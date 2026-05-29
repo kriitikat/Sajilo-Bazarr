@@ -1,5 +1,5 @@
 #include "admindashboard.h"
-#include "./ui_admindashboard.h"
+#include "../ui/ui_admindashboard.h"
 
 AdminDashboard::AdminDashboard(QWidget *parent)
     : QMainWindow(parent)

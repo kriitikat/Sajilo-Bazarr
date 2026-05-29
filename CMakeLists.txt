@@ -9,11 +9,11 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Sql)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql)
 
 set(PROJECT_SOURCES
-        main.cpp
+        source/main.cpp
         source/admindashboard.cpp
         source/category.cpp
         source/dashboard.cpp
@@ -39,7 +39,7 @@ set(PROJECT_SOURCES
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
-    qt_add_executable(admindashboard
+    qt_add_executable(Sajilo-Bazarr
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
     )
@@ -49,19 +49,26 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
 # For more information, see https://doc.qt.io/qt-6/qt-add-executable.html#target-creation
 else()
     if(ANDROID)
-        add_library(admindashboard SHARED
+        add_library(Sajilo-Bazarr SHARED
             ${PROJECT_SOURCES}
         )
 # Define properties for Android with Qt 5 after find_package() calls as:
 #    set(ANDROID_PACKAGE_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/android")
     else()
-        add_executable(admindashboard
+        add_executable(Sajilo-Bazarr
             ${PROJECT_SOURCES}
         )
     endif()
 endif()
 
-target_link_libraries(admindashboard PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(Sajilo-Bazarr PRIVATE
+    Qt${QT_VERSION_MAJOR}::Widgets
+    Qt${QT_VERSION_MAJOR}::Sql
+)
+
+target_include_directories(Sajilo-Bazarr PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
@@ -69,7 +76,7 @@ target_link_libraries(admindashboard PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 if(${QT_VERSION} VERSION_LESS 6.1.0)
   set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.admindashboard)
 endif()
-set_target_properties(admindashboard PROPERTIES
+set_target_properties(Sajilo-Bazarr PROPERTIES
     ${BUNDLE_ID_OPTION}
     MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
@@ -78,12 +85,12 @@ set_target_properties(admindashboard PROPERTIES
 )
 
 include(GNUInstallDirs)
-install(TARGETS admindashboard
+install(TARGETS Sajilo-Bazarr
     BUNDLE DESTINATION .
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt_finalize_executable(admindashboard)
+    qt_finalize_executable(Sajilo-Bazarr)
 endif()

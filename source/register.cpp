@@ -1,4 +1,4 @@
-#include "register.h"
+#include "../include/"
 
 #include <QtSql>
 #include <QVBoxLayout>

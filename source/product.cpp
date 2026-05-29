@@ -1,5 +1,5 @@
-#include "product.h"
-#include "ui_product.h"
+#include "../include/"
+#include "../ui/"
 #include <QStringList>
 #include <QHeaderView>
 #include <QTableWidgetItem>

@@ -1,7 +1,7 @@
 #ifndef SUPPLIER_H
 #define SUPPLIER_H
 
-#include <QMainWindow
+#include <QMainWindow>
 
 namespace Ui { class Supplier; }
 

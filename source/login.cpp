@@ -1,6 +1,6 @@
-#include "login.h"
-#include "register.h"
-#include "dashboard.h"
+#include "../include/login.h"
+#include "../include/register.h"
+#include "../include/dashboard.h"
 
 #include <QMessageBox>
 #include <QVBoxLayout>

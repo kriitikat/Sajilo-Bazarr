@@ -1,4 +1,4 @@
-#include "dashboard.h"
+#include "../include/dashboard.h"
 
 #include <QVBoxLayout>
 #include <QLabel>
