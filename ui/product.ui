@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>product</class>
+ <widget class="QMainWindow" name="product">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>900</width><height>600</height></rect>
+  </property>
+  <property name="windowTitle"><string>Sajilo Bazar - Products</string></property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="mainLayout">
+    <property name="spacing"><number>0</number></property>
+    <property name="leftMargin"><number>0</number></property>
+    <property name="topMargin"><number>0</number></property>
+    <property name="rightMargin"><number>0</number></property>
+    <property name="bottomMargin"><number>0</number></property>
+    <item>
+     <widget class="QFrame" name="topbarFrame">
+      <property name="styleSheet"><string>QFrame#topbarFrame { background-color: #FFFFFF; border-bottom: 1px solid #E0E4EE; }</string></property>
+      <property name="minimumSize"><size><width>0</width><height>55</height></size></property>
+      <property name="maximumSize"><size><width>16777215</width><height>55</height></size></property>
+      <layout class="QHBoxLayout">
+       <item>
+        <widget class="QLabel" name="pageTitle">
+         <property name="text"><string>Products</string></property>
+         <property name="styleSheet"><string>QLabel { color: #1B2A4A; font-size: 18px; font-weight: bold; padding-left: 20px; }</string></property>
+        </widget>
+       </item>
+       <item>
+        <spacer><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btnAddProduct">
+         <property name="text"><string>+ Add Product</string></property>
+         <property name="styleSheet"><string>QPushButton { background-color: #28a745; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 13px; font-weight: bold; margin-right: 20px; } QPushButton:hover { background-color: #1e7e34; }</string></property>
+         <property name="minimumSize"><size><width>130</width><height>36</height></size></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="contentFrame">
+      <property name="styleSheet"><string>QFrame#contentFrame { background-color: #F4F6FA; }</string></property>
+      <layout class="QVBoxLayout" name="contentLayout">
+       <property name="leftMargin"><number>20</number></property>
+       <property name="topMargin"><number>16</number></property>
+       <property name="rightMargin"><number>20</number></property>
+       <property name="bottomMargin"><number>20</number></property>
+       <item>
+        <layout class="QHBoxLayout" name="filterLayout">
+         <property name="spacing"><number>10</number></property>
+         <item>
+          <widget class="QLineEdit" name="searchBar">
+           <property name="placeholderText"><string>Search products...</string></property>
+           <property name="styleSheet"><string>QLineEdit { background-color: #FFFFFF; border: 1px solid #E0E4EE; border-radius: 6px; padding: 6px 12px; font-size: 13px; color: #1B2A4A; }</string></property>
+           <property name="minimumSize"><size><width>250</width><height>36</height></size></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="categoryFilter">
+           <property name="styleSheet"><string>QComboBox { background-color: #FFFFFF; border: 1px solid #E0E4EE; border-radius: 6px; padding: 4px 12px; font-size: 13px; color: #1B2A4A; min-height: 36px; }</string></property>
+           <item><property name="text"><string>All Categories</string></property></item>
+           <item><property name="text"><string>Groceries</string></property></item>
+           <item><property name="text"><string>Dairy</string></property></item>
+           <item><property name="text"><string>Beverages</string></property></item>
+           <item><property name="text"><string>Bakery</string></property></item>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="statusFilter">
+           <property name="styleSheet"><string>QComboBox { background-color: #FFFFFF; border: 1px solid #E0E4EE; border-radius: 6px; padding: 4px 12px; font-size: 13px; color: #1B2A4A; min-height: 36px; }</string></property>
+           <item><property name="text"><string>All Status</string></property></item>
+           <item><property name="text"><string>In Stock</string></property></item>
+           <item><property name="text"><string>Low Stock</string></property></item>
+           <item><property name="text"><string>Out of Stock</string></property></item>
+          </widget>
+         </item>
+         <item>
+          <spacer><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="productTable">
+         <property name="styleSheet"><string>QTableWidget { background-color: #FFFFFF; border: 1px solid #E0E4EE; border-radius: 8px; gridline-color: #F0F2F8; font-size: 13px; } QTableWidget::item { padding: 8px; color: #1B2A4A; } QHeaderView::section { background-color: #F4F6FA; color: #7a8aaa; font-size: 11px; font-weight: bold; padding: 8px; border: none; border-bottom: 1px solid #E0E4EE; } QTableWidget::item:selected { background-color: #E8F1FB; color: #1B2A4A; }</string></property>
+         <property name="rowCount"><number>0</number></property>
+         <property name="columnCount"><number>7</number></property>
+         <property name="selectionBehavior"><enum>QAbstractItemView::SelectRows</enum></property>
+         <property name="alternatingRowColors"><bool>true</bool></property>
+         <property name="editTriggers"><set>QAbstractItemView::NoEditTriggers</set></property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="actionLayout">
+         <property name="spacing"><number>10</number></property>
+         <item>
+          <spacer><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnUpdateStock">
+           <property name="text"><string>Update Stock</string></property>
+           <property name="styleSheet"><string>QPushButton { background-color: #185FA5; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 13px; font-weight: bold; } QPushButton:hover { background-color: #1B2A4A; }</string></property>
+           <property name="minimumSize"><size><width>130</width><height>36</height></size></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnEditProduct">
+           <property name="text"><string>Edit Product</string></property>
+           <property name="styleSheet"><string>QPushButton { background-color: #854F0B; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 13px; font-weight: bold; } QPushButton:hover { background-color: #6b3f08; }</string></property>
+           <property name="minimumSize"><size><width>130</width><height>36</height></size></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnDeleteProduct">
+           <property name="text"><string>Delete Product</string></property>
+           <property name="styleSheet"><string>QPushButton { background-color: #A32D2D; color: white; border: none; border-radius: 6px; padding: 8px 18px; font-size: 13px; font-weight: bold; } QPushButton:hover { background-color: #7a1f1f; }</string></property>
+           <property name="minimumSize"><size><width>130</width><height>36</height></size></property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar"/>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
