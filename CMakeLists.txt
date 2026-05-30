@@ -22,6 +22,7 @@ set(PROJECT_SOURCES
         source/product.cpp
         source/register.cpp
         source/supplier.cpp
+         source/staffdashboard.cpp
         include/admindashboard.h
         include/category.h
         include/dashboard.h
@@ -30,12 +31,14 @@ set(PROJECT_SOURCES
         include/product.h
         include/register.h
         include/supplier.h
+        include/staffdashboard.h
         ui/admindashboard.ui
         ui/category.ui
         ui/mainwindow.ui
         ui/product.ui
         ui/staffpage.ui
         ui/supplier.ui
+        ui/staffdashboard.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

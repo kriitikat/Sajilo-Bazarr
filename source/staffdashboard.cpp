@@ -1,7 +1,7 @@
 // staffdashboard.cpp
 
-#include "staffdashboard.h"
-#include "ui_staffdashboard.h"
+#include "../include/staffdashboard.h"
+#include "../ui/ui_staffdashboard.h"
 
 StaffDashboard::StaffDashboard(QWidget *parent)
     : QMainWindow(parent)
