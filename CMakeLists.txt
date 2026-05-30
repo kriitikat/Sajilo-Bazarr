@@ -19,9 +19,12 @@ set(PROJECT_SOURCES
         source/dashboard.cpp
         source/login.cpp
         source/mainwindow.cpp
-        source/product.cpp
+
         source/register.cpp
         source/supplier.cpp
+        source/product.cpp
+        source/staffdashboard.cpp
+
         include/admindashboard.h
         include/category.h
         include/dashboard.h
@@ -30,11 +33,16 @@ set(PROJECT_SOURCES
         include/product.h
         include/register.h
         include/supplier.h
+        include/staffdashboard.h
+
         ui/admindashboard.ui
         ui/category.ui
         ui/mainwindow.ui
-        ui/product.ui
+
         ui/staffpage.ui
+        ui/product.ui
+        ui/staffdashboard.ui
+
         ui/supplier.ui
 )
 
@@ -42,6 +50,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(Sajilo-Bazarr
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET admindashboard APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
