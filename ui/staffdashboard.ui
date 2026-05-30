@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>StaffDashboard</class>
-
  <widget class="QMainWindow" name="StaffDashboard">
-
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -12,54 +10,40 @@
     <height>600</height>
    </rect>
   </property>
-
   <property name="windowTitle">
    <string>Sajilo Bazar - Staff Dashboard</string>
   </property>
-
   <widget class="QWidget" name="centralwidget">
-
    <layout class="QHBoxLayout" name="mainLayout">
-
     <property name="spacing">
      <number>0</number>
     </property>
-
     <property name="leftMargin">
      <number>0</number>
     </property>
-
     <property name="topMargin">
      <number>0</number>
     </property>
-
     <property name="rightMargin">
      <number>0</number>
     </property>
-
     <property name="bottomMargin">
      <number>0</number>
     </property>
-
-    <!-- SIDEBAR -->
-
     <item>
      <widget class="QFrame" name="sidebarFrame">
-
       <property name="minimumSize">
        <size>
         <width>200</width>
         <height>0</height>
        </size>
       </property>
-
       <property name="maximumSize">
        <size>
         <width>200</width>
         <height>16777215</height>
        </size>
       </property>
-
       <property name="styleSheet">
        <string>
 QFrame#sidebarFrame {
@@ -67,42 +51,24 @@ background-color: #1B2A4A;
 }
        </string>
       </property>
-
       <layout class="QVBoxLayout" name="sidebarLayout">
-
        <property name="spacing">
         <number>0</number>
        </property>
-
        <property name="leftMargin">
         <number>0</number>
        </property>
-
        <property name="topMargin">
         <number>0</number>
        </property>
-
        <property name="rightMargin">
         <number>0</number>
        </property>
-
        <property name="bottomMargin">
         <number>0</number>
        </property>
-
-       <!-- LOGO -->
-
        <item>
         <widget class="QLabel" name="logoLabel">
-
-         <property name="text">
-          <string>Sajilo Bazar</string>
-         </property>
-
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-
          <property name="styleSheet">
           <string>
 QLabel {
@@ -114,19 +80,16 @@ border-bottom: 1px solid #2d4070;
 }
           </string>
          </property>
-
+         <property name="text">
+          <string>Sajilo Bazar</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignmentFlag::AlignCenter</set>
+         </property>
         </widget>
        </item>
-
-       <!-- DASHBOARD -->
-
        <item>
         <widget class="QPushButton" name="btnDashboard">
-
-         <property name="text">
-          <string>  Dashboard</string>
-         </property>
-
          <property name="styleSheet">
           <string>
 QPushButton {
@@ -142,49 +105,37 @@ border-bottom: none;
 }
           </string>
          </property>
-
+         <property name="text">
+          <string>  Dashboard</string>
+         </property>
         </widget>
        </item>
-
-       <!-- PRODUCTS -->
-
        <item>
         <widget class="QPushButton" name="btnProducts">
+         <property name="styleSheet">
+          <string>
+QPushButton {
+color: #A0B8D8;
+background-color: transparent;
+border: none;
+padding: 12px 16px;
+text-align: left;
+font-size: 13px;
+}
 
+QPushButton:hover {
+background-color: #2D4A7A;
+color: white;
+}
+          </string>
+         </property>
          <property name="text">
           <string>  Products</string>
          </property>
-
-         <property name="styleSheet">
-          <string>
-QPushButton {
-color: #A0B8D8;
-background-color: transparent;
-border: none;
-padding: 12px 16px;
-text-align: left;
-font-size: 13px;
-}
-
-QPushButton:hover {
-background-color: #2D4A7A;
-color: white;
-}
-          </string>
-         </property>
-
         </widget>
        </item>
-
-       <!-- INVENTORY -->
-
        <item>
-        <widget class="QPushButton" name="btnInventory">
-
-         <property name="text">
-          <string>  Inventory</string>
-         </property>
-
+        <widget class="QPushButton" name="btnUpdateStock">
          <property name="styleSheet">
           <string>
 QPushButton {
@@ -202,19 +153,37 @@ color: white;
 }
           </string>
          </property>
-
+         <property name="text">
+          <string>Update Stock</string>
+         </property>
         </widget>
        </item>
+       <item>
+        <widget class="QPushButton" name="btnViewTasks">
+         <property name="styleSheet">
+          <string>
+QPushButton {
+color: #A0B8D8;
+background-color: transparent;
+border: none;
+padding: 12px 16px;
+text-align: left;
+font-size: 13px;
+}
 
-       <!-- CATEGORY -->
-
+QPushButton:hover {
+background-color: #2D4A7A;
+color: white;
+}
+   </string>
+         </property>
+         <property name="text">
+          <string>View Tasks</string>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QPushButton" name="btnCategory">
-
-         <property name="text">
-          <string>  Category</string>
-         </property>
-
          <property name="styleSheet">
           <string>
 QPushButton {
@@ -232,29 +201,44 @@ color: white;
 }
           </string>
          </property>
-
+         <property name="text">
+          <string>Sort Inventory</string>
+         </property>
         </widget>
        </item>
-
        <item>
-        <spacer name="sidebarSpacer">
-
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
+        <widget class="QPushButton" name="pushButton">
+         <property name="styleSheet">
+          <string notr="true">QPushButton {
+color: #A0B8D8;
+background-color: transparent;
+border: none;
+padding: 12px 16px;
+text-align: left;
+font-size: 13px;
+}
+             </string>
          </property>
-
+         <property name="text">
+          <string>Track Stock</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>40</height>
+          </size>
+         </property>
         </spacer>
        </item>
-
-       <!-- LOGOUT -->
-
        <item>
         <widget class="QPushButton" name="btnLogout">
-
-         <property name="text">
-          <string>  Logout</string>
-         </property>
-
          <property name="styleSheet">
           <string>
 QPushButton {
@@ -274,19 +258,16 @@ background-color: #3a2020;
 }
           </string>
          </property>
-
+         <property name="text">
+          <string>  Logout</string>
+         </property>
         </widget>
        </item>
-
       </layout>
      </widget>
     </item>
-
-    <!-- MAIN CONTENT -->
-
     <item>
      <widget class="QFrame" name="mainFrame">
-
       <property name="styleSheet">
        <string>
 QFrame#mainFrame {
@@ -294,32 +275,24 @@ background-color: #F4F6FA;
 }
        </string>
       </property>
-
       <layout class="QVBoxLayout" name="mainLayout2">
-
        <property name="spacing">
         <number>0</number>
        </property>
-
-       <!-- TOP BAR -->
-
        <item>
         <widget class="QFrame" name="topbarFrame">
-
          <property name="minimumSize">
           <size>
            <width>0</width>
            <height>60</height>
           </size>
          </property>
-
          <property name="maximumSize">
           <size>
            <width>16777215</width>
            <height>60</height>
           </size>
          </property>
-
          <property name="styleSheet">
           <string>
 QFrame#topbarFrame {
@@ -328,16 +301,9 @@ border-bottom: 1px solid #E0E4EE;
 }
           </string>
          </property>
-
          <layout class="QHBoxLayout">
-
           <item>
            <widget class="QLabel" name="welcomeLabel">
-
-            <property name="text">
-             <string>Welcome back, Staff!</string>
-            </property>
-
             <property name="styleSheet">
              <string>
 QLabel {
@@ -348,25 +314,26 @@ padding-left: 20px;
 }
              </string>
             </property>
-
+            <property name="text">
+             <string>Welcome back, Staff!</string>
+            </property>
            </widget>
           </item>
-
           <item>
            <spacer>
             <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
             </property>
            </spacer>
           </item>
-
           <item>
            <widget class="QLabel" name="staffBadge">
-
-            <property name="text">
-             <string>Staff</string>
-            </property>
-
             <property name="styleSheet">
              <string>
 QLabel {
@@ -379,19 +346,16 @@ margin-right: 20px;
 }
              </string>
             </property>
-
+            <property name="text">
+             <string>Staff</string>
+            </property>
            </widget>
           </item>
-
          </layout>
         </widget>
        </item>
-
-       <!-- CONTENT -->
-
        <item>
         <widget class="QFrame" name="contentFrame">
-
          <property name="styleSheet">
           <string>
 QFrame {
@@ -399,26 +363,15 @@ background-color: #F4F6FA;
 }
           </string>
          </property>
-
          <layout class="QVBoxLayout">
-
           <property name="leftMargin">
            <number>20</number>
           </property>
-
           <property name="topMargin">
            <number>20</number>
           </property>
-
-          <!-- TITLE -->
-
           <item>
            <widget class="QLabel" name="titleLabel">
-
-            <property name="text">
-             <string>Staff Dashboard</string>
-            </property>
-
             <property name="styleSheet">
              <string>
 QLabel {
@@ -428,26 +381,19 @@ font-weight: bold;
 }
              </string>
             </property>
-
+            <property name="text">
+             <string>Staff Dashboard</string>
+            </property>
            </widget>
           </item>
-
-          <!-- SEARCH BAR -->
-
           <item>
            <widget class="QLineEdit" name="searchBar">
-
-            <property name="placeholderText">
-             <string>Search Product...</string>
-            </property>
-
             <property name="minimumSize">
              <size>
               <width>0</width>
               <height>35</height>
              </size>
             </property>
-
             <property name="styleSheet">
              <string>
 QLineEdit {
@@ -459,15 +405,13 @@ font-size: 13px;
 }
              </string>
             </property>
-
+            <property name="placeholderText">
+             <string>Search Product...</string>
+            </property>
            </widget>
           </item>
-
-          <!-- TABLE -->
-
           <item>
            <widget class="QTableWidget" name="productTable">
-
             <property name="styleSheet">
              <string>
 QTableWidget {
@@ -479,65 +423,53 @@ font-size: 12px;
 }
              </string>
             </property>
-
            </widget>
           </item>
-
-          <!-- BUTTONS -->
-
           <item>
            <layout class="QHBoxLayout" name="buttonLayout">
-
             <item>
              <widget class="QPushButton" name="btnViewProducts">
-
               <property name="text">
                <string>View Products</string>
               </property>
-
              </widget>
             </item>
-
             <item>
              <widget class="QPushButton" name="btnUpdateStock">
-
               <property name="text">
                <string>Update Stock</string>
               </property>
-
              </widget>
             </item>
-
             <item>
              <widget class="QPushButton" name="btnSortInventory">
-
               <property name="text">
                <string>Sort Inventory</string>
               </property>
-
              </widget>
             </item>
-
            </layout>
           </item>
-
          </layout>
         </widget>
        </item>
-
       </layout>
      </widget>
     </item>
-
    </layout>
   </widget>
-
-  <widget class="QMenuBar" name="menubar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>900</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
   <widget class="QStatusBar" name="statusbar"/>
-
  </widget>
-
  <resources/>
  <connections/>
-
 </ui>

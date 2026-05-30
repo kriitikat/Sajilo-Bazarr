@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
+<<<<<<< HEAD
 <!-- Written by QtCreator 19.0.2, 2026-05-30T18:15:38. -->
+=======
+<!-- Written by QtCreator 19.0.1, 2026-05-30T15:34:09. -->
+>>>>>>> 2ed435efa097c42f652123dbf6bb042b237c958c
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -122,7 +126,7 @@
      <valuemap type="QVariantMap" key="ProjectExplorer.BuildStepList.Step.0">
       <value type="QString" key="CMakeProjectManager.MakeStep.BuildPreset"></value>
       <valuelist type="QVariantList" key="CMakeProjectManager.MakeStep.BuildTargets">
-       <value type="QString">all</value>
+       <value type="QString">Sajilo-Bazarr</value>
       </valuelist>
       <value type="bool" key="CMakeProjectManager.MakeStep.ClearSystemEnvironment">false</value>
       <valuelist type="QVariantList" key="CMakeProjectManager.MakeStep.UserEnvironmentChanges"/>

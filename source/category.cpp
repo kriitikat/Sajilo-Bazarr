@@ -1,4 +1,4 @@
-#include "category.h"
+#include "../include/category.h"
 #include "../ui/ui_category.h"
 
 category::category(QWidget *parent)
