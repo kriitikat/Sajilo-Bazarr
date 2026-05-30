@@ -22,7 +22,7 @@ set(PROJECT_SOURCES
 
         source/register.cpp
         source/supplier.cpp
-        source/product.cpp
+
         source/staffdashboard.cpp
 
         include/admindashboard.h
@@ -30,7 +30,7 @@ set(PROJECT_SOURCES
         include/dashboard.h
         include/login.h
         include/mainwindow.h
-        include/product.h
+
         include/register.h
         include/supplier.h
         include/staffdashboard.h
@@ -40,7 +40,7 @@ set(PROJECT_SOURCES
         ui/mainwindow.ui
 
         ui/staffpage.ui
-        ui/product.ui
+
         ui/staffdashboard.ui
 
         ui/supplier.ui
