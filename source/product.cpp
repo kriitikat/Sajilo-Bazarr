@@ -1,11 +1,3 @@
-// ═══════════════════════════════════════════════════════════════════
-//  Sajilo Bazar – Product Module
-//  product.cpp
-//
-//  Requires Qt modules:  widgets  sql
-//  Add to .pro:  QT += widgets sql
-// ═══════════════════════════════════════════════════════════════════
-
 #include "../include/product.h"
 #include "../ui/ui_product.h"
 

@@ -19,29 +19,25 @@ set(PROJECT_SOURCES
         source/dashboard.cpp
         source/login.cpp
         source/mainwindow.cpp
-
+        source/product.cpp
         source/register.cpp
         source/supplier.cpp
-<<<<<<< HEAD
-
         source/staffdashboard.cpp
+        source/frontdesk.cpp
 
-=======
-         source/staffdashboard.cpp
->>>>>>> 2ed435efa097c42f652123dbf6bb042b237c958c
         include/admindashboard.h
         include/category.h
         include/dashboard.h
         include/login.h
         include/mainwindow.h
-
         include/register.h
         include/supplier.h
         include/staffdashboard.h
-<<<<<<< HEAD
+        include/product.h
+        include/frontdesk.h
 
-=======
->>>>>>> 2ed435efa097c42f652123dbf6bb042b237c958c
+
+
         ui/admindashboard.ui
         ui/category.ui
         ui/mainwindow.ui
@@ -51,7 +47,8 @@ set(PROJECT_SOURCES
         ui/staffdashboard.ui
 
         ui/supplier.ui
-        ui/staffdashboard.ui
+        ui/product.ui
+        ui/frontdesk.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
