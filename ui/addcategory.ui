@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>addcategory</class>
+ <widget class="QDialog" name="addcategory">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>568</width>
+    <height>286</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QWidget" name="widget" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="minimumSize">
+         <size>
+          <width>20</width>
+          <height>20</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>30</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QLabel {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1e293b;
+    border: none;
+}</string>
+        </property>
+        <property name="text">
+         <string>Add Categorie</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QFrame" name="frame">
+        <property name="styleSheet">
+         <string notr="true">QFrame {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}</string>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::Shape::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Shadow::Raised</enum>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <widget class="QWidget" name="widget_2" native="true">
+             <widget class="QLabel" name="label_2">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>10</y>
+                <width>141</width>
+                <height>16</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel{
+    color:#2D4A7A;
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    background-color: transparent;
+  }</string>
+              </property>
+              <property name="text">
+               <string>CATEGORY NAME</string>
+              </property>
+             </widget>
+             <widget class="QTextEdit" name="descriptionInput">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>110</y>
+                <width>341</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QTextEdit {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #4a5568;
+    
+    /* Force a comfortable height for a 14px font */
+    height: 35px; 
+    padding-left: 10px;
+    padding-right: 10px;
+}
+/* Style the vertical scrollbar area */
+QScrollBar:vertical {
+    border: none;
+    background: #f7fafc; /* Matches your text edit background */
+    width: 8px;          /* Sleek, thin width */
+    margin: 0px 0px 0px 0px;
+    border-radius: 4px;
+}
+
+/* Style the actual moving handle (the thumb) */
+QScrollBar::handle:vertical {
+    background: #cbd5e1; /* Smooth grey tone */
+    min-height: 20px;
+    border-radius: 4px;
+}
+
+/* Change handle color when user hovers over it */
+QScrollBar::handle:vertical:hover {
+    background: #94a3b8; /* Slightly darker gray when active */
+}
+
+/* Hide the top arrow button */
+QScrollBar::sub-line:vertical {
+    height: 0px;
+    border: none;
+    background: none;
+}
+
+/* Hide the bottom arrow button */
+QScrollBar::add-line:vertical {
+    height: 0px;
+    border: none;
+    background: none;
+}
+
+/* Clean up any leftover background spacing artifacts */
+QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical {
+    background: none;
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}</string>
+              </property>
+             </widget>
+             <widget class="QLabel" name="label_3">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>80</y>
+                <width>121</width>
+                <height>16</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel{
+    color:#2D4A7A;
+    font-weight: bold;
+    border: none;
+    background: transparent;
+    background-color: transparent;
+  }</string>
+              </property>
+              <property name="text">
+               <string>DESCRIPTION</string>
+              </property>
+             </widget>
+             <widget class="QLineEdit" name="categoryNameInput">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>40</y>
+                <width>341</width>
+                <height>31</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLineEdit {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #4a5568;
+    
+    /* Force a comfortable height for a 14px font */
+    height: 35px; 
+    padding-left: 10px;
+    padding-right: 10px;
+}</string>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="cancelButton">
+              <property name="geometry">
+               <rect>
+                <x>220</x>
+                <y>170</y>
+                <width>80</width>
+                <height>18</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+    background-color: #2D4A7A;
+    border: none;
+    /* Changed from 8px to 4px on the top and bottom */
+    padding: 4px 16px; 
+    color: white;
+    font-weight: bold;
+    border-radius: 12px;
+}
+QPushButton:hover {
+    color: white;
+    background-color: #1B2A4A;
+}</string>
+              </property>
+              <property name="text">
+               <string>Cancel</string>
+              </property>
+             </widget>
+             <widget class="QPushButton" name="addButton">
+              <property name="geometry">
+               <rect>
+                <x>330</x>
+                <y>170</y>
+                <width>80</width>
+                <height>18</height>
+               </rect>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QPushButton {
+    background-color: #2D4A7A;
+    border: none;
+    /* Changed from 8px to 4px on the top and bottom */
+    padding: 4px 16px; 
+    color: white;
+    font-weight: bold;
+    border-radius: 12px;
+}
+QPushButton:hover {
+    color: white;
+    background-color: #1B2A4A;
+}</string>
+              </property>
+              <property name="text">
+               <string>Add</string>
+              </property>
+             </widget>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
