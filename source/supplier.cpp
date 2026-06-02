@@ -1,13 +1,14 @@
-#include "../include/"
-#include "../ui/"
+#include "supplier.h"
+#include "ui_supplier.h"
 
-Supplier::Supplier(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::Supplier)
+supplier::supplier(QWidget *parent)
+    : QWidget(parent) // 1. Changed from QMainWindow to QWidget
+    , ui(new Ui::supplier)
 {
-    ui->setupUi(this);
+    ui->setupUi(this); // 2. Removed the forced setLayout line
 }
 
-Supplier::~Supplier()
+supplier::~supplier()
 {
     delete ui;
 }
