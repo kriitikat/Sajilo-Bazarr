@@ -8,6 +8,7 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+ set(CMAKE_AUTOUIC_SEARCH_PATHS ${CMAKE_SOURCE_DIR}/ui)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Sql)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql)
@@ -15,40 +16,37 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql)
 set(PROJECT_SOURCES
         source/main.cpp
         source/admindashboard.cpp
-        source/category.cpp
+
         source/dashboard.cpp
         source/login.cpp
         source/mainwindow.cpp
         source/product.cpp
         source/register.cpp
-        source/supplier.cpp
+
         source/staffdashboard.cpp
         source/frontdesk.cpp
+        source/inventory.cpp
 
         include/admindashboard.h
-        include/category.h
+
         include/dashboard.h
         include/login.h
         include/mainwindow.h
         include/register.h
-        include/supplier.h
+
         include/staffdashboard.h
         include/product.h
         include/frontdesk.h
+        include/inventory.h
 
 
 
         ui/admindashboard.ui
-        ui/category.ui
-        ui/mainwindow.ui
-
-        ui/staffpage.ui
-
         ui/staffdashboard.ui
-
-        ui/supplier.ui
         ui/product.ui
         ui/frontdesk.ui
+        ui/login.ui
+        ui/inventory.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

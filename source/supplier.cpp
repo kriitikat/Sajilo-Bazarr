@@ -1,5 +1,5 @@
-#include "../include/"
-#include "../ui/"
+#include "../include/supplier.h"
+#include "../ui/ui_supplier.h"
 
 Supplier::Supplier(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::Supplier)

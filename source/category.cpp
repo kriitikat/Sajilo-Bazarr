@@ -3,7 +3,7 @@
 
 category::category(QWidget *parent)
     : QMainWindow(parent)
-    , ui(new Ui::CATEGORY)
+    , ui(new Ui::category)
 {
     ui->setupUi(this);
 }

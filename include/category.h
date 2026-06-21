@@ -4,7 +4,7 @@
 #include <QMainWindow>
 
 namespace Ui {
-class SUPPLIER;
+class category;
 }
 
 class category : public QMainWindow
@@ -16,7 +16,7 @@ public:
     ~category();
 
 private:
-    Ui::SUPPLIER *ui;
+    Ui::category *ui;
 };
 
 #endif

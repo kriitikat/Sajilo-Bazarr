@@ -101,6 +101,8 @@ bool Login::connectDatabase()
         return false;
     }
 }
+void Login::on_loginButton_clicked() {}
+void Login::on_registerButton_clicked() {}
 
 Login::~Login()
 {

@@ -1,5 +1,5 @@
-#include "frontdesk.h"
-#include "./ui_frontdesk.h"
+#include "../include/frontdesk.h"
+#include "../ui/ui_frontdesk.h"
 
 frontdesk::frontdesk(QWidget *parent)
     : QMainWindow(parent)

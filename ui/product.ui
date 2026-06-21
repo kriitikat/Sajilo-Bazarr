@@ -211,7 +211,7 @@ QLabel#lblSubtitle {
       <item>
        <widget class="QLabel" name="lblTotalProducts">
         <property name="styleSheet">
-         <string>color:#1A73E8; font-weight:bold;</string>
+         <string>color:#2D4A7A; font-weight:bold;</string>
         </property>
         <property name="text">
          <string>Total: 0</string>

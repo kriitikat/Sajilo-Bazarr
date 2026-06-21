@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>inventory</class>
+ <widget class="QMainWindow" name="inventory">
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>1000</width><height>650</height></rect>
+  </property>
+  <property name="windowTitle"><string>Sajilo Bazar - Inventory Dashboard</string></property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="mainLayout">
+    <property name="spacing"><number>0</number></property>
+    <property name="leftMargin"><number>0</number></property>
+    <property name="topMargin"><number>0</number></property>
+    <property name="rightMargin"><number>0</number></property>
+    <property name="bottomMargin"><number>0</number></property>
+    <item>
+     <widget class="QFrame" name="topbarFrame">
+      <property name="styleSheet"><string>QFrame#topbarFrame { background-color: #1B2A4A; }</string></property>
+      <property name="minimumSize"><size><width>0</width><height>55</height></size></property>
+      <property name="maximumSize"><size><width>16777215</width><height>55</height></size></property>
+      <layout class="QHBoxLayout">
+       <item>
+        <widget class="QLabel" name="pageTitle">
+         <property name="text"><string>Inventory Dashboard</string></property>
+         <property name="styleSheet"><string>QLabel { color: #FFFFFF; font-size: 18px; font-weight: bold; padding-left: 20px; }</string></property>
+        </widget>
+       </item>
+       <item>
+        <spacer><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+       </item>
+       <item>
+        <widget class="QLabel" name="adminBadge">
+         <property name="text"><string>Admin</string></property>
+         <property name="styleSheet"><string>QLabel { background-color: #2D4A7A; color: #FFFFFF; border-radius: 10px; padding: 4px 14px; font-size: 12px; margin-right: 20px; }</string></property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QFrame" name="contentFrame">
+      <property name="styleSheet"><string>QFrame#contentFrame { background-color: #F4F6FA; }</string></property>
+      <layout class="QVBoxLayout" name="contentLayout">
+       <property name="leftMargin"><number>20</number></property>
+       <property name="topMargin"><number>20</number></property>
+       <property name="rightMargin"><number>20</number></property>
+       <property name="bottomMargin"><number>20</number></property>
+       <item>
+        <layout class="QHBoxLayout" name="statsLayout">
+         <property name="spacing"><number>12</number></property>
+         <item>
+          <widget class="QFrame" name="cardTotal">
+           <property name="styleSheet"><string>QFrame { background-color: #FFFFFF; border-radius: 10px; border: 1px solid #E0E4EE; }</string></property>
+           <property name="minimumSize"><size><width>0</width><height>90</height></size></property>
+           <layout class="QVBoxLayout">
+            <item><widget class="QLabel" name="lblTotalTitle"><property name="text"><string>Total Products</string></property><property name="styleSheet"><string>QLabel { color: #7a8aaa; font-size: 12px; font-weight: bold; }</string></property></widget></item>
+            <item><widget class="QLabel" name="lblTotalValue"><property name="text"><string>0</string></property><property name="styleSheet"><string>QLabel { color: #1B2A4A; font-size: 26px; font-weight: bold; }</string></property></widget></item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="cardLowStock">
+           <property name="styleSheet"><string>QFrame { background-color: #FFFFFF; border-radius: 10px; border: 1px solid #E0E4EE; }</string></property>
+           <property name="minimumSize"><size><width>0</width><height>90</height></size></property>
+           <layout class="QVBoxLayout">
+            <item><widget class="QLabel" name="lblLowStockTitle"><property name="text"><string>Low Stock</string></property><property name="styleSheet"><string>QLabel { color: #7a8aaa; font-size: 12px; font-weight: bold; }</string></property></widget></item>
+            <item><widget class="QLabel" name="lblLowStockValue"><property name="text"><string>0</string></property><property name="styleSheet"><string>QLabel { color: #A32D2D; font-size: 26px; font-weight: bold; }</string></property></widget></item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="cardHighStock">
+           <property name="styleSheet"><string>QFrame { background-color: #FFFFFF; border-radius: 10px; border: 1px solid #E0E4EE; }</string></property>
+           <property name="minimumSize"><size><width>0</width><height>90</height></size></property>
+           <layout class="QVBoxLayout">
+            <item><widget class="QLabel" name="lblHighStockTitle"><property name="text"><string>High Stock</string></property><property name="styleSheet"><string>QLabel { color: #7a8aaa; font-size: 12px; font-weight: bold; }</string></property></widget></item>
+            <item><widget class="QLabel" name="lblHighStockValue"><property name="text"><string>0</string></property><property name="styleSheet"><string>QLabel { color: #3B6D11; font-size: 26px; font-weight: bold; }</string></property></widget></item>
+           </layout>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="cardOutOfStock">
+           <property name="styleSheet"><string>QFrame { background-color: #FFFFFF; border-radius: 10px; border: 1px solid #E0E4EE; }</string></property>
+           <property name="minimumSize"><size><width>0</width><height>90</height></size></property>
+           <layout class="QVBoxLayout">
+            <item><widget class="QLabel" name="lblOutOfStockTitle"><property name="text"><string>Out Of Stock</string></property><property name="styleSheet"><string>QLabel { color: #7a8aaa; font-size: 12px; font-weight: bold; }</string></property></widget></item>
+            <item><widget class="QLabel" name="lblOutOfStockValue"><property name="text"><string>0</string></property><property name="styleSheet"><string>QLabel { color: #854F0B; font-size: 26px; font-weight: bold; }</string></property></widget></item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="filterLayout">
+         <property name="spacing"><number>10</number></property>
+         <item>
+          <widget class="QComboBox" name="sortInventory">
+           <property name="styleSheet"><string>QComboBox { background-color: #FFFFFF; border: 1px solid #E0E4EE; border-radius: 6px; padding: 4px 12px; font-size: 13px; color: #1B2A4A; min-height: 36px; }</string></property>
+           <item><property name="text"><string>Sort Inventory</string></property></item>
+           <item><property name="text"><string>Name (A-Z)</string></property></item>
+           <item><property name="text"><string>Stock (Low to High)</string></property></item>
+           <item><property name="text"><string>Expiry Date</string></property></item>
+          </widget>
+         </item>
+         <item>
+          <spacer><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <widget class="QTableWidget" name="inventoryTable">
+         <property name="styleSheet"><string>QTableWidget { background-color: #FFFFFF; border: 1px solid #E0E4EE; border-radius: 8px; gridline-color: #F0F2F8; font-size: 13px; } QTableWidget::item { padding: 8px; color: #1B2A4A; } QHeaderView::section { background-color: #1B2A4A; color: #FFFFFF; font-size: 11px; font-weight: bold; padding: 8px; border: none; } QTableWidget::item:selected { background-color: #E8F1FB; color: #1B2A4A; }</string></property>
+         <property name="rowCount"><number>0</number></property>
+         <property name="columnCount"><number>10</number></property>
+         <property name="selectionBehavior"><enum>QAbstractItemView::SelectRows</enum></property>
+         <property name="alternatingRowColors"><bool>true</bool></property>
+         <property name="editTriggers"><set>QAbstractItemView::NoEditTriggers</set></property>
+        </widget>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="navLayout">
+         <property name="spacing"><number>10</number></property>
+         <item>
+          <widget class="QPushButton" name="btnPrev">
+           <property name="text"><string>Prev</string></property>
+           <property name="styleSheet"><string>QPushButton { background-color: #1B2A4A; color: white; border: none; border-radius: 6px; padding: 6px 16px; font-size: 12px; font-weight: bold; } QPushButton:hover { background-color: #2D4A7A; }</string></property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="btnNext">
+           <property name="text"><string>Next</string></property>
+           <property name="styleSheet"><string>QPushButton { background-color: #1B2A4A; color: white; border: none; border-radius: 6px; padding: 6px 16px; font-size: 12px; font-weight: bold; } QPushButton:hover { background-color: #2D4A7A; }</string></property>
+          </widget>
+         </item>
+         <item>
+          <spacer><property name="orientation"><enum>Qt::Horizontal</enum></property></spacer>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar"/>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

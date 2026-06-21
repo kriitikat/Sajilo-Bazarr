@@ -10,6 +10,7 @@ StaffDashboard::StaffDashboard(QWidget *parent)
     ui->setupUi(this);
 }
 
+
 StaffDashboard::~StaffDashboard()
 {
     delete ui;
