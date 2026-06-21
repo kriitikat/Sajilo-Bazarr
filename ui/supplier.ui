@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SUPPLIER</class>
- <widget class="QWidget" name="SUPPLIER">
+ <class>supplier</class>
+ <widget class="QWidget" name="supplier">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -39,7 +39,7 @@
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
-   <item>
+   <item alignment="Qt::AlignmentFlag::AlignHCenter">
     <widget class="QLabel" name="ManagementModuletitle">
      <property name="minimumSize">
       <size>
@@ -74,7 +74,7 @@
      </property>
     </widget>
    </item>
-   <item>
+   <item alignment="Qt::AlignmentFlag::AlignHCenter">
     <widget class="QLabel" name="AdminDashboardtitle">
      <property name="maximumSize">
       <size>
@@ -237,7 +237,7 @@ QPushButton:hover {
 }</string>
              </property>
              <property name="text">
-              <string>Suppliers Management</string>
+              <string>Supplier Management</string>
              </property>
             </widget>
            </item>
@@ -251,7 +251,7 @@ QPushButton:hover {
 }</string>
              </property>
              <property name="text">
-              <string>Manage product supplier</string>
+              <string>Manage product suppliers</string>
              </property>
             </widget>
            </item>
@@ -293,12 +293,12 @@ QPushButton:hover {
 }</string>
              </property>
              <property name="text">
-              <string>Add Category</string>
+              <string>Add Supplier</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QTableWidget" name="categoryTable">
+            <widget class="QTableWidget" name="categoryTableWidget">
              <property name="layoutDirection">
               <enum>Qt::LayoutDirection::RightToLeft</enum>
              </property>
@@ -311,8 +311,9 @@ QPushButton:hover {
     font-size: 13px;
 }
 
+/* FIX: Target text items specifically so it doesn't break custom cell widgets */
 QTableWidget::item {
-    padding: 12px 8px;
+    padding: 6px 8px; /* Slightly reduced vertical padding for a sleek look */
     border-bottom: 1px solid #f1f5f9;
     color: #475569;
 }
@@ -333,6 +334,9 @@ QHeaderView::section {
     text-transform: uppercase;
 }</string>
              </property>
+             <property name="sortingEnabled">
+              <bool>true</bool>
+             </property>
              <attribute name="horizontalHeaderMinimumSectionSize">
               <number>108</number>
              </attribute>
@@ -352,12 +356,22 @@ QHeaderView::section {
              </column>
              <column>
               <property name="text">
-               <string>EMAIL</string>
+               <string>CATEGORIES</string>
               </property>
              </column>
              <column>
               <property name="text">
-               <string>CONTACT</string>
+               <string>PRODUCT</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>DESCRIPTION</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>CONTACTS</string>
               </property>
              </column>
              <column>
@@ -367,7 +381,7 @@ QHeaderView::section {
              </column>
              <column>
               <property name="text">
-               <string>ID </string>
+               <string>ID</string>
               </property>
              </column>
             </widget>

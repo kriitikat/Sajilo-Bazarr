@@ -1,10 +1,12 @@
 #include <QApplication>
-#include "../include/admindashboard.h"
+#include "login.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    AdminDashboard admindashboard;
-    admindashboard.show();
+
+    Login w;
+    w.show();
+
     return a.exec();
 }
