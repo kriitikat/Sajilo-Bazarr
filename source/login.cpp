@@ -1,6 +1,6 @@
-#include "../include/login.h"
-#include "../include/register.h"
-#include "../include/dashboard.h"
+#include "login.h"
+#include "register.h"
+#include "dashboard.h"
 
 #include <QMessageBox>
 #include <QVBoxLayout>
@@ -101,8 +101,6 @@ bool Login::connectDatabase()
         return false;
     }
 }
-void Login::on_loginButton_clicked() {}
-void Login::on_registerButton_clicked() {}
 
 Login::~Login()
 {
