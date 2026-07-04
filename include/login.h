@@ -2,7 +2,10 @@
 #define LOGIN_H
 
 #include <QMainWindow>
-#include <QtSql>
+
+QT_BEGIN_NAMESPACE
+namespace Ui { class Login; }
+QT_END_NAMESPACE
 
 class Login : public QMainWindow
 {
@@ -12,8 +15,21 @@ public:
     explicit Login(QWidget *parent = nullptr);
     ~Login();
 
+private slots:
+    void on_loginButton_clicked();
+    void on_registerButton_clicked();
+
 private:
-    bool connectDatabase();
+    Ui::Login *ui;
+
+
+    QString hashPassword(const QString &plainText) const;
+
+
+    void openDashboard(const QString &role,
+                       const QString &username,
+                       const QString &firstName,
+                       const QString &lastName);
 };
 
 #endif

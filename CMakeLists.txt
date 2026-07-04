@@ -15,38 +15,14 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql)
 
 set(PROJECT_SOURCES
         source/main.cpp
-        source/admindashboard.cpp
-
-        source/dashboard.cpp
-        source/login.cpp
-        source/mainwindow.cpp
-        source/product.cpp
-        source/register.cpp
-
-        source/staffdashboard.cpp
-        source/frontdesk.cpp
-        source/inventory.cpp
-
-        include/admindashboard.h
-
-        include/dashboard.h
-        include/login.h
-        include/mainwindow.h
-        include/register.h
-
-        include/staffdashboard.h
-        include/product.h
-        include/frontdesk.h
-        include/inventory.h
-
-
-
-        ui/admindashboard.ui
-        ui/staffdashboard.ui
-        ui/product.ui
-        ui/frontdesk.ui
-        ui/login.ui
-        ui/inventory.ui
+       #login
+       source/login.cpp
+       ui/login.ui
+       include/login.h
+       #register
+       source/register.cpp
+       ui/register.ui
+       include/register.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

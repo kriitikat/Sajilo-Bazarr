@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>pending</class>
+ <widget class="QWidget" name="pending">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>950</width>
+    <height>560</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>500</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <family>Segoe UI</family>
+    <pointsize>12</pointsize>
+    <bold>true</bold>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Pending Registrations</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget {
+    background-color: #f8fafc;
+    font-family: 'Segoe UI';
+}</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_main">
+   <item alignment="Qt::AlignmentFlag::AlignHCenter">
+    <widget class="QLabel" name="moduleTitleLabel">
+     <property name="maximumSize">
+      <size>
+       <width>500</width>
+       <height>50</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Segoe UI</family>
+       <pointsize>14</pointsize>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: black;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::NoFrame</enum>
+     </property>
+     <property name="text">
+      <string>Management Module</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::TextFormat::PlainText</enum>
+     </property>
+    </widget>
+   </item>
+   <item alignment="Qt::AlignmentFlag::AlignHCenter">
+    <widget class="QLabel" name="moduleSubtitleLabel">
+     <property name="maximumSize">
+      <size>
+       <width>500</width>
+       <height>20</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Segoe UI</family>
+       <pointsize>-1</pointsize>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel {
+    font-size: 12px;
+    color: #94a3b8;
+    border: none;
+}</string>
+     </property>
+     <property name="text">
+      <string>Pending Requests - Admin Dashboard</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="mainCardFrame">
+     <property name="styleSheet">
+      <string notr="true">QFrame {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_card">
+      <item>
+       <widget class="QWidget" name="cardInner" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout_inner">
+         <item>
+          <widget class="QLabel" name="cardTitleLabel">
+           <property name="font">
+            <font>
+             <family>Segoe UI</family>
+             <pointsize>-1</pointsize>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QLabel {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1e293b;
+    border: none;
+}</string>
+           </property>
+           <property name="text">
+            <string>Pending Registration Requests</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="cardSubtitleLabel">
+           <property name="styleSheet">
+            <string notr="true">QLabel {
+    font-size: 12px;
+    color: #94a3b8;
+    border: none;
+}</string>
+           </property>
+           <property name="text">
+            <string>Review and approve or decline new account requests</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTableWidget" name="pendingTable">
+           <property name="styleSheet">
+            <string notr="true">QTableWidget {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background-color: #ffffff;
+    gridline-color: #f1f5f9;
+    font-size: 13px;
+}
+
+QTableWidget::item {
+    padding: 12px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #475569;
+}
+
+QTableWidget::item:selected {
+    background-color: #f0fdf4;
+    color: #1e293b;
+}
+
+QHeaderView::section {
+    background-color: #f8fafc;
+    color: #64748b;
+    font-weight: bold;
+    font-size: 11px;
+    padding: 10px 8px;
+    border: none;
+    border-bottom: 2px solid #e2e8f0;
+    text-transform: uppercase;
+}</string>
+           </property>
+           <property name="editTriggers">
+            <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+           </property>
+           <property name="columnCount">
+            <number>7</number>
+           </property>
+           <attribute name="horizontalHeaderMinimumSectionSize">
+            <number>80</number>
+           </attribute>
+           <attribute name="horizontalHeaderHighlightSections">
+            <bool>false</bool>
+           </attribute>
+           <attribute name="horizontalHeaderStretchLastSection">
+            <bool>true</bool>
+           </attribute>
+           <attribute name="verticalHeaderVisible">
+            <bool>false</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string>ID</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>NAME</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>USERNAME</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>ROLE</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>EMAIL</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>PHONE</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>ACTIONS</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

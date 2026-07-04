@@ -5,10 +5,6 @@
 
 #include <QMainWindow>
 
-// #include "../include/product.h"
-class Product;
-
-
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class StaffDashboard;
@@ -22,7 +18,6 @@ class StaffDashboard : public QMainWindow
 public:
     explicit StaffDashboard(QWidget *parent = nullptr);
     ~StaffDashboard() override;
-
 
 private:
     Ui::StaffDashboard *ui;

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>Login</class>
-
  <widget class="QMainWindow" name="Login">
   <property name="geometry">
    <rect>
@@ -11,26 +10,21 @@
     <height>300</height>
    </rect>
   </property>
-
   <property name="windowTitle">
    <string>Sajilo Bazar - Login</string>
   </property>
-
   <widget class="QWidget" name="centralwidget">
-
    <layout class="QVBoxLayout" name="verticalLayout">
-
     <item>
      <widget class="QLabel" name="titleLabel">
       <property name="text">
        <string>Login System</string>
       </property>
       <property name="alignment">
-       <set>Qt::AlignCenter</set>
+       <set>Qt::AlignmentFlag::AlignCenter</set>
       </property>
      </widget>
     </item>
-
     <item>
      <widget class="QLineEdit" name="usernameEdit">
       <property name="placeholderText">
@@ -38,18 +32,16 @@
       </property>
      </widget>
     </item>
-
     <item>
      <widget class="QLineEdit" name="passwordEdit">
+      <property name="echoMode">
+       <enum>QLineEdit::EchoMode::Password</enum>
+      </property>
       <property name="placeholderText">
        <string>Password</string>
       </property>
-      <property name="echoMode">
-       <enum>QLineEdit::Password</enum>
-      </property>
      </widget>
     </item>
-
     <item>
      <widget class="QPushButton" name="loginButton">
       <property name="text">
@@ -57,7 +49,6 @@
       </property>
      </widget>
     </item>
-
     <item>
      <widget class="QPushButton" name="registerButton">
       <property name="text">
@@ -65,12 +56,20 @@
       </property>
      </widget>
     </item>
-
    </layout>
   </widget>
-
-  <widget class="QMenuBar" name="menubar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>400</width>
+     <height>26</height>
+    </rect>
+   </property>
+  </widget>
   <widget class="QStatusBar" name="statusbar"/>
-
  </widget>
+ <resources/>
+ <connections/>
 </ui>
