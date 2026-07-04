@@ -7,12 +7,18 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class Login; }
 QT_END_NAMESPACE
 
+QT_BEGIN_NAMESPACE
+namespace Ui {
+class Login;
+}
+QT_END_NAMESPACE
+
 class Login : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit Login(QWidget *parent = nullptr);
+    Login(QWidget *parent = nullptr);
     ~Login();
 
 private slots:
@@ -22,6 +28,7 @@ private slots:
 private:
     Ui::Login *ui;
 
+<<<<<<< HEAD
 
     QString hashPassword(const QString &plainText) const;
 
@@ -30,6 +37,9 @@ private:
                        const QString &username,
                        const QString &firstName,
                        const QString &lastName);
+=======
+    bool connectDatabase();
+>>>>>>> 8364bbfabed1b7d2cc57b69230f1e1f88628ef97
 };
 
 #endif

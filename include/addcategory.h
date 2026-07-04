@@ -16,13 +16,15 @@ public:
     explicit addcategory(QWidget *parent = nullptr);
     ~addcategory();
 
-    // Data getter methods available to the category dashboard widget
+    // Data getter methods available to the category dashboard widget.
+    // Both are trimmed of leading/trailing whitespace.
     QString getCategoryName() const;
     QString getDescription() const;
 
 private slots:
     void on_addButton_clicked();
     void on_cancelButton_clicked();
+    void updateAddButtonState();
 
 private:
     Ui::addcategory *ui;

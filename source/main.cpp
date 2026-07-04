@@ -208,6 +208,28 @@ const QVector<QString> kStatements = {
         ('tasks',             0),
         ('pending_requests',  0);
     )sql"),
+<<<<<<< HEAD
+=======
+
+    // ── indexes ──────────────────────────────────────────────────
+    // `username` already gets an implicit index from its UNIQUE constraint,
+    // so login lookups are fine. These cover the columns the dashboards
+    // actually filter/sort/group by (category & low-stock views, per-staff
+    // task lists, per-role staff lists), so those queries don't fall back
+    // to a full table scan as the product/task tables grow.
+    QStringLiteral(R"sql(
+    CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
+    )sql"),
+    QStringLiteral(R"sql(
+    CREATE INDEX IF NOT EXISTS idx_products_status ON products(status);
+    )sql"),
+    QStringLiteral(R"sql(
+    CREATE INDEX IF NOT EXISTS idx_tasks_staff_name ON tasks(staff_name);
+    )sql"),
+    QStringLiteral(R"sql(
+    CREATE INDEX IF NOT EXISTS idx_information_role ON information(role);
+    )sql"),
+>>>>>>> 8364bbfabed1b7d2cc57b69230f1e1f88628ef97
 };
 
 } // namespace
@@ -236,9 +258,32 @@ static bool initBazarDatabase(const QString &dbPath, QString *errorMessage)
 
     qInfo() << "Opened/created" << dbPath << "- building schema and data...";
 
+<<<<<<< HEAD
     bool    allOk = true;
     QString firstError;
 
+=======
+    // A couple of pragmas that make everyday app usage snappier: WAL lets
+    // reads and writes proceed concurrently instead of blocking each other,
+    // and NORMAL synchronous is the standard safe-but-fast pairing with WAL.
+    {
+        QSqlQuery pragma(db);
+        pragma.exec(QStringLiteral("PRAGMA journal_mode = WAL;"));
+        pragma.exec(QStringLiteral("PRAGMA synchronous = NORMAL;"));
+        pragma.exec(QStringLiteral("PRAGMA foreign_keys = ON;"));
+    }
+
+    bool    allOk = true;
+    QString firstError;
+
+    // Run every CREATE/INSERT as one transaction instead of letting SQLite
+    // auto-commit after each statement. On first launch this is ~20
+    // statements (several inserting dozens of rows); one commit instead of
+    // ~20 is the difference between a near-instant startup and a noticeably
+    // slower one, since each commit is a separate disk fsync.
+    db.transaction();
+
+>>>>>>> 8364bbfabed1b7d2cc57b69230f1e1f88628ef97
     for (int i = 0; i < kStatements.size(); ++i) {
         QSqlQuery query(db);
         if (!query.exec(kStatements[i])) {
@@ -252,6 +297,14 @@ static bool initBazarDatabase(const QString &dbPath, QString *errorMessage)
         }
     }
 
+<<<<<<< HEAD
+=======
+    if (allOk)
+        db.commit();
+    else
+        db.rollback();
+
+>>>>>>> 8364bbfabed1b7d2cc57b69230f1e1f88628ef97
     db.close();
     QSqlDatabase::removeDatabase(kConnectionName);
 
