@@ -1,12 +1,12 @@
-#include "admindashboard.h"
-#include "ui_admindashboard.h"
+#include "../include/admindashboard.h"
+#include "../include/ui_admindashboard.h"
 
-#include "category.h"
-#include "product.h"
-#include "inventory.h"
-#include "staff.h"
-#include "pending.h"
-#include "supplier.h"
+#include "../include/category.h"
+#include "../include/product.h"
+#include "../include/inventory.h"
+#include "../include/staff.h"
+#include "../include/pending.h"
+#include "../include/supplier.h"
 
 #include <QPushButton>
 #include <QMessageBox>

@@ -1,5 +1,5 @@
-#include "addcategory.h"
-#include "ui_addcategory.h"
+#include "../include/addcategory.h"
+#include "../ui/ui_addcategory.h"
 
 #include <QMessageBox>
 #include <QLineEdit>

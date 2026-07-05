@@ -1,5 +1,5 @@
-#include "inventory.h"
-#include "ui_inventory.h"
+#include "../include/inventory.h"
+#include "../include/ui_inventory.h"
 
 #include <QSqlQuery>
 #include <QSqlError>

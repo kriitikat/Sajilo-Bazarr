@@ -15,6 +15,7 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql)
 
 set(PROJECT_SOURCES
         source/main.cpp
+<<<<<<< Updated upstream
        #login
        source/login.cpp
        ui/login.ui
@@ -23,6 +24,54 @@ set(PROJECT_SOURCES
        source/register.cpp
        ui/register.ui
        include/register.h
+=======
+        source/admindashboard.cpp
+
+        source/dashboard.cpp
+        source/login.cpp
+        source/mainwindow.cpp
+        source/product.cpp
+        source/register.cpp
+        source/staff.cpp
+        source/supplier.cpp
+        source/category.cpp
+
+        source/staffdashboard.cpp
+        source/frontdesk.cpp
+        source/inventory.cpp
+        source/addcategory.cpp
+
+        include/admindashboard.h
+
+        include/dashboard.h
+        include/login.h
+        include/mainwindow.h
+        include/register.h
+
+        include/staffdashboard.h
+        include/product.h
+        include/frontdesk.h
+        include/inventory.h
+        include/addcategory.h
+        include/staff.h
+        include/supplier.h
+        include/category.h
+
+
+
+
+
+        ui/admindashboard.ui
+        ui/staffdashboard.ui
+        ui/product.ui
+        ui/frontdesk.ui
+        ui/login.ui
+        ui/inventory.ui
+        ui/addcategory.ui
+        ui/category.ui
+        ui/supplier.ui
+        ui/staff.ui
+>>>>>>> Stashed changes
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
