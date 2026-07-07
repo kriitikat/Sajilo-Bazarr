@@ -40,6 +40,17 @@ QString roleLabel(const QString &role)
     return r;
 }
 
+// Pretty-print the raw status value from the DB into a display label.
+// Valid raw values: 'enabled', 'disabled', 'expired'.
+QString statusLabel(const QString &status)
+{
+    if (status.compare(QLatin1String("disabled"), Qt::CaseInsensitive) == 0)
+        return QStringLiteral("Disabled");
+    if (status.compare(QLatin1String("expired"), Qt::CaseInsensitive) == 0)
+        return QStringLiteral("Expired");
+    return QStringLiteral("Enabled");
+}
+
 } // namespace
 
 // ─── Column indices ────────────────────────────────────────────────────────
@@ -73,8 +84,31 @@ staff::staff(QWidget *parent)
     };
     ui->staffTable_3->setColumnCount(COL_COUNT);
     ui->staffTable_3->setHorizontalHeaderLabels(headers);
-    ui->staffTable_3->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->staffTable_3->verticalHeader()->setVisible(false);
+
+    // ── Column sizing ──────────────────────────────────────────────────────
+    // A single global QHeaderView::Stretch (the old approach) spreads width
+    // evenly across all 8 columns, so the narrow ID column ends up as wide
+    // as NAME/EMAIL while ACTIONS (which needs to fit 4 buttons) gets
+    // squeezed. Give each column a resize mode that matches what it
+    // actually needs to hold, so ACTIONS has enough room to stay readable.
+    auto *header = ui->staffTable_3->horizontalHeader();
+    header->setSectionResizeMode(QHeaderView::Interactive);
+    header->setSectionResizeMode(COL_ID,       QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_NAME,     QHeaderView::Stretch);
+    header->setSectionResizeMode(COL_EMAIL,    QHeaderView::Stretch);
+    header->setSectionResizeMode(COL_PHONE,    QHeaderView::Interactive);
+    header->setSectionResizeMode(COL_STATUS,   QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_USERNAME, QHeaderView::Interactive);
+    header->setSectionResizeMode(COL_ROLE,     QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_ACTIONS,  QHeaderView::Fixed);
+
+    header->resizeSection(COL_ID,       48);
+    header->resizeSection(COL_PHONE,    110);
+    header->resizeSection(COL_STATUS,   90);
+    header->resizeSection(COL_USERNAME, 130);
+    header->resizeSection(COL_ROLE,     90);
+    header->resizeSection(COL_ACTIONS,  300);
 
     connect(ui->addStaffBtn_3, &QPushButton::clicked, this, &staff::on_addStaffBtn_3_clicked);
 
@@ -117,34 +151,40 @@ void staff::loadStaffTable()
                              + query.value(2).toString();
         const QString email    = query.value(3).toString();
         const QString phone    = query.value(4).toString();
-        const QString status   = query.value(5).toString();
+        const QString status   = query.value(5).toString(); // 'enabled' | 'disabled' | 'expired'
         const QString username = query.value(6).toString();
         const QString role     = query.value(7).toString();
-        const bool    disabled = (status == QLatin1String("disabled"));
+
+        const bool disabled = (status == QLatin1String("disabled"));
+        const bool expired  = (status == QLatin1String("expired"));
 
         ui->staffTable_3->insertRow(row);
 
-        // Helper: create a non-editable cell; grey out text when disabled.
+        // Helper: create a non-editable cell.
+        // NOTE: QTableWidgetItem is not a QWidget, so it has no stylesheet
+        // support — Qt only exposes per-item foreground color via the API
+        // below (setForeground). This one piece can't be moved into the
+        // .ui file; every other visual (button colors, hovers, fonts,
+        // borders, padding) lives entirely in staff.ui.
         auto setCell = [&](int col, const QString &text) {
             auto *item = new QTableWidgetItem(text);
             item->setFlags(item->flags() & ~Qt::ItemIsEditable);
             if (disabled)
-                item->setForeground(QColor(QStringLiteral("#94a3b8")));
+                item->setForeground(QColor(QStringLiteral("#94a3b8"))); // muted grey
+            else if (expired)
+                item->setForeground(QColor(QStringLiteral("#dc2626"))); // muted red
             ui->staffTable_3->setItem(row, col, item);
         };
 
-        auto *idItem = new QTableWidgetItem(QString::number(id));
-        idItem->setFlags(idItem->flags() & ~Qt::ItemIsEditable);
-        ui->staffTable_3->setItem(row, COL_ID, idItem);
-
+        setCell(COL_ID,       QString::number(id));
         setCell(COL_NAME,     name.trimmed());
         setCell(COL_EMAIL,    email);
         setCell(COL_PHONE,    phone);
-        setCell(COL_STATUS,   status);
+        setCell(COL_STATUS,   statusLabel(status));
         setCell(COL_USERNAME, username);
         setCell(COL_ROLE,     roleLabel(role));
 
-        ui->staffTable_3->setCellWidget(row, COL_ACTIONS, buildActionsWidget(id, disabled));
+        ui->staffTable_3->setCellWidget(row, COL_ACTIONS, buildActionsWidget(id, status));
 
         ++row;
     }
@@ -152,58 +192,53 @@ void staff::loadStaffTable()
     ui->staffTable_3->resizeRowsToContents();
 }
 
-QWidget *staff::buildActionsWidget(int staffId, bool disabled)
+QWidget *staff::buildActionsWidget(int staffId, const QString &status)
 {
+    const bool disabled = (status == QLatin1String("disabled"));
+    const bool expired  = (status == QLatin1String("expired"));
+
     auto *container = new QWidget(ui->staffTable_3);
     auto *layout    = new QHBoxLayout(container);
     layout->setContentsMargins(4, 2, 4, 2);
-    layout->setSpacing(6);
+    layout->setSpacing(4);
 
-    const QString baseStyle = QStringLiteral(
-        "QPushButton {"
-        "  border: none;"
-        "  border-radius: 6px;"
-        "  padding: 4px 10px;"
-        "  font-size: 11px;"
-        "  font-weight: bold;"
-        "  color: white;"
-        "}");
+    // Every button below only sets WHAT it is via the "actionRole" dynamic
+    // property. staff.ui's stylesheet matches on that property (e.g.
+    // QPushButton[actionRole="edit"]) to apply colors, radius, padding,
+    // font size, and hover states. No colors or fonts are set here.
 
-    // Task — greyed out (not implemented)
+    // Task — placeholder, not implemented yet.
     auto *taskBtn = new QPushButton(tr("Task"), container);
-    taskBtn->setStyleSheet(baseStyle +
-                           QStringLiteral("QPushButton { background-color: #94a3b8; }"));
+    taskBtn->setProperty("actionRole", QStringLiteral("task"));
     taskBtn->setEnabled(false);
     taskBtn->setToolTip(tr("Task assignment is not implemented yet"));
     connect(taskBtn, &QPushButton::clicked, this, [this, staffId]() { taskStaff(staffId); });
 
-    // Edit — brand blue (matches inventory accent #2D4A7A)
+    // Edit
     auto *editBtn = new QPushButton(tr("Edit"), container);
-    editBtn->setStyleSheet(baseStyle +
-                           QStringLiteral("QPushButton { background-color: #2D4A7A; }"
-                                          "QPushButton:hover { background-color: #1B2A4A; }"));
+    editBtn->setProperty("actionRole", QStringLiteral("edit"));
     connect(editBtn, &QPushButton::clicked, this, [this, staffId]() { editStaff(staffId); });
 
-    // Disable / Enable — amber / green
+    // Disable / Enable — toggles based on current status.
     auto *disableBtn = new QPushButton(disabled ? tr("Enable") : tr("Disable"), container);
-    disableBtn->setStyleSheet(baseStyle + (disabled
-                                               ? QStringLiteral("QPushButton { background-color: #16A34A; }"
-                                                                "QPushButton:hover { background-color: #15803D; }")
-                                               : QStringLiteral("QPushButton { background-color: #D97706; }"
-                                                                "QPushButton:hover { background-color: #B45309; }")));
+    disableBtn->setProperty("actionRole", disabled ? QStringLiteral("enable")
+                                                   : QStringLiteral("disable"));
     connect(disableBtn, &QPushButton::clicked, this, [this, staffId]() { disableStaff(staffId); });
 
-    // Delete — red
-    auto *deleteBtn = new QPushButton(tr("Delete"), container);
-    deleteBtn->setStyleSheet(baseStyle +
-                             QStringLiteral("QPushButton { background-color: #DC2626; }"
-                                            "QPushButton:hover { background-color: #991B1B; }"));
-    connect(deleteBtn, &QPushButton::clicked, this, [this, staffId]() { deleteStaff(staffId); });
+    // Expire — replaces the old Delete button. Marks the account as expired
+    // instead of removing the row from the database.
+    auto *expireBtn = new QPushButton(tr("Expire"), container);
+    expireBtn->setProperty("actionRole", QStringLiteral("expire"));
+    if (expired) {
+        expireBtn->setEnabled(false);
+        expireBtn->setToolTip(tr("This account has already expired"));
+    }
+    connect(expireBtn, &QPushButton::clicked, this, [this, staffId]() { expireStaff(staffId); });
 
     layout->addWidget(taskBtn);
     layout->addWidget(editBtn);
     layout->addWidget(disableBtn);
-    layout->addWidget(deleteBtn);
+    layout->addWidget(expireBtn);
     layout->addStretch();
 
     container->setLayout(layout);
@@ -267,7 +302,7 @@ void staff::on_addStaffBtn_3_clicked()
     query.prepare(QStringLiteral(
         "INSERT INTO information "
         "(first_name, last_name, username, role, email, phone, picture, password, status) "
-        "VALUES (:first_name, :last_name, :username, :role, :email, :phone, NULL, :password, 'approved')"));
+        "VALUES (:first_name, :last_name, :username, :role, :email, :phone, NULL, :password, 'enabled')"));
     query.bindValue(QStringLiteral(":first_name"), firstName);
     query.bindValue(QStringLiteral(":last_name"),  lastName);
     query.bindValue(QStringLiteral(":username"),   username);
@@ -408,7 +443,7 @@ void staff::disableStaff(int staffId)
 
     const bool    currentlyDisabled = (fetch.value(0).toString() == QLatin1String("disabled"));
     const QString newStatus = currentlyDisabled
-                                  ? QStringLiteral("approved")
+                                  ? QStringLiteral("enabled")
                                   : QStringLiteral("disabled");
 
     const auto reply = QMessageBox::question(
@@ -436,26 +471,44 @@ void staff::disableStaff(int staffId)
     loadStaffTable();
 }
 
-// ─── Delete Staff ──────────────────────────────────────────────────────────
+// ─── Expire Staff ───────────────────────────────────────────────────────────
 
-void staff::deleteStaff(int staffId)
+void staff::expireStaff(int staffId)
 {
+    QSqlDatabase db = QSqlDatabase::database();
+
+    QSqlQuery fetch(db);
+    fetch.prepare(QStringLiteral("SELECT status FROM information WHERE id = :id"));
+    fetch.bindValue(QStringLiteral(":id"), staffId);
+
+    if (!fetch.exec() || !fetch.next()) {
+        QMessageBox::critical(this, tr("Database Error"),
+                              tr("Failed to load staff status: %1").arg(fetch.lastError().text()));
+        return;
+    }
+
+    if (fetch.value(0).toString() == QLatin1String("expired")) {
+        QMessageBox::information(this, tr("Already Expired"),
+                                 tr("This staff member's account has already expired."));
+        return;
+    }
+
     const auto reply = QMessageBox::question(
-        this, tr("Confirm Delete"),
-        tr("Are you sure you want to delete this staff member? This cannot be undone."),
+        this, tr("Confirm Expire"),
+        tr("Mark this staff member's account as expired? This is typically used when their "
+           "contract or engagement period has ended."),
         QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
     if (reply != QMessageBox::Yes)
         return;
 
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery query(db);
-    query.prepare(QStringLiteral("DELETE FROM information WHERE id = :id"));
-    query.bindValue(QStringLiteral(":id"), staffId);
+    QSqlQuery update(db);
+    update.prepare(QStringLiteral("UPDATE information SET status = 'expired' WHERE id = :id"));
+    update.bindValue(QStringLiteral(":id"), staffId);
 
-    if (!query.exec()) {
+    if (!update.exec()) {
         QMessageBox::critical(this, tr("Database Error"),
-                              tr("Failed to delete staff: %1").arg(query.lastError().text()));
+                              tr("Failed to update status: %1").arg(update.lastError().text()));
         return;
     }
 

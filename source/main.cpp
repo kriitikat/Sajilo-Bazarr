@@ -50,7 +50,7 @@ const QVector<QString> kStatements = {
         phone      TEXT,
         picture    TEXT,
         password   TEXT,
-        status     TEXT DEFAULT 'disabled' CHECK(status IN ('approved','disabled'))
+        status     TEXT DEFAULT 'enabled' CHECK(status IN ('enabled','disabled','expired'))
     );
     )sql"),
 
@@ -58,17 +58,17 @@ const QVector<QString> kStatements = {
     INSERT OR IGNORE INTO information
         (id, first_name, last_name, username, role, email, phone, picture, password, status)
     VALUES
-    (1,  'Anushka',      'Sigdel',     'Anushka_Sigdel_Admin',           'admin',     'anushkasigdel50@gmail.com', '9761468969', 'anushka.jpg',  '202cb962ac59075b964b07152d234b70', 'approved'),
-    (2,  'Suyeshna',     'Shrestha',   'Suyeshna_Shrestha_Staff',        'staff',     'suyeshna@gmail.com',        '9801111111', 'suyeshna.jpg', '202cb962ac59075b964b07152d234b70', 'approved'),
-    (3,  'Kritika',      'Gurung',     'Kritika_Gurung_Staff',           'staff',     'kritika@gmail.com',         '9802222222', 'kritika.jpg',  '202cb962ac59075b964b07152d234b70', 'approved'),
-    (4,  'Milan',        'Tamang',     'Milan_Tamang_Staff',             'staff',     'milan@gmail.com',           '9803333333', 'milan.jpg',    '202cb962ac59075b964b07152d234b70', 'approved'),
-    (5,  'Ritika',       'Karki',      'Ritika_Karki_Staff',             'staff',     'ritika@gmail.com',          '9804444444', 'ritika.jpg',   '202cb962ac59075b964b07152d234b70', 'approved'),
-    (6,  'Roshan',       'Basnet',     'Roshan_Basnet_Staff',            'staff',     'roshan@gmail.com',          '9805555555', 'roshan.jpg',   '202cb962ac59075b964b07152d234b70', 'approved'),
-    (7,  'Prisha',       'Adhikari',   'Prisha_Adhikari_Frontdesk',      'frontdesk', 'prisha@gmail.com',          '9811111111', 'prisha.jpg',   '202cb962ac59075b964b07152d234b70', 'approved'),
-    (8,  'Aayush',       'Thapa',      'Aayush_Thapa_Frontdesk',         'frontdesk', 'aayush@gmail.com',          '9812222222', 'aayush.jpg',   '202cb962ac59075b964b07152d234b70', 'approved'),
-    (9,  'Shreekrishna', 'Mishra',     'shreekrishna_mishra_staff',      'staff',     'skjfksj@gmail.com',         '9849803850', NULL,           '202cb962ac59075b964b07152d234b70', 'disabled'),
-    (10, 'Anushka',      'Sigdel',     'anushka_sigdel_frontdesk',       'frontdesk', 'gjhvjhg@gmail.com',         '646858758',  NULL,           '202cb962ac59075b964b07152d234b70', 'disabled'),
-    (11, 'Kismat',       'ThapaMagar', 'kismat_thapamagar_staff',        'staff',     'skjfksj@gmail.com',         '9849803850', NULL,           '202cb962ac59075b964b07152d234b70', 'disabled');
+    (1,  'Anushka',      'Sigdel',     'Anushka_Sigdel_Admin',           'admin',     'anushkasigdel50@gmail.com', '9761468969', 'anushka.jpg',  '202cb962ac59075b964b07152d234b70', 'enabled'),
+    (2,  'Suyeshna',     'Shrestha',   'Suyeshna_Shrestha_Staff',        'staff',     'suyeshna@gmail.com',        '9801111111', 'suyeshna.jpg', '202cb962ac59075b964b07152d234b70', 'enabled'),
+    (3,  'Kritika',      'Gurung',     'Kritika_Gurung_Staff',           'staff',     'kritika@gmail.com',         '9802222222', 'kritika.jpg',  '202cb962ac59075b964b07152d234b70', 'enabled'),
+    (4,  'Milan',        'Tamang',     'Milan_Tamang_Staff',             'staff',     'milan@gmail.com',           '9803333333', 'milan.jpg',    '202cb962ac59075b964b07152d234b70', 'enabled'),
+    (5,  'Ritika',       'Karki',      'Ritika_Karki_Staff',             'staff',     'ritika@gmail.com',          '9804444444', 'ritika.jpg',   '202cb962ac59075b964b07152d234b70', 'enabled'),
+    (6,  'Roshan',       'Basnet',     'Roshan_Basnet_Staff',            'staff',     'roshan@gmail.com',          '9805555555', 'roshan.jpg',   '202cb962ac59075b964b07152d234b70', 'enabled'),
+    (7,  'Prisha',       'Adhikari',   'Prisha_Adhikari_Frontdesk',      'frontdesk', 'prisha@gmail.com',          '9811111111', 'prisha.jpg',   '202cb962ac59075b964b07152d234b70', 'enabled'),
+    (8,  'Aayush',       'Thapa',      'Aayush_Thapa_Frontdesk',         'frontdesk', 'aayush@gmail.com',          '9812222222', 'aayush.jpg',   '202cb962ac59075b964b07152d234b70', 'enabled'),
+    (9,  'Shreekrishna', 'Mishra',     'shreekrishna_mishra_staff',      'staff',     'skjfksj@gmail.com',         '9849803850', NULL,           '202cb962ac59075b964b07152d234b70', 'enabled'),
+    (10, 'Anushka',      'Sigdel',     'anushka_sigdel_frontdesk',       'frontdesk', 'gjhvjhg@gmail.com',         '646858758',  NULL,           '202cb962ac59075b964b07152d234b70', 'enabled'),
+    (11, 'Kismat',       'ThapaMagar', 'kismat_thapamagar_staff',        'staff',     'skjfksj@gmail.com',         '9849803850', NULL,           '202cb962ac59075b964b07152d234b70', 'enabled');
     )sql"),
 
     // ── products ─────────────────────────────────────────────────
