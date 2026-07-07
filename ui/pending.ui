@@ -151,6 +151,7 @@
     border: 1px solid #e2e8f0;
     border-radius: 8px;
     background-color: #ffffff;
+    alternate-background-color: #f8fafc;
     gridline-color: #f1f5f9;
     font-size: 13px;
 }
@@ -174,11 +175,15 @@ QHeaderView::section {
     padding: 10px 8px;
     border: none;
     border-bottom: 2px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
     text-transform: uppercase;
 }</string>
            </property>
            <property name="editTriggers">
             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+           </property>
+           <property name="alternatingRowColors">
+            <bool>true</bool>
            </property>
            <property name="selectionBehavior">
             <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>

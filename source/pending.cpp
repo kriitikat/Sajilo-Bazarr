@@ -13,6 +13,13 @@
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Constructor / Destructor
+//
+//  NOTE: All static visual styling (table colors, header colors, alternating
+//  row colors, fonts, card frame, etc.) now lives ENTIRELY in pending.ui.
+//  This file only sets things Qt Designer cannot express as a static
+//  property — per-column resize *behavior* (a runtime layout policy) and the
+//  dynamically-generated Approve/Decline button widgets, which don't exist
+//  until a row is populated from the database.
 // ─────────────────────────────────────────────────────────────────────────────
 
 pending::pending(QWidget *parent)
@@ -22,40 +29,7 @@ pending::pending(QWidget *parent)
     ui->setupUi(this);
     setWindowTitle("Pending Registration Requests");
 
-    // ── Table header styling to match staff page navy theme ──────────────────
-    ui->pendingTable->horizontalHeader()->setStyleSheet(QStringLiteral(
-        "QHeaderView::section {"
-        "  background-color: #2D4A7A;"
-        "  color: white;"
-        "  font-weight: bold;"
-        "  font-size: 12px;"
-        "  padding: 6px 8px;"
-        "  border: none;"
-        "  border-right: 1px solid #1B2A4A;"
-        "}"));
-
-    // ── Table widget styling ──────────────────────────────────────────────────
-    ui->pendingTable->setStyleSheet(QStringLiteral(
-        "QTableWidget {"
-        "  background-color: #ffffff;"
-        "  alternate-background-color: #f1f5f9;"
-        "  gridline-color: #e2e8f0;"
-        "  border: 1px solid #cbd5e1;"
-        "  border-radius: 6px;"
-        "  font-size: 12px;"
-        "}"
-        "QTableWidget::item {"
-        "  padding: 4px 8px;"
-        "  color: #1e293b;"
-        "}"
-        "QTableWidget::item:selected {"
-        "  background-color: #dbeafe;"
-        "  color: #1e3a5f;"
-        "}"));
-
-    ui->pendingTable->setAlternatingRowColors(true);
-
-    // ── Column resize modes (unchanged) ──────────────────────────────────────
+    // ── Column resize modes (behavioral, not visual — kept in code) ─────────
     ui->pendingTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents); // ID
     ui->pendingTable->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);          // NAME
     ui->pendingTable->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);          // USERNAME
@@ -79,9 +53,7 @@ pending::~pending()
 //  Pulls straight from `pending_requests` — the self-registration queue.
 //  That table has no status column at all (see main.cpp's schema comment):
 //  every row sitting in it is implicitly "pending", so no WHERE clause is
-//  needed. `information.status` only ever holds 'approved' or 'disabled',
-//  which is why the previous "WHERE status = 'pending'" query against
-//  `information` could never return a row.
+//  needed.
 // ─────────────────────────────────────────────────────────────────────────────
 
 void pending::loadPendingTable()
@@ -118,11 +90,14 @@ void pending::loadPendingTable()
 
         ui->pendingTable->insertRow(row);
 
-        // Helper: create a non-editable cell item matching staff page text colour.
+        // Helper: create a non-editable cell item. Text color intentionally
+        // NOT set here — the .ui stylesheet's QTableWidget::item { color: ... }
+        // rule already applies to every cell, so setting it again per-item
+        // would just be a second, redundant place styling could drift out
+        // of sync.
         auto makeCell = [](const QString &text) -> QTableWidgetItem * {
             auto *item = new QTableWidgetItem(text);
             item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-            item->setForeground(QColor(QStringLiteral("#1e293b")));
             return item;
         };
 
@@ -130,7 +105,7 @@ void pending::loadPendingTable()
         ui->pendingTable->setItem(row, 1, makeCell(fullName));
         ui->pendingTable->setItem(row, 2, makeCell(username));
 
-        // Capitalise the role string for display (e.g. "frontdesk" → "Front Desk").
+        // Capitalise the role string for display (e.g. "frontdesk" -> "Front Desk").
         QString roleDisplay = role;
         if (role == QLatin1String("staff"))
             roleDisplay = tr("Staff");
@@ -148,12 +123,12 @@ void pending::loadPendingTable()
 
     ui->pendingTable->resizeRowsToContents();
 
-    // Show a friendly placeholder message when the queue is empty.
+    // Friendly placeholder message when the queue is empty.
     if (row == 0) {
         ui->pendingTable->insertRow(0);
         auto *placeholder = new QTableWidgetItem(tr("No pending requests at this time."));
         placeholder->setFlags(placeholder->flags() & ~Qt::ItemIsEditable);
-        placeholder->setForeground(QColor(QStringLiteral("#94a3b8"))); // matches staff page muted colour
+        placeholder->setForeground(QColor(QStringLiteral("#94a3b8"))); // matches subtitle muted color
         placeholder->setTextAlignment(Qt::AlignCenter);
         ui->pendingTable->setItem(0, 0, placeholder);
         ui->pendingTable->setSpan(0, 0, 1, 7); // merge all columns
@@ -162,6 +137,12 @@ void pending::loadPendingTable()
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Build per-row Approve / Decline widget
+//
+//  These buttons are generated dynamically, one pair per row, only after the
+//  database returns results — Qt Designer has no way to predefine a widget
+//  that doesn't exist until runtime, so their styling has to stay here.
+//  Colors are semantic action colors (green = approve, red = decline) and
+//  deliberately kept separate from the neutral table theme.
 // ─────────────────────────────────────────────────────────────────────────────
 
 QWidget *pending::buildActionsWidget(int userId)
@@ -171,7 +152,6 @@ QWidget *pending::buildActionsWidget(int userId)
     layout->setContentsMargins(4, 2, 4, 2);
     layout->setSpacing(6);
 
-    // Base style matches staff page button style exactly.
     const QString baseStyle = QStringLiteral(
         "QPushButton {"
         "  border: none;"
@@ -182,16 +162,18 @@ QWidget *pending::buildActionsWidget(int userId)
         "  color: white;"
         "}");
 
-    // Approve — green (semantic action colour, kept intentionally).
+    // Approve — green (semantic action colour).
     auto *approveBtn = new QPushButton(tr("Approve"), container);
+    approveBtn->setCursor(Qt::PointingHandCursor);
     approveBtn->setStyleSheet(baseStyle + QStringLiteral(
                                   "QPushButton { background-color: #16A34A; }"
                                   "QPushButton:hover { background-color: #15803D; }"));
     connect(approveBtn, &QPushButton::clicked,
             this, [this, userId]() { approveRequest(userId); });
 
-    // Decline — red (semantic action colour, kept intentionally).
+    // Decline — red (semantic action colour).
     auto *declineBtn = new QPushButton(tr("Decline"), container);
+    declineBtn->setCursor(Qt::PointingHandCursor);
     declineBtn->setStyleSheet(baseStyle + QStringLiteral(
                                   "QPushButton { background-color: #DC2626; }"
                                   "QPushButton:hover { background-color: #991B1B; }"));
@@ -210,11 +192,11 @@ QWidget *pending::buildActionsWidget(int userId)
 //  Approve
 //
 //  Moves the row from `pending_requests` into `information` with
-//  status = 'approved', then removes it from the pending queue. Both steps
-//  run inside a single transaction: if the INSERT or DELETE fails for any
-//  reason (e.g. a UNIQUE username collision against an existing account),
-//  everything rolls back so the request is never silently lost or
-//  duplicated.
+//  status = 'approved' (the registrant becomes an employee), then removes it
+//  from the pending queue. Both steps run inside a single transaction: if the
+//  INSERT or DELETE fails for any reason (e.g. a UNIQUE username collision
+//  against an existing account), everything rolls back so the request is
+//  never silently lost or duplicated.
 // ─────────────────────────────────────────────────────────────────────────────
 
 void pending::approveRequest(int userId)
@@ -247,7 +229,8 @@ void pending::approveRequest(int userId)
 
     const auto reply = QMessageBox::question(
         this, tr("Confirm Approval"),
-        tr("Approve the registration request for %1 (username: %2)?")
+        tr("Approve the registration request for %1 (username: %2)?\n\n"
+           "They will be added to the system as an employee and will be able to log in.")
             .arg(name, username),
         QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
