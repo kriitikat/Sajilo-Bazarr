@@ -1,5 +1,5 @@
-#include "pending.h"
-#include "ui_pending.h"
+#include "../include/pending.h"
+#include "../ui/ui_pending.h"
 
 #include <QSqlDatabase>
 #include <QSqlQuery>

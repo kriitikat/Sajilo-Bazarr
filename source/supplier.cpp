@@ -1,5 +1,5 @@
-#include "supplier.h"
-#include "ui_supplier.h"
+#include "../include/supplier.h"
+#include "../ui/ui_supplier.h"
 
 #include <QSqlDatabase>
 #include <QSqlQuery>

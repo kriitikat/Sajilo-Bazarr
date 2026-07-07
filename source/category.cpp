@@ -1,6 +1,6 @@
-#include "category.h"
-#include "ui_category.h"
-#include "addcategory.h"
+#include "../include/category.h"
+#include "../ui/ui_category.h"
+#include "../include/addcategory.h"
 #include <QDebug>
 #include <QTableWidgetItem>
 #include <QHeaderView>

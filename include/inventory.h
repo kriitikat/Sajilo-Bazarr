@@ -2,6 +2,7 @@
 #define INVENTORY_H
 
 #include <QMainWindow>
+#include <QEvent>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -17,11 +18,24 @@ public:
     explicit inventory(QWidget *parent = nullptr);
     ~inventory() override;
 
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+    void showEvent(QShowEvent *event) override;   // ADD THIS LINE
 private:
-    void loadInventoryData();
-    void handleSortChanged(int index);
-
     Ui::inventory *ui;
+
+    int currentPage = 1;
+    int pageSize = 15;
+    QString currentFilter; // empty = show all; else "Low Stock" / "High Stock" / "Out Of Stock"
+
+    void loadInventoryData(int page = 1);
+    void updateStatCards();          // NEW: always counts ALL products, unaffected by filter
+    void filterByStatus(const QString &status);
+
+private slots:
+    void handleSortChanged(int index);
+    void goToNextPage();
+    void goToPreviousPage();
 };
 
 #endif // INVENTORY_H

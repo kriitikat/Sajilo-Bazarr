@@ -6,8 +6,8 @@
 //           expiry_date, status, supplier, sku
 // ═══════════════════════════════════════════════════════════════════
 
-#include "product.h"
-#include "ui_product.h"
+#include "../include/product.h"
+#include "../ui/ui_product.h"
 
 #include <QHBoxLayout>
 #include <QVBoxLayout>
@@ -159,8 +159,7 @@ void ProductDialog::setupUi()
     deExpiry->setMinimumDate(QDate(2000, 1, 1));
 
     cmbStatus = new QComboBox(this);
-    cmbStatus->addItems({"In Stock", "Low Stock", "High Stock", "Out of Stock"});
-
+    cmbStatus->addItems({"In Stock", "Low Stock", "High Stock", "Out Of Stock"});
     txtSupplier = new QLineEdit(this);
     txtSupplier->setPlaceholderText("Supplier name");
 

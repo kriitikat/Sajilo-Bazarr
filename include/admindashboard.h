@@ -2,13 +2,13 @@
 #define ADMINDASHBOARD_H
 
 #include <QMainWindow>
-#include "category.h"
-#include "product.h"
-#include "inventory.h"
-#include "staff.h"
-#include "pending.h"
-#include "login.h"
-#include"supplier.h"
+#include "../include/category.h"
+#include "../include/product.h"
+#include "../include/inventory.h"
+#include "../include/staff.h"
+#include "../include/pending.h"
+#include "../include/login.h"
+#include "../include/supplier.h"
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class AdminDashboard;
@@ -34,6 +34,7 @@ private slots:
 
 private:
     Ui::AdminDashboard *ui;
+    inventory *inventoryPage = nullptr;
 };
 
 #endif // ADMINDASHBOARD_H

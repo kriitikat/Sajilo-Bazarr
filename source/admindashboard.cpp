@@ -1,5 +1,5 @@
 #include "../include/admindashboard.h"
-#include "../include/ui_admindashboard.h"
+#include "../ui/ui_admindashboard.h"
 
 #include "../include/category.h"
 #include "../include/product.h"
@@ -78,11 +78,14 @@ void AdminDashboard::on_btnProducts_clicked()
     Product *productPage = new Product();
     productPage->show();
 }
-
 void AdminDashboard::on_btnInventory_clicked()
 {
-    inventory *inventoryPage = new inventory();
+    if (!inventoryPage) {
+        inventoryPage = new inventory();
+    }
     inventoryPage->show();
+    inventoryPage->raise();
+    inventoryPage->activateWindow();
 }
 
 void AdminDashboard::on_btnStaff_clicked()

@@ -1,5 +1,5 @@
-#include "staff.h"
-#include "ui_staff.h"
+#include "../include/staff.h"
+#include "../ui/ui_staff.h"
 
 #include <QSqlDatabase>
 #include <QSqlQuery>
