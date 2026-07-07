@@ -17,6 +17,10 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql)
         source/login.cpp
         include/login.h
         ui/login.ui
+        ui/taskmanagement.ui
+        source/taskmanagement.cpp
+        include/taskmanagement.h
+
         source/register.cpp
         include/register.h
         ui/register.ui

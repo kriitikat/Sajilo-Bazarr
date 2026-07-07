@@ -1,5 +1,6 @@
 #include "../include/staff.h"
 #include "../ui/ui_staff.h"
+#include "../include/taskmanagement.h" // TODO: confirm this path/filename matches your project layout
 
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -207,11 +208,9 @@ QWidget *staff::buildActionsWidget(int staffId, const QString &status)
     // QPushButton[actionRole="edit"]) to apply colors, radius, padding,
     // font size, and hover states. No colors or fonts are set here.
 
-    // Task — placeholder, not implemented yet.
+    // Task — opens taskmanagement for this staff member.
     auto *taskBtn = new QPushButton(tr("Task"), container);
     taskBtn->setProperty("actionRole", QStringLiteral("task"));
-    taskBtn->setEnabled(false);
-    taskBtn->setToolTip(tr("Task assignment is not implemented yet"));
     connect(taskBtn, &QPushButton::clicked, this, [this, staffId]() { taskStaff(staffId); });
 
     // Edit
@@ -515,11 +514,18 @@ void staff::expireStaff(int staffId)
     loadStaffTable();
 }
 
-// ─── Task Staff (placeholder) ──────────────────────────────────────────────
+// ─── Task Staff ─────────────────────────────────────────────────────────────
 
 void staff::taskStaff(int staffId)
 {
-    Q_UNUSED(staffId)
-    QMessageBox::information(this, tr("Coming Soon"),
-                             tr("Task assignment for staff is not implemented yet."));
+    // TODO: confirm taskmanagement's real constructor. This assumes it looks
+    // like staff's own constructor: explicit taskmanagement(QWidget *parent = nullptr).
+    // If taskmanagement needs to know WHICH staff member it's for, add either:
+    //   - a constructor overload: taskmanagement(int staffId, QWidget *parent = nullptr)
+    //   - or a setter you call right after construction, e.g. win->setStaffId(staffId);
+    // and swap the line below accordingly.
+    auto *taskWin = new TaskManagement(); // no parent -> opens as its own top-level window
+    taskWin->setAttribute(Qt::WA_DeleteOnClose); // auto-cleans up when the user closes it
+    taskWin->setWindowTitle(tr("Tasks — Staff #%1").arg(staffId)); // harmless if taskmanagement.ui sets its own title
+    taskWin->show();
 }

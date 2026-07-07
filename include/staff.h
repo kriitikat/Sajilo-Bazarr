@@ -26,7 +26,7 @@ private slots:
     void editStaff(int staffId);
     void disableStaff(int staffId); // toggles status between 'enabled' and 'disabled'
     void expireStaff(int staffId);  // sets status to 'expired'
-    void taskStaff(int staffId);    // placeholder only
+    void taskStaff(int staffId);    // opens taskmanagement for this staff member
 
 private:
     Ui::staff *ui;

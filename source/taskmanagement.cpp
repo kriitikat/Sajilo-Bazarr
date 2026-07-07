@@ -1,4 +1,5 @@
-#include "taskmanagement.h"
+#include "../include/taskmanagement.h"
+#include "../ui/ui_taskmanagement.h"
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
