@@ -90,7 +90,7 @@ staff::staff(QWidget *parent)
     // ── Column sizing ──────────────────────────────────────────────────────
     // A single global QHeaderView::Stretch (the old approach) spreads width
     // evenly across all 8 columns, so the narrow ID column ends up as wide
-    // as NAME/EMAIL while ACTIONS (which needs to fit 4 buttons) gets
+    // as NAME/EMAIL while ACTIONS (which needs to fit its buttons) gets
     // squeezed. Give each column a resize mode that matches what it
     // actually needs to hold, so ACTIONS has enough room to stay readable.
     auto *header = ui->staffTable_3->horizontalHeader();
@@ -109,9 +109,10 @@ staff::staff(QWidget *parent)
     header->resizeSection(COL_STATUS,   90);
     header->resizeSection(COL_USERNAME, 130);
     header->resizeSection(COL_ROLE,     90);
-    header->resizeSection(COL_ACTIONS,  300);
-
-    connect(ui->addStaffBtn_3, &QPushButton::clicked, this, &staff::on_addStaffBtn_3_clicked);
+    // Only 3 buttons now (Edit / Disable-Enable / Expire-Unexpire) since
+    // Task moved to the top nav bar, so ACTIONS needs less width than before.
+    header->resizeSection(COL_ACTIONS,  220);
+    connect(ui->navTasksBtn_3, &QPushButton::clicked, this, &staff::on_navTasksBtn_3_clicked);
 
     loadStaffTable();
 }
@@ -193,6 +194,12 @@ void staff::loadStaffTable()
     ui->staffTable_3->resizeRowsToContents();
 }
 
+// ─── Actions cell ────────────────────────────────────────────────────────────
+// Task button removed entirely — TaskManagement is now opened from the
+// top-nav "Tasks" button (see on_navTasksBtn_3_clicked), not per staff row.
+// Expire now toggles to "Unexpire" once a row is expired, instead of
+// permanently disabling the button.
+
 QWidget *staff::buildActionsWidget(int staffId, const QString &status)
 {
     const bool disabled = (status == QLatin1String("disabled"));
@@ -208,33 +215,27 @@ QWidget *staff::buildActionsWidget(int staffId, const QString &status)
     // QPushButton[actionRole="edit"]) to apply colors, radius, padding,
     // font size, and hover states. No colors or fonts are set here.
 
-    // Task — opens taskmanagement for this staff member.
-    auto *taskBtn = new QPushButton(tr("Task"), container);
-    taskBtn->setProperty("actionRole", QStringLiteral("task"));
-    connect(taskBtn, &QPushButton::clicked, this, [this, staffId]() { taskStaff(staffId); });
-
     // Edit
     auto *editBtn = new QPushButton(tr("Edit"), container);
     editBtn->setProperty("actionRole", QStringLiteral("edit"));
+    editBtn->setCursor(Qt::PointingHandCursor);
     connect(editBtn, &QPushButton::clicked, this, [this, staffId]() { editStaff(staffId); });
 
     // Disable / Enable — toggles based on current status.
     auto *disableBtn = new QPushButton(disabled ? tr("Enable") : tr("Disable"), container);
     disableBtn->setProperty("actionRole", disabled ? QStringLiteral("enable")
                                                    : QStringLiteral("disable"));
+    disableBtn->setCursor(Qt::PointingHandCursor);
     connect(disableBtn, &QPushButton::clicked, this, [this, staffId]() { disableStaff(staffId); });
 
-    // Expire — replaces the old Delete button. Marks the account as expired
-    // instead of removing the row from the database.
-    auto *expireBtn = new QPushButton(tr("Expire"), container);
-    expireBtn->setProperty("actionRole", QStringLiteral("expire"));
-    if (expired) {
-        expireBtn->setEnabled(false);
-        expireBtn->setToolTip(tr("This account has already expired"));
-    }
+    // Expire / Unexpire — toggles based on current status. No longer gets
+    // permanently disabled once expired; instead flips to "Unexpire".
+    auto *expireBtn = new QPushButton(expired ? tr("Unexpire") : tr("Expire"), container);
+    expireBtn->setProperty("actionRole", expired ? QStringLiteral("unexpire")
+                                                 : QStringLiteral("expire"));
+    expireBtn->setCursor(Qt::PointingHandCursor);
     connect(expireBtn, &QPushButton::clicked, this, [this, staffId]() { expireStaff(staffId); });
 
-    layout->addWidget(taskBtn);
     layout->addWidget(editBtn);
     layout->addWidget(disableBtn);
     layout->addWidget(expireBtn);
@@ -244,80 +245,7 @@ QWidget *staff::buildActionsWidget(int staffId, const QString &status)
     return container;
 }
 
-// ─── Add Staff ─────────────────────────────────────────────────────────────
 
-void staff::on_addStaffBtn_3_clicked()
-{
-    QDialog dialog(this);
-    dialog.setWindowTitle(tr("Add Staff"));
-
-    auto *form = new QFormLayout(&dialog);
-
-    auto *firstNameEdit = new QLineEdit(&dialog);
-    auto *lastNameEdit  = new QLineEdit(&dialog);
-    auto *emailEdit     = new QLineEdit(&dialog);
-    auto *phoneEdit     = new QLineEdit(&dialog);
-    auto *usernameEdit  = new QLineEdit(&dialog);
-    auto *passwordEdit  = new QLineEdit(&dialog);
-    passwordEdit->setEchoMode(QLineEdit::Password);
-
-    // Role selector — matches the two roles stored in the DB
-    auto *roleCombo = new QComboBox(&dialog);
-    roleCombo->addItem(tr("Staff"),      QStringLiteral("staff"));
-    roleCombo->addItem(tr("Front Desk"), QStringLiteral("frontdesk"));
-
-    form->addRow(tr("First Name:"), firstNameEdit);
-    form->addRow(tr("Last Name:"),  lastNameEdit);
-    form->addRow(tr("Email:"),      emailEdit);
-    form->addRow(tr("Phone:"),      phoneEdit);
-    form->addRow(tr("Username:"),   usernameEdit);
-    form->addRow(tr("Password:"),   passwordEdit);
-    form->addRow(tr("Role:"),       roleCombo);
-
-    auto *buttons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel, &dialog);
-    form->addRow(buttons);
-    connect(buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
-    connect(buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
-
-    if (dialog.exec() != QDialog::Accepted)
-        return;
-
-    const QString firstName = firstNameEdit->text().trimmed();
-    const QString lastName  = lastNameEdit->text().trimmed();
-    const QString email     = emailEdit->text().trimmed();
-    const QString phone     = phoneEdit->text().trimmed();
-    const QString username  = usernameEdit->text().trimmed();
-    const QString password  = passwordEdit->text();
-    const QString role      = roleCombo->currentData().toString();
-
-    if (firstName.isEmpty() || username.isEmpty() || password.isEmpty()) {
-        QMessageBox::warning(this, tr("Missing Information"),
-                             tr("First name, username, and password are required."));
-        return;
-    }
-
-    QSqlDatabase db = QSqlDatabase::database();
-    QSqlQuery query(db);
-    query.prepare(QStringLiteral(
-        "INSERT INTO information "
-        "(first_name, last_name, username, role, email, phone, picture, password, status) "
-        "VALUES (:first_name, :last_name, :username, :role, :email, :phone, NULL, :password, 'enabled')"));
-    query.bindValue(QStringLiteral(":first_name"), firstName);
-    query.bindValue(QStringLiteral(":last_name"),  lastName);
-    query.bindValue(QStringLiteral(":username"),   username);
-    query.bindValue(QStringLiteral(":role"),       role);
-    query.bindValue(QStringLiteral(":email"),      email);
-    query.bindValue(QStringLiteral(":phone"),      phone);
-    query.bindValue(QStringLiteral(":password"),   hashPassword(password));
-
-    if (!query.exec()) {
-        QMessageBox::critical(this, tr("Database Error"),
-                              tr("Failed to add staff: %1").arg(query.lastError().text()));
-        return;
-    }
-
-    loadStaffTable();
-}
 
 // ─── Edit Staff ────────────────────────────────────────────────────────────
 
@@ -470,7 +398,10 @@ void staff::disableStaff(int staffId)
     loadStaffTable();
 }
 
-// ─── Expire Staff ───────────────────────────────────────────────────────────
+// ─── Expire / Unexpire Staff ────────────────────────────────────────────────
+// Toggles between 'expired' and 'enabled'. Previously Expire permanently
+// disabled itself once a row was expired, with no way back short of editing
+// the DB directly. Now the ACTIONS cell just flips to "Unexpire".
 
 void staff::expireStaff(int staffId)
 {
@@ -486,24 +417,27 @@ void staff::expireStaff(int staffId)
         return;
     }
 
-    if (fetch.value(0).toString() == QLatin1String("expired")) {
-        QMessageBox::information(this, tr("Already Expired"),
-                                 tr("This staff member's account has already expired."));
-        return;
-    }
+    const bool currentlyExpired = (fetch.value(0).toString() == QLatin1String("expired"));
+    const QString newStatus = currentlyExpired
+                                  ? QStringLiteral("enabled")
+                                  : QStringLiteral("expired");
 
     const auto reply = QMessageBox::question(
-        this, tr("Confirm Expire"),
-        tr("Mark this staff member's account as expired? This is typically used when their "
-           "contract or engagement period has ended."),
+        this,
+        currentlyExpired ? tr("Confirm Unexpire") : tr("Confirm Expire"),
+        currentlyExpired
+            ? tr("Restore this staff member's account to active (enabled)?")
+            : tr("Mark this staff member's account as expired? This is typically used when their "
+                 "contract or engagement period has ended."),
         QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
     if (reply != QMessageBox::Yes)
         return;
 
     QSqlQuery update(db);
-    update.prepare(QStringLiteral("UPDATE information SET status = 'expired' WHERE id = :id"));
-    update.bindValue(QStringLiteral(":id"), staffId);
+    update.prepare(QStringLiteral("UPDATE information SET status = :status WHERE id = :id"));
+    update.bindValue(QStringLiteral(":status"), newStatus);
+    update.bindValue(QStringLiteral(":id"),     staffId);
 
     if (!update.exec()) {
         QMessageBox::critical(this, tr("Database Error"),
@@ -514,18 +448,15 @@ void staff::expireStaff(int staffId)
     loadStaffTable();
 }
 
-// ─── Task Staff ─────────────────────────────────────────────────────────────
+// ─── Tasks (top nav) ─────────────────────────────────────────────────────────
+// Moved out of the per-row ACTIONS cell entirely. Now a page-level entry
+// point living alongside Staff / Category / Supplier in the top nav bar.
 
-void staff::taskStaff(int staffId)
+void staff::on_navTasksBtn_3_clicked()
 {
     // TODO: confirm taskmanagement's real constructor. This assumes it looks
     // like staff's own constructor: explicit taskmanagement(QWidget *parent = nullptr).
-    // If taskmanagement needs to know WHICH staff member it's for, add either:
-    //   - a constructor overload: taskmanagement(int staffId, QWidget *parent = nullptr)
-    //   - or a setter you call right after construction, e.g. win->setStaffId(staffId);
-    // and swap the line below accordingly.
     auto *taskWin = new TaskManagement(); // no parent -> opens as its own top-level window
     taskWin->setAttribute(Qt::WA_DeleteOnClose); // auto-cleans up when the user closes it
-    taskWin->setWindowTitle(tr("Tasks — Staff #%1").arg(staffId)); // harmless if taskmanagement.ui sets its own title
     taskWin->show();
 }

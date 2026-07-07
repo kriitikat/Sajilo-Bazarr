@@ -99,74 +99,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="navLayout">
-     <item>
-      <widget class="QPushButton" name="navStaffBtn">
-       <property name="styleSheet">
-        <string notr="true">QPushButton {
-    background-color: #2D4A7A;
-    border: none;
-    padding: 8px 16px;
-    color: white;
-    font-weight: bold;
-    border-radius:12px;
-}
-QPushButton:hover {
-    color:white;
-    background-color: #1B2A4A;
-    border-radius:12px;
-}</string>
-       </property>
-       <property name="text">
-        <string>Staff</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="navCategoryBtn">
-       <property name="styleSheet">
-        <string notr="true">QPushButton {
-    background-color: #2D4A7A;
-    border: none;
-    padding: 8px 16px;
-    color: white;
-    font-weight: bold;
-    border-radius:12px;
-}
-QPushButton:hover {
-    color:white;
-    background-color: #1B2A4A;
-    border-radius:12px;
-}</string>
-       </property>
-       <property name="text">
-        <string>Category</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="navSupplierBtn">
-       <property name="styleSheet">
-        <string notr="true">QPushButton {
-    background-color: #2D4A7A;
-    border: none;
-    padding: 8px 16px;
-    color: white;
-    font-weight: bold;
-    border-radius:12px;
-}
-QPushButton:hover {
-    color:white;
-    background-color: #1B2A4A;
-    border-radius:12px;
-}</string>
-       </property>
-       <property name="text">
-        <string>Supplier</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <layout class="QHBoxLayout" name="navLayout"/>
    </item>
    <item>
     <widget class="QFrame" name="mainCardFrame">
@@ -254,7 +187,7 @@ QPushButton:hover {
     color: white;
     font-weight: bold;
     border-radius: 12px;
-    font-family: "Segoe UI", Arial;
+    font-family: &quot;Segoe UI&quot;, Arial;
     font-size: 9px;
 }
 QPushButton:hover {

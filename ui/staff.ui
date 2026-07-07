@@ -33,6 +33,76 @@
    <string notr="true">QWidget {
     background-color: #f8fafc;
     font-family: 'Segoe UI';
+}
+
+/* ── Per-row ACTIONS button styling ───────────────────────────────────────
+   Buttons in staff.cpp's buildActionsWidget() only set a QPushButton's
+   &quot;actionRole&quot; dynamic property (edit / disable / enable / expire /
+   unexpire); all color/hover/font/radius styling lives here so staff.cpp
+   never touches presentation. */
+QPushButton[actionRole=&quot;edit&quot;] {
+    background-color: #2563eb;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole=&quot;edit&quot;]:hover {
+    background-color: #1d4ed8;
+}
+
+QPushButton[actionRole=&quot;disable&quot;] {
+    background-color: #d97706;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole=&quot;disable&quot;]:hover {
+    background-color: #b45309;
+}
+
+QPushButton[actionRole=&quot;enable&quot;] {
+    background-color: #16a34a;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole=&quot;enable&quot;]:hover {
+    background-color: #15803d;
+}
+
+QPushButton[actionRole=&quot;expire&quot;] {
+    background-color: #dc2626;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole=&quot;expire&quot;]:hover {
+    background-color: #991b1b;
+}
+
+QPushButton[actionRole=&quot;unexpire&quot;] {
+    background-color: #0891b2;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole=&quot;unexpire&quot;]:hover {
+    background-color: #0e7490;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -123,28 +193,6 @@ QPushButton:hover {
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="navCategoryBtn_3">
-       <property name="styleSheet">
-        <string notr="true">QPushButton {
-    background-color: #2D4A7A;
-    border: none;
-    padding: 8px 16px;
-    color: white;
-    font-weight: bold;
-    border-radius: 12px;
-}
-QPushButton:hover {
-    color: white;
-    background-color: #1B2A4A;
-    border-radius: 12px;
-}</string>
-       </property>
-       <property name="text">
-        <string>Category</string>
-       </property>
-      </widget>
-     </item>
-     <item>
       <widget class="QPushButton" name="navSupplierBtn_3">
        <property name="styleSheet">
         <string notr="true">QPushButton {
@@ -163,6 +211,28 @@ QPushButton:hover {
        </property>
        <property name="text">
         <string>Supplier</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="navTasksBtn_3">
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+    background-color: #2D4A7A;
+    border: none;
+    padding: 8px 16px;
+    color: white;
+    font-weight: bold;
+    border-radius: 12px;
+}
+QPushButton:hover {
+    color: white;
+    background-color: #1B2A4A;
+    border-radius: 12px;
+}</string>
+       </property>
+       <property name="text">
+        <string>Tasks</string>
        </property>
       </widget>
      </item>
@@ -317,48 +387,6 @@ QHeaderView::section {
              <string>ACTIONS</string>
             </property>
            </column>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="addStaffBtn_3">
-           <property name="minimumSize">
-            <size>
-             <width>90</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>94</width>
-             <height>30</height>
-            </size>
-           </property>
-           <property name="font">
-            <font>
-             <family>Segoe UI</family>
-             <pointsize>-1</pointsize>
-             <bold>true</bold>
-            </font>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">QPushButton {
-    background-color: #2E8B57;
-    border: none;
-    padding: 8px 16px;
-    color: white;
-    font-weight: bold;
-    border-radius: 12px;
-    font-family: "Segoe UI", Arial;
-    font-size: 9px;
-}
-QPushButton:hover {
-    color: white;
-    background-color: #0B6623;
-}</string>
-           </property>
-           <property name="text">
-            <string>Add Staff</string>
-           </property>
           </widget>
          </item>
         </layout>
