@@ -192,8 +192,9 @@ QWidget *pending::buildActionsWidget(int userId)
 //  Approve
 //
 //  Moves the row from `pending_requests` into `information` with
-//  status = 'approved' (the registrant becomes an employee), then removes it
-//  from the pending queue. Both steps run inside a single transaction: if the
+//  status = 'enabled' (the registrant becomes an employee who can log in
+//  immediately), then removes it from the pending queue. Both steps run
+//  inside a single transaction: if the
 //  INSERT or DELETE fails for any reason (e.g. a UNIQUE username collision
 //  against an existing account), everything rolls back so the request is
 //  never silently lost or duplicated.
@@ -243,10 +244,14 @@ void pending::approveRequest(int userId)
         return;
     }
 
+    // NOTE: `information.status` has CHECK(status IN ('enabled','disabled','expired')) —
+    // 'approved' is NOT a valid value and would violate that constraint, causing
+    // this INSERT to fail (and the whole approval to roll back) every single time.
+    // A newly-approved account should simply be 'enabled' so it can log in.
     QSqlQuery insert(db);
     insert.prepare(QStringLiteral(
         "INSERT INTO information (first_name, last_name, username, role, email, phone, password, status) "
-        "VALUES (:first_name, :last_name, :username, :role, :email, :phone, :password, 'approved')"));
+        "VALUES (:first_name, :last_name, :username, :role, :email, :phone, :password, 'enabled')"));
     insert.bindValue(QStringLiteral(":first_name"), firstName);
     insert.bindValue(QStringLiteral(":last_name"), lastName);
     insert.bindValue(QStringLiteral(":username"), username);
