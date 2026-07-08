@@ -138,8 +138,13 @@ void ProductStaffDialog::setupUi()
     for (const auto &c : ProductStaff::loadCategoriesFromDb())
         cmbCategory->addItem(c);
 
-    txtUnit = new QLineEdit(this);
-    txtUnit->setPlaceholderText("e.g. kg, pcs, litre");
+    // ── Unit dropdown (editable so user can still type a custom unit) ──
+    cmbUnit = new QComboBox(this);
+    cmbUnit->setEditable(true);
+    cmbUnit->addItems(ProductStaff::s_units);
+    cmbUnit->setCurrentIndex(-1);                 // start empty
+    if (cmbUnit->lineEdit())
+        cmbUnit->lineEdit()->setPlaceholderText("e.g. kg, pcs, litre");
 
     txtPrice = new QLineEdit(this);
     txtPrice->setPlaceholderText("0.00");
@@ -192,7 +197,7 @@ void ProductStaffDialog::setupUi()
 
     form->addRow(makeLabel("Product Name *"), txtName);
     form->addRow(makeLabel("Category *"),     cmbCategory);
-    form->addRow(makeLabel("Unit"),           txtUnit);
+    form->addRow(makeLabel("Unit"),           cmbUnit);
     form->addRow(makeLabel("Price (Rs.) *"),  txtPrice);
     form->addRow(makeLabel("Stock *"),        spnStock);
     form->addRow(makeLabel("Expiry Date"),    deExpiry);
@@ -256,7 +261,16 @@ void ProductStaffDialog::populateFields(const StaffProductDTO &p)
     }
     cmbCategory->setCurrentIndex(catIdx >= 0 ? catIdx : 0);
 
-    txtUnit->setText(p.unit);
+    // ── Unit: select if it exists in the list, otherwise add it ──
+    int unitIdx = cmbUnit->findText(p.unit, Qt::MatchFixedString);
+    if (unitIdx < 0 && !p.unit.isEmpty()) {
+        cmbUnit->addItem(p.unit);
+        unitIdx = cmbUnit->count() - 1;
+    }
+    cmbUnit->setCurrentIndex(unitIdx);
+    if (unitIdx < 0)
+        cmbUnit->setCurrentText(p.unit);
+
     txtPrice->setText(QString::number(p.price, 'f', 2));
     spnStock->setValue(p.stock);
 
@@ -324,7 +338,7 @@ StaffProductDTO ProductStaffDialog::getProduct() const
     p.id          = m_editId;
     p.productName = txtName->text().trimmed();
     p.category    = cmbCategory->currentText();
-    p.unit        = txtUnit->text().trimmed();
+    p.unit        = cmbUnit->currentText().trimmed();
     p.price       = txtPrice->text().toDouble();
     p.stock       = spnStock->value();
     p.expiryDate  = deExpiry->date().toString("yyyy-MM-dd");
