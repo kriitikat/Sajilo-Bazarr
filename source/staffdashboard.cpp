@@ -1,17 +1,29 @@
 // staffdashboard.cpp
-
 #include "../include/staffdashboard.h"
 #include "../ui/ui_staffdashboard.h"
+#include "../include/productstaff.h"
+#include <QPushButton>
 
 StaffDashboard::StaffDashboard(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::StaffDashboard)
 {
     ui->setupUi(this);
-}
 
+    // Products button
+    connect(ui->btnProducts,
+            &QPushButton::clicked,
+            this,
+            &StaffDashboard::handleProductsClicked);
+}
 
 StaffDashboard::~StaffDashboard()
 {
     delete ui;
+}
+
+void StaffDashboard::handleProductsClicked()
+{
+    ProductStaff *productPage = new ProductStaff();
+    productPage->show();
 }

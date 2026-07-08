@@ -183,48 +183,6 @@ color: white;
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="btnCategory">
-         <property name="styleSheet">
-          <string>
-QPushButton {
-color: #A0B8D8;
-background-color: transparent;
-border: none;
-padding: 12px 16px;
-text-align: left;
-font-size: 13px;
-}
-
-QPushButton:hover {
-background-color: #2D4A7A;
-color: white;
-}
-          </string>
-         </property>
-         <property name="text">
-          <string>Sort Inventory</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="pushButton">
-         <property name="styleSheet">
-          <string notr="true">QPushButton {
-color: #A0B8D8;
-background-color: transparent;
-border: none;
-padding: 12px 16px;
-text-align: left;
-font-size: 13px;
-}
-             </string>
-         </property>
-         <property name="text">
-          <string>Track Stock</string>
-         </property>
-        </widget>
-       </item>
-       <item>
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Orientation::Vertical</enum>
@@ -370,86 +328,6 @@ background-color: #F4F6FA;
           <property name="topMargin">
            <number>20</number>
           </property>
-          <item>
-           <widget class="QLabel" name="titleLabel">
-            <property name="styleSheet">
-             <string>
-QLabel {
-color: #1B2A4A;
-font-size: 16px;
-font-weight: bold;
-}
-             </string>
-            </property>
-            <property name="text">
-             <string>Staff Dashboard</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="searchBar">
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string>
-QLineEdit {
-background-color: white;
-border: 1px solid #D0D7E2;
-border-radius: 6px;
-padding-left: 10px;
-font-size: 13px;
-}
-             </string>
-            </property>
-            <property name="placeholderText">
-             <string>Search Product...</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QTableWidget" name="productTable">
-            <property name="styleSheet">
-             <string>
-QTableWidget {
-background-color: white;
-border: 1px solid #DDE3EC;
-border-radius: 8px;
-gridline-color: #EAECEF;
-font-size: 12px;
-}
-             </string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="buttonLayout">
-            <item>
-             <widget class="QPushButton" name="btnViewProducts">
-              <property name="text">
-               <string>View Products</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="btnUpdateStock">
-              <property name="text">
-               <string>Update Stock</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="btnSortInventory">
-              <property name="text">
-               <string>Sort Inventory</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
          </layout>
         </widget>
        </item>

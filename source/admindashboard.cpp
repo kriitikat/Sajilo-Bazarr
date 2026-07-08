@@ -21,30 +21,30 @@ AdminDashboard::AdminDashboard(QWidget *parent)
     connect(ui->btnCategories,
             &QPushButton::clicked,
             this,
-            &AdminDashboard::on_btnCategories_clicked);
+            &AdminDashboard::handleCategories_clicked);
 
     // Products button
     connect(ui->btnProducts,
             &QPushButton::clicked,
             this,
-            &AdminDashboard::on_btnProducts_clicked);
+            &AdminDashboard::handleProducts_clicked);
 
     // Inventory button
     connect(ui->btnInventory,
             &QPushButton::clicked,
             this,
-            &AdminDashboard::on_btnInventory_clicked);
+            &AdminDashboard::handleInventory_clicked);
 
     // Staff button
     connect(ui->btnStaff,
             &QPushButton::clicked,
             this,
-            &AdminDashboard::on_btnStaff_clicked);
+            &AdminDashboard::handleStaff_clicked);
     // suppliers button
     connect(ui->btnSuppliers,
             &QPushButton::clicked,
             this,
-            &AdminDashboard::on_btnSuppliers_clicked);
+            &AdminDashboard::handleSuppliers_clicked);
 
 
     // Pending Request button
@@ -53,13 +53,13 @@ AdminDashboard::AdminDashboard(QWidget *parent)
     connect(ui->btnPending_Request,
             &QPushButton::clicked,
             this,
-            &AdminDashboard::on_btnPending_Request_clicked);
+            &AdminDashboard::handlePending_Request_clicked);
 
     // Logout button
     connect(ui->btnLogout,
             &QPushButton::clicked,
             this,
-            &AdminDashboard::on_btnLogout_clicked);
+            &AdminDashboard::handleLogout_clicked);
 }
 
 AdminDashboard::~AdminDashboard()
@@ -67,18 +67,18 @@ AdminDashboard::~AdminDashboard()
     delete ui;
 }
 
-void AdminDashboard::on_btnCategories_clicked()
+void AdminDashboard::handleCategories_clicked()
 {
     category *categoryPage = new category();
     categoryPage->show();
 }
 
-void AdminDashboard::on_btnProducts_clicked()
+void AdminDashboard::handleProducts_clicked()
 {
     Product *productPage = new Product();
     productPage->show();
 }
-void AdminDashboard::on_btnInventory_clicked()
+void AdminDashboard::handleInventory_clicked()
 {
     if (!inventoryPage) {
         inventoryPage = new inventory();
@@ -88,26 +88,26 @@ void AdminDashboard::on_btnInventory_clicked()
     inventoryPage->activateWindow();
 }
 
-void AdminDashboard::on_btnStaff_clicked()
+void AdminDashboard::handleStaff_clicked()
 {
     staff *staffPage = new staff();
     staffPage->show();
 }
 
-void AdminDashboard::on_btnPending_Request_clicked()
+void AdminDashboard::handlePending_Request_clicked()
 {
     pending *pendingPage = new pending();
     pendingPage->setAttribute(Qt::WA_DeleteOnClose);
     pendingPage->show();
 }
-void AdminDashboard::on_btnSuppliers_clicked()
+void AdminDashboard::handleSuppliers_clicked()
 {
     supplier *suppliersPage = new supplier();
     suppliersPage->setAttribute(Qt::WA_DeleteOnClose);
     suppliersPage->show();
 }
 
-void AdminDashboard::on_btnLogout_clicked()
+void AdminDashboard::handleLogout_clicked()
 {
     const auto reply = QMessageBox::question(
         this, tr("Confirm Logout"),

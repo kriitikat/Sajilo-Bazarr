@@ -54,6 +54,9 @@ find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql)
         source/supplier.cpp
         include/supplier.h
         ui/supplier.ui
+        source/productstaff.cpp
+        include/productstaff.h
+        ui/productstaff.ui
     )
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
