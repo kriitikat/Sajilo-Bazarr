@@ -247,12 +247,21 @@ void ProductStaffDialog::setupUi()
         QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDateEdit:focus {
             border:1px solid #1B8A44;
         }
+        QLineEdit:read-only {
+            background:#F0F2F5; color:#7F8C8D;
+        }
     )");
 }
 
 void ProductStaffDialog::populateFields(const StaffProductDTO &p)
 {
     txtName->setText(p.productName);
+
+    // ── Product Name cannot be changed while editing ──
+    // (still visible/selectable for copying, just not editable)
+    txtName->setReadOnly(true);
+    txtName->setCursor(Qt::ArrowCursor);
+    txtName->setToolTip("Product name cannot be changed once created.");
 
     int catIdx = cmbCategory->findText(p.category);
     if (catIdx < 0 && !p.category.isEmpty()) {
@@ -387,6 +396,10 @@ ProductStaff::ProductStaff(QWidget *parent)
             this,                  &ProductStaff::onClearSearch);
     connect(ui->tblProducts,       &QTableWidget::cellDoubleClicked,
             this,                  &ProductStaff::onTableDoubleClicked);
+    connect(ui->btnPrevPage,       &QPushButton::clicked,
+            this,                  &ProductStaff::onPrevPage);
+    connect(ui->btnNextPage,       &QPushButton::clicked,
+            this,                  &ProductStaff::onNextPage);
 
     loadProducts();
 }
@@ -427,11 +440,14 @@ bool ProductStaff::saveProduct(const StaffProductDTO &p)
 
 bool ProductStaff::updateProduct(const StaffProductDTO &p)
 {
+    // NOTE: product_name is intentionally NOT updated here.
+    // The Edit dialog locks the name field, so whatever came back
+    // in p.productName is simply the original, unchanged name —
+    // but we still exclude it explicitly from the UPDATE for safety.
     QSqlQuery q;
     q.prepare(R"(
         UPDATE products
-        SET product_name = :name,
-            category     = :cat,
+        SET category     = :cat,
             unit         = :unit,
             price        = :price,
             stock        = :stock,
@@ -441,7 +457,6 @@ bool ProductStaff::updateProduct(const StaffProductDTO &p)
             sku          = :sku
         WHERE id = :id
     )");
-    q.bindValue(":name",     p.productName);
     q.bindValue(":cat",      p.category);
     q.bindValue(":unit",     p.unit);
     q.bindValue(":price",    p.price);
@@ -472,7 +487,9 @@ bool ProductStaff::deleteProduct(int id)
 }
 
 QList<StaffProductDTO> ProductStaff::fetchProducts(const QString &search,
-                                                   const QString &category)
+                                                   const QString &category,
+                                                   int limit,
+                                                   int offset)
 {
     QList<StaffProductDTO> list;
 
@@ -487,12 +504,19 @@ QList<StaffProductDTO> ProductStaff::fetchProducts(const QString &search,
         sql += " AND category = :category";
     sql += " ORDER BY product_name ASC";
 
+    if (limit > 0)
+        sql += " LIMIT :limit OFFSET :offset";
+
     QSqlQuery q;
     q.prepare(sql);
     if (!search.isEmpty())
         q.bindValue(":search", "%" + search + "%");
     if (!category.isEmpty())
         q.bindValue(":category", category);
+    if (limit > 0) {
+        q.bindValue(":limit",  limit);
+        q.bindValue(":offset", offset);
+    }
 
     if (!q.exec()) {
         qWarning() << "[DB] fetchProducts error:" << q.lastError().text();
@@ -516,6 +540,29 @@ QList<StaffProductDTO> ProductStaff::fetchProducts(const QString &search,
     return list;
 }
 
+int ProductStaff::fetchProductCount(const QString &search, const QString &category)
+{
+    QString sql = "SELECT COUNT(*) FROM products WHERE 1=1";
+
+    if (!search.isEmpty())
+        sql += " AND (product_name LIKE :search OR sku LIKE :search)";
+    if (!category.isEmpty())
+        sql += " AND category = :category";
+
+    QSqlQuery q;
+    q.prepare(sql);
+    if (!search.isEmpty())
+        q.bindValue(":search", "%" + search + "%");
+    if (!category.isEmpty())
+        q.bindValue(":category", category);
+
+    if (!q.exec() || !q.next()) {
+        qWarning() << "[DB] fetchProductCount error:" << q.lastError().text();
+        return 0;
+    }
+    return q.value(0).toInt();
+}
+
 // ─────────────────────────────────────────────────────────────────
 //  UI HELPERS
 // ─────────────────────────────────────────────────────────────────
@@ -531,12 +578,25 @@ void ProductStaff::populateCategoryFilter()
 
 void ProductStaff::loadProducts(const QString &search, const QString &category)
 {
+    m_lastSearch   = search;
+    m_lastCategory = category;
+
+    // ── Work out pagination bounds for this (search, category) ──
+    m_totalRecords = fetchProductCount(search, category);
+    m_totalPages   = qMax(1, (m_totalRecords + m_pageSize - 1) / m_pageSize);
+
+    if (m_currentPage > m_totalPages) m_currentPage = m_totalPages;
+    if (m_currentPage < 1)            m_currentPage = 1;
+
+    const int offset = (m_currentPage - 1) * m_pageSize;
+
     QTableWidget *tbl = ui->tblProducts;
     tbl->setUpdatesEnabled(false);
     tbl->setSortingEnabled(false);
     tbl->setRowCount(0);
 
-    const QList<StaffProductDTO> products = fetchProducts(search, category);
+    const QList<StaffProductDTO> products =
+        fetchProducts(search, category, m_pageSize, offset);
 
     for (int row = 0; row < products.size(); ++row) {
         tbl->insertRow(row);
@@ -546,6 +606,8 @@ void ProductStaff::loadProducts(const QString &search, const QString &category)
 
     tbl->setSortingEnabled(true);
     tbl->setUpdatesEnabled(true);
+
+    updatePaginationControls();
     updateStatusBar(products.size());
 }
 
@@ -655,13 +717,35 @@ void ProductStaff::addActionButtons(int row, int productId)
     ui->tblProducts->setRowHeight(row, 42);
 }
 
-void ProductStaff::updateStatusBar(int count)
+void ProductStaff::updateStatusBar(int rowsShownOnPage)
 {
+    Q_UNUSED(rowsShownOnPage);
+
     ui->lblTotalProducts->setText(
-        QString("Total: %1 product%2").arg(count).arg(count == 1 ? "" : "s"));
+        QString("Total: %1 product%2")
+            .arg(m_totalRecords)
+            .arg(m_totalRecords == 1 ? "" : "s"));
+
+    const int startRow = (m_totalRecords == 0)
+                             ? 0
+                             : (m_currentPage - 1) * m_pageSize + 1;
+    const int endRow = qMin(m_currentPage * m_pageSize, m_totalRecords);
+
     ui->lblStatusBar->setText(
-        QString("Last refreshed: %1")
+        QString("Showing %1–%2 of %3      Last refreshed: %4")
+            .arg(startRow)
+            .arg(endRow)
+            .arg(m_totalRecords)
             .arg(QDateTime::currentDateTime().toString("dd-MMM-yyyy  hh:mm:ss")));
+}
+
+void ProductStaff::updatePaginationControls()
+{
+    ui->lblPageInfo->setText(
+        QString("Page %1 of %2").arg(m_currentPage).arg(m_totalPages));
+
+    ui->btnPrevPage->setEnabled(m_currentPage > 1);
+    ui->btnNextPage->setEnabled(m_currentPage < m_totalPages);
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -675,10 +759,7 @@ void ProductStaff::onAddProduct()
         if (saveProduct(p)) {
             ui->lblStatusBar->setText(
                 QString("✔  '%1' added successfully.").arg(p.productName));
-            loadProducts(ui->txtSearch->text(),
-                         ui->cmbFilterCategory->currentIndex() == 0
-                             ? QString()
-                             : ui->cmbFilterCategory->currentText());
+            loadProducts(m_lastSearch, m_lastCategory);
         }
     }
 }
@@ -688,6 +769,7 @@ void ProductStaff::onSearchChanged(const QString &text)
     QString cat = ui->cmbFilterCategory->currentIndex() == 0
                       ? QString()
                       : ui->cmbFilterCategory->currentText();
+    m_currentPage = 1;   // new search → back to page 1
     loadProducts(text.trimmed(), cat);
 }
 
@@ -696,6 +778,7 @@ void ProductStaff::onFilterCategoryChanged(int)
     QString cat = ui->cmbFilterCategory->currentIndex() == 0
                       ? QString()
                       : ui->cmbFilterCategory->currentText();
+    m_currentPage = 1;   // new filter → back to page 1
     loadProducts(ui->txtSearch->text().trimmed(), cat);
 }
 
@@ -703,6 +786,7 @@ void ProductStaff::onClearSearch()
 {
     ui->txtSearch->clear();
     ui->cmbFilterCategory->setCurrentIndex(0);
+    m_currentPage = 1;
     loadProducts();
 }
 
@@ -720,14 +804,12 @@ void ProductStaff::onEditProduct()
 
     ProductStaffDialog dlg(this, p);
     if (dlg.exec() == QDialog::Accepted) {
-        const StaffProductDTO updated = dlg.getProduct();
+        StaffProductDTO updated = dlg.getProduct();
+        updated.productName = p.productName;   // name is locked; keep original
         if (updateProduct(updated)) {
             ui->lblStatusBar->setText(
                 QString("✔  '%1' updated successfully.").arg(updated.productName));
-            loadProducts(ui->txtSearch->text(),
-                         ui->cmbFilterCategory->currentIndex() == 0
-                             ? QString()
-                             : ui->cmbFilterCategory->currentText());
+            loadProducts(m_lastSearch, m_lastCategory);
         }
     }
 }
@@ -751,10 +833,7 @@ void ProductStaff::onDeleteProduct()
     if (ans == QMessageBox::Yes && deleteProduct(id)) {
         ui->lblStatusBar->setText(
             QString("🗑  '%1' deleted.").arg(p.productName));
-        loadProducts(ui->txtSearch->text(),
-                     ui->cmbFilterCategory->currentIndex() == 0
-                         ? QString()
-                         : ui->cmbFilterCategory->currentText());
+        loadProducts(m_lastSearch, m_lastCategory);
     }
 }
 
@@ -768,14 +847,28 @@ void ProductStaff::onTableDoubleClicked(int row, int)
 
     ProductStaffDialog dlg(this, p);
     if (dlg.exec() == QDialog::Accepted) {
-        const StaffProductDTO updated = dlg.getProduct();
+        StaffProductDTO updated = dlg.getProduct();
+        updated.productName = p.productName;   // name is locked; keep original
         if (updateProduct(updated)) {
             ui->lblStatusBar->setText(
                 QString("✔  '%1' updated.").arg(updated.productName));
-            loadProducts(ui->txtSearch->text(),
-                         ui->cmbFilterCategory->currentIndex() == 0
-                             ? QString()
-                             : ui->cmbFilterCategory->currentText());
+            loadProducts(m_lastSearch, m_lastCategory);
         }
+    }
+}
+
+void ProductStaff::onPrevPage()
+{
+    if (m_currentPage > 1) {
+        --m_currentPage;
+        loadProducts(m_lastSearch, m_lastCategory);
+    }
+}
+
+void ProductStaff::onNextPage()
+{
+    if (m_currentPage < m_totalPages) {
+        ++m_currentPage;
+        loadProducts(m_lastSearch, m_lastCategory);
     }
 }

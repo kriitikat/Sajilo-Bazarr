@@ -49,7 +49,7 @@ private:
     int  m_editId   = 0;
     QLineEdit   *txtName     = nullptr;
     QComboBox   *cmbCategory = nullptr;
-    QComboBox   *cmbUnit     = nullptr;   // ← changed from QLineEdit* txtUnit
+    QComboBox   *cmbUnit     = nullptr;
     QLineEdit   *txtPrice    = nullptr;
     QSpinBox    *spnStock    = nullptr;
     QDateEdit   *deExpiry    = nullptr;
@@ -81,18 +81,36 @@ private slots:
     void onEditProduct();
     void onDeleteProduct();
     void onTableDoubleClicked(int row, int column);
+    void onPrevPage();
+    void onNextPage();
 private:
     bool saveProduct(const StaffProductDTO &p);
     bool updateProduct(const StaffProductDTO &p);
     bool deleteProduct(int id);
+
+    // limit/offset aware fetch: limit <= 0 means "no limit" (fetch all)
     QList<StaffProductDTO> fetchProducts(const QString &search   = QString(),
-                                         const QString &category = QString());
+                                         const QString &category = QString(),
+                                         int limit = -1,
+                                         int offset = 0);
+    int  fetchProductCount(const QString &search, const QString &category);
+
     void loadProducts(const QString &search   = QString(),
                       const QString &category = QString());
     void populateCategoryFilter();
     void setRowData(int row, const StaffProductDTO &p);
     void addActionButtons(int row, int productId);
-    void updateStatusBar(int count);
+    void updateStatusBar(int rowsShownOnPage);
+    void updatePaginationControls();
+
+    // ── Pagination state ────────────────────────────────
+    int     m_currentPage   = 1;
+    int     m_pageSize      = 10;
+    int     m_totalRecords  = 0;
+    int     m_totalPages    = 1;
+    QString m_lastSearch;
+    QString m_lastCategory;
+
     Ui::ProductStaff *ui;
 };
 #endif // PRODUCTSTAFF_H
