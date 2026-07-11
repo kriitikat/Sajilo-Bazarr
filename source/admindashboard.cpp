@@ -27,7 +27,7 @@
 #include <QtSql/QSqlError>
 
 AdminDashboard::AdminDashboard(QWidget *parent)
-    : QMainWindow(parent)
+    : ClassLogout(parent)
     , ui(new Ui::AdminDashboard)
 {
     ui->setupUi(this);
@@ -38,8 +38,10 @@ AdminDashboard::AdminDashboard(QWidget *parent)
     connect(ui->btnStaff, &QPushButton::clicked, this, &AdminDashboard::on_btnStaff_clicked);
     connect(ui->btnSuppliers, &QPushButton::clicked, this, &AdminDashboard::on_btnSuppliers_clicked);
     connect(ui->btnPending_Request, &QPushButton::clicked, this, &AdminDashboard::on_btnPending_Request_clicked);
-    connect(ui->btnLogout, &QPushButton::clicked, this, &AdminDashboard::on_btnLogout_clicked);
-
+    connect(ui->btnLogout,
+            &QPushButton::clicked,
+            this,
+            &AdminDashboard::handleLogout_clicked);
     setupReportChart();
     setupWeeklySalesChart();
     setupMonthlySalesChart();
@@ -309,18 +311,4 @@ void AdminDashboard::on_btnSuppliers_clicked()
     supplier *suppliersPage = new supplier();
     suppliersPage->setAttribute(Qt::WA_DeleteOnClose);
     suppliersPage->show();
-}
-
-void AdminDashboard::on_btnLogout_clicked()
-{
-    const auto reply = QMessageBox::question(
-        this, tr("Confirm Logout"),
-        tr("Are you sure you want to log out?"),
-        QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
-    if (reply != QMessageBox::Yes)
-        return;
-    Login *loginPage = new Login();
-    loginPage->setAttribute(Qt::WA_DeleteOnClose);
-    loginPage->show();
-    this->close();
 }

@@ -8,7 +8,7 @@
 #include <QString>
 
 #include "../include/reportdb.h"   // ReportData
-
+#include "../include/classlogout.h"
 namespace Ui {
 class AdminDashboard;
 }
@@ -23,7 +23,7 @@ class pending;
 class supplier;
 class Login;
 
-class AdminDashboard : public QMainWindow
+class AdminDashboard : public ClassLogout
 {
     Q_OBJECT
 
@@ -38,7 +38,6 @@ private slots:
     void on_btnStaff_clicked();
     void on_btnSuppliers_clicked();
     void on_btnPending_Request_clicked();
-    void on_btnLogout_clicked();
 
 private:
     Ui::AdminDashboard *ui;

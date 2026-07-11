@@ -10,7 +10,7 @@ class frontdesk;
 }
 QT_END_NAMESPACE
 
-class frontdesk : public ClassLogout 
+class frontdesk : public ClassLogout
 {
     Q_OBJECT
 

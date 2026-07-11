@@ -15,6 +15,13 @@ StaffDashboard::StaffDashboard(QWidget *parent)
             &QPushButton::clicked,
             this,
             &StaffDashboard::handleProductsClicked);
+    // Logout button
+    connect(ui->btnLogout,
+            &QPushButton::clicked,
+            this,
+            &StaffDashboard::handleLogout_clicked);
+
+
 }
 
 StaffDashboard::~StaffDashboard()

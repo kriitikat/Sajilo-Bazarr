@@ -12,6 +12,11 @@ frontdesk::frontdesk(QWidget *parent)
     // open the same standalone Billing window.
     connect(ui->btnBilling,     &QPushButton::clicked, this, &frontdesk::openBillingWindow);
     connect(ui->btnBillingMain, &QPushButton::clicked, this, &frontdesk::openBillingWindow);
+    // Logout button
+    connect(ui->btnLogout,
+            &QPushButton::clicked,
+            this,
+            &frontdesk::handleLogout_clicked);
 }
 
 frontdesk::~frontdesk()
