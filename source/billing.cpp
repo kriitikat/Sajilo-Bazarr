@@ -115,9 +115,12 @@ void Billing::addProductToBill(const QString &code)
     const int row = ui->billTable->rowCount();
     ui->billTable->insertRow(row);
 
-    ui->billTable->setItem(row, ColSku,  new QTableWidgetItem(sku));
+    auto *skuItem = new QTableWidgetItem(sku);
+    skuItem->setData(Qt::UserRole, query.value("id").toInt());  // stash product_id
+    ui->billTable->setItem(row, ColSku, skuItem);
     ui->billTable->setItem(row, ColName, new QTableWidgetItem(name));
     ui->billTable->setItem(row, ColUnit, new QTableWidgetItem(unit));
+
 
     auto *priceItem = new QTableWidgetItem(QString::number(price, 'f', 2));
     priceItem->setData(Qt::UserRole, price); // stash raw unit price for calculations
@@ -197,6 +200,50 @@ void Billing::generateBill()
         QMessageBox::information(this, tr("Empty Bill"), tr("Scan at least one product first."));
         return;
     }
+    // 1. Decrement stock for every line item.
+    for (int r = 0; r < rowCount; ++r) {
+        const QString sku = ui->billTable->item(r, ColSku)->text();
+        const int productId = ui->billTable->item(r, ColSku)->data(Qt::UserRole).toInt();
+        auto *spin         = qobject_cast<QDoubleSpinBox *>(ui->billTable->cellWidget(r, ColQty));
+        const double qty   = spin ? spin->value() : 0.0;
+        const double unitPrice = ui->billTable->item(r, ColUnitPrice)->data(Qt::UserRole).toDouble();
+        const QString name = ui->billTable->item(r, ColName)->text();
+
+        QSqlQuery update;
+        update.prepare("UPDATE products SET stock = stock - :qty WHERE sku = :sku");
+        update.bindValue(":qty", qty);
+        update.bindValue(":sku", sku);
+
+        if (!update.exec()) {
+            QSqlDatabase::database().rollback();
+            QMessageBox::critical(this, tr("Database Error"),
+                                  tr("Could not update stock for %1:\n%2")
+                                      .arg(sku, update.lastError().text()));
+            return;
+        }
+
+        // Record this sale so Reports (Revenue/Profit) can read it later.
+        QSqlQuery insertSale;
+        insertSale.prepare(R"sql(
+            INSERT INTO sales (product_id, sku, product_name, quantity_sold, unit_price, sale_date)
+            VALUES (:pid, :sku, :name, :qty, :price, :date)
+        )sql");
+        insertSale.bindValue(":pid",   productId);
+        insertSale.bindValue(":sku",   sku);
+        insertSale.bindValue(":name",  name);
+        insertSale.bindValue(":qty",   qty);
+        insertSale.bindValue(":price", unitPrice);
+        insertSale.bindValue(":date",  QDateTime::currentDateTime().toString("yyyy-MM-dd"));
+
+        if (!insertSale.exec()) {
+            QSqlDatabase::database().rollback();
+            QMessageBox::critical(this, tr("Database Error"),
+                                  tr("Could not record sale for %1:\n%2")
+                                      .arg(sku, insertSale.lastError().text()));
+            return;
+        }
+    }
+    QSqlDatabase::database().commit();
 
     QSqlDatabase::database().transaction();
 
