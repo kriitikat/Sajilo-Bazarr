@@ -17,6 +17,9 @@ public:
     explicit frontdesk(QWidget *parent = nullptr);
     ~frontdesk();
 
+private slots:
+    void openBillingWindow();
+
 private:
     Ui::frontdesk *ui;
 };

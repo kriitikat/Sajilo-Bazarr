@@ -9,55 +9,59 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Sql)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Sql PrintSupport)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql PrintSupport)
 
-    set(PROJECT_SOURCES
-        source/main.cpp
-        source/login.cpp
-        include/login.h
-        ui/login.ui
-        ui/taskmanagement.ui
-        source/taskmanagement.cpp
-        include/taskmanagement.h
+set(PROJECT_SOURCES
+       source/main.cpp
+       source/login.cpp
+       include/login.h
+       ui/login.ui
+       ui/taskmanagement.ui
+       source/taskmanagement.cpp
+       include/taskmanagement.h
 
-        source/register.cpp
-        include/register.h
-        ui/register.ui
-        source/staffdashboard.cpp
-        include/staffdashboard.h
-        ui/staffdashboard.ui
-        source/frontdesk.cpp
-        include/frontdesk.h
-        ui/frontdesk.ui
-        source/admindashboard.cpp
-        include/admindashboard.h
-        ui/admindashboard.ui
-        source/product.cpp
-        include/product.h
-        ui/product.ui
-        source/inventory.cpp
-        include/inventory.h
-        ui/inventory.ui
-        source/category.cpp
-        include/category.h
-        ui/category.ui
-        source/addcategory.cpp
-        include/addcategory.h
-        ui/addcategory.ui
-        source/staff.cpp
-        include/staff.h
-        ui/staff.ui
-        source/pending.cpp
-        include/pending.h
-        ui/pending.ui
-        source/supplier.cpp
-        include/supplier.h
-        ui/supplier.ui
-        source/productstaff.cpp
-        include/productstaff.h
-        ui/productstaff.ui
-    )
+       source/register.cpp
+       include/register.h
+       ui/register.ui
+       source/staffdashboard.cpp
+       include/staffdashboard.h
+       ui/staffdashboard.ui
+       source/frontdesk.cpp
+       include/frontdesk.h
+       ui/frontdesk.ui
+       source/billing.cpp
+       include/billing.h
+       ui/billing.ui
+       source/admindashboard.cpp
+       include/admindashboard.h
+       ui/admindashboard.ui
+       source/product.cpp
+       include/product.h
+       ui/product.ui
+       source/inventory.cpp
+       include/inventory.h
+       ui/inventory.ui
+       source/category.cpp
+       include/category.h
+       ui/category.ui
+       source/addcategory.cpp
+       include/addcategory.h
+       ui/addcategory.ui
+       source/staff.cpp
+       include/staff.h
+       ui/staff.ui
+       source/pending.cpp
+       include/pending.h
+       ui/pending.ui
+       source/supplier.cpp
+       include/supplier.h
+       ui/supplier.ui
+       source/productstaff.cpp
+       include/productstaff.h
+       ui/productstaff.ui
+   )
+
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     qt_add_executable(Sajilo-Bazarr
@@ -79,6 +83,7 @@ endif()
 target_link_libraries(Sajilo-Bazarr PRIVATE
     Qt${QT_VERSION_MAJOR}::Widgets
     Qt${QT_VERSION_MAJOR}::Sql
+     Qt${QT_VERSION_MAJOR}::PrintSupport
 )
 
 if(${QT_VERSION} VERSION_LESS 6.1.0)
