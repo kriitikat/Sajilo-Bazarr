@@ -3,7 +3,7 @@
 #include "../include/billing.h"
 
 frontdesk::frontdesk(QWidget *parent)
-    : QMainWindow(parent)
+    : ClassLogout(parent)
     , ui(new Ui::frontdesk)
 {
     ui->setupUi(this);

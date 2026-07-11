@@ -5,7 +5,7 @@
 #include <QPushButton>
 
 StaffDashboard::StaffDashboard(QWidget *parent)
-    : QMainWindow(parent)
+    : ClassLogout(parent)
     , ui(new Ui::StaffDashboard)
 {
     ui->setupUi(this);

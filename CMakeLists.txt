@@ -16,6 +16,8 @@ set(PROJECT_SOURCES
        source/main.cpp
        source/login.cpp
        include/login.h
+       source/classlogout.cpp
+       include/classlogout.h
        ui/login.ui
        ui/taskmanagement.ui
        source/taskmanagement.cpp

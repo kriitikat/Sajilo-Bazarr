@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "../include/productstaff.h"
+#include "../include/classlogout.h"  
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -10,7 +11,7 @@ class StaffDashboard;
 }
 QT_END_NAMESPACE
 
-class StaffDashboard : public QMainWindow
+class StaffDashboard : public ClassLogout      
 {
     Q_OBJECT
 

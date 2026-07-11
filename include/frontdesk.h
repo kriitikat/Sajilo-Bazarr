@@ -2,6 +2,7 @@
 #define FRONTDESK_H
 
 #include <QMainWindow>
+#include "../include/classlogout.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -9,7 +10,7 @@ class frontdesk;
 }
 QT_END_NAMESPACE
 
-class frontdesk : public QMainWindow
+class frontdesk : public ClassLogout 
 {
     Q_OBJECT
 
