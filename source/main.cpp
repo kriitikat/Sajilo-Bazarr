@@ -273,6 +273,7 @@ static bool initBazarDatabase(const QString &dbPath, QString *errorMessage)
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.setWindowIcon(QIcon(QStringLiteral(":/resources/logo.png")));
 
     // 1. Run schema / seed SQL via a temporary named connection.
     QString errorMessage;

@@ -13,6 +13,10 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Sql PrintSupport)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql PrintSupport)
 
 set(PROJECT_SOURCES
+       resources.qrc
+
+       app.rc
+
        source/main.cpp
        source/login.cpp
        include/login.h
@@ -20,7 +24,6 @@ set(PROJECT_SOURCES
        ui/taskmanagement.ui
        source/taskmanagement.cpp
        include/taskmanagement.h
-
        source/register.cpp
        include/register.h
        ui/register.ui
@@ -61,7 +64,6 @@ set(PROJECT_SOURCES
        include/productstaff.h
        ui/productstaff.ui
    )
-
 
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     qt_add_executable(Sajilo-Bazarr
