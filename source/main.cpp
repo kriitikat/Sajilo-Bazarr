@@ -5,6 +5,7 @@
 #include <QVector>
 #include <QDebug>
 #include "../include/login.h"
+#include "../include/reportdb.h"
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Database seed / schema (runs once at startup)
@@ -180,10 +181,6 @@ const QVector<QString> kStatements = {
     )sql"),
 
     // ── pending_requests (self-registration queue) ───────────────
-    // Registrations land here first. The admin approves them by moving
-    // a row into `information` (status='approved') and then deleting it
-    // from this table, or simply deletes the row to reject.
-    // No status column is needed: every row is implicitly "pending".
     QStringLiteral(R"sql(
     CREATE TABLE IF NOT EXISTS pending_requests (
         id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -214,8 +211,6 @@ const QVector<QString> kStatements = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  initBazarDatabase
-//  Opens a *named* connection just to run schema/seed SQL, then closes it so
-//  the default (unnamed) connection used by the rest of the app is unaffected.
 // ─────────────────────────────────────────────────────────────────────────────
 static bool initBazarDatabase(const QString &dbPath, QString *errorMessage)
 {
@@ -225,10 +220,6 @@ static bool initBazarDatabase(const QString &dbPath, QString *errorMessage)
     bool    allOk = true;
     QString firstError;
 
-    // Inner scope: every QSqlDatabase/QSqlQuery tied to kConnectionName
-    // must be destroyed BEFORE removeDatabase() runs below, otherwise Qt
-    // warns "connection ... is still in use" because this `db` reference
-    // would still be alive at that point.
     {
         QSqlDatabase db = QSqlDatabase::addDatabase(QStringLiteral("QSQLITE"), kConnectionName);
         db.setDatabaseName(dbPath);
@@ -257,9 +248,9 @@ static bool initBazarDatabase(const QString &dbPath, QString *errorMessage)
         }
 
         db.close();
-    } // <-- db (and any QSqlQuery built from it) is destroyed here
+    }
 
-    QSqlDatabase::removeDatabase(kConnectionName); // safe now, no lingering references
+    QSqlDatabase::removeDatabase(kConnectionName);
 
     if (!allOk && errorMessage && errorMessage->isEmpty())
         *errorMessage = firstError;
@@ -279,7 +270,6 @@ int main(int argc, char *argv[])
     QString errorMessage;
     if (!initBazarDatabase(QStringLiteral("bazar1.db"), &errorMessage)) {
         qCritical().noquote() << "Database initialization failed:" << errorMessage;
-        // Not fatal — the DB might already exist from a previous run.
     }
 
     // 2. Open the DEFAULT (unnamed) connection that every QSqlQuery in
@@ -291,6 +281,10 @@ int main(int argc, char *argv[])
         qCritical() << "Cannot open bazar1.db:" << db.lastError().text();
         return 1;
     }
+
+    // 2b. Create/verify report-related tables (sales, buying_price column)
+    //     on the default connection.
+    initReportTables();
 
     // 3. Show the login window.
     Login w;

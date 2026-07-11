@@ -2,18 +2,26 @@
 #define ADMINDASHBOARD_H
 
 #include <QMainWindow>
-#include "../include/category.h"
-#include "../include/product.h"
-#include "../include/inventory.h"
-#include "../include/staff.h"
-#include "../include/pending.h"
-#include "../include/login.h"
-#include "../include/supplier.h"
-QT_BEGIN_NAMESPACE
+#include <QtCharts/QChartView>
+#include <QVector>
+#include <QPair>
+#include <QString>
+
+#include "../include/reportdb.h"   // ReportData
+
 namespace Ui {
 class AdminDashboard;
 }
-QT_END_NAMESPACE
+
+// Forward declarations — these pages are only ever used as pointers here,
+// so we don't need their full headers in this file.
+class category;
+class Product;
+class inventory;
+class staff;
+class pending;
+class supplier;
+class Login;
 
 class AdminDashboard : public QMainWindow
 {
@@ -21,20 +29,34 @@ class AdminDashboard : public QMainWindow
 
 public:
     explicit AdminDashboard(QWidget *parent = nullptr);
-    ~AdminDashboard() override;
+    ~AdminDashboard();
 
 private slots:
-    void handleCategories_clicked();
-    void handleProducts_clicked();
-    void handleInventory_clicked();
-    void handleStaff_clicked();
-    void handleSuppliers_clicked();
-    void handlePending_Request_clicked(); // matches the UI button name "btnPending Request"
-    void handleLogout_clicked();
+    void on_btnCategories_clicked();
+    void on_btnProducts_clicked();
+    void on_btnInventory_clicked();
+    void on_btnStaff_clicked();
+    void on_btnSuppliers_clicked();
+    void on_btnPending_Request_clicked();
+    void on_btnLogout_clicked();
 
 private:
     Ui::AdminDashboard *ui;
+
     inventory *inventoryPage = nullptr;
+
+    // ---- Reporting ----
+    ReportData fetchReportData();
+    QVector<QPair<QString, double>> fetchWeeklySales();
+    QVector<QPair<QString, double>> fetchMonthlySales();
+
+    void setupReportChart();
+    void setupWeeklySalesChart();
+    void setupMonthlySalesChart();
+
+    QChartView *reportChartView  = nullptr;
+    QChartView *weeklyChartView  = nullptr;
+    QChartView *monthlyChartView = nullptr;
 };
 
 #endif // ADMINDASHBOARD_H

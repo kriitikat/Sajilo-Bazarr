@@ -137,7 +137,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="btnPending Request">
+        <widget class="QPushButton" name="btnPending_Request">
          <property name="styleSheet">
           <string>QPushButton { color: #A0B8D8; background-color: transparent; border: none; padding: 12px 16px; text-align: left; font-size: 13px; } QPushButton:hover { background-color: #2D4A7A; color: white; }</string>
          </property>
@@ -268,8 +268,84 @@
              <string>QLabel { color: #1B2A4A; font-size: 14px; font-weight: bold; }</string>
             </property>
             <property name="text">
-             <string> Dashboard Overview( Report )</string>
+             <string>Dashboard Overview</string>
             </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTabWidget" name="dashboardTabs">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>350</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string>QTabWidget::pane { background-color: #FFFFFF; border-radius: 10px; border: 1px solid #E0E4EE; }</string>
+            </property>
+            <widget class="QWidget" name="tabOverview">
+             <attribute name="title">
+              <string>Overview</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="reportChartLayout">
+              <property name="leftMargin">
+               <number>10</number>
+              </property>
+              <property name="topMargin">
+               <number>10</number>
+              </property>
+              <property name="rightMargin">
+               <number>10</number>
+              </property>
+              <property name="bottomMargin">
+               <number>10</number>
+              </property>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tabWeekly">
+             <attribute name="title">
+              <string>Weekly</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="weeklyChartLayout">
+              <property name="leftMargin">
+               <number>10</number>
+              </property>
+              <property name="topMargin">
+               <number>10</number>
+              </property>
+              <property name="rightMargin">
+               <number>10</number>
+              </property>
+              <property name="bottomMargin">
+               <number>10</number>
+              </property>
+             </layout>
+            </widget>
+            <widget class="QWidget" name="tabMonthly">
+             <attribute name="title">
+              <string>Monthly</string>
+             </attribute>
+             <layout class="QVBoxLayout" name="monthlyChartLayout">
+              <property name="leftMargin">
+               <number>10</number>
+              </property>
+              <property name="topMargin">
+               <number>10</number>
+              </property>
+              <property name="rightMargin">
+               <number>10</number>
+              </property>
+              <property name="bottomMargin">
+               <number>10</number>
+              </property>
+             </layout>
+            </widget>
            </widget>
           </item>
           <item>
