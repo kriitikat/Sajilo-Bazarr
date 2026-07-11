@@ -13,10 +13,11 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Sql PrintSupport)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql PrintSupport)
 
 set(PROJECT_SOURCES
+       include/staffperform.h
+       source/staffperform.cpp
+       ui/staffperform.ui
        resources.qrc
-
        app.rc
-
        source/main.cpp
        source/login.cpp
        include/login.h
