@@ -30,6 +30,46 @@
    <string notr="true">QWidget {
     background-color: #f8fafc;
     font-family: 'Segoe UI';
+}
+
+/* ── Approve / Decline action buttons ──────────────────────────────────
+   These buttons are created at runtime (one pair per row, in
+   pending.cpp's buildActionsWidget()) since Qt Designer can't predefine
+   widgets that don't exist until the database returns results.
+
+   Styled the same way staff.ui styles its ACTIONS buttons: pending.cpp
+   only sets an "actionRole" dynamic property (approve / decline) on each
+   button, and every color/size/hover state lives here via an
+   attribute-selector rule. This keeps both pages' action-button look
+   (compact pill, 6px radius, 11px bold label) visually identical, and
+   avoids the old objectName-based rule's oversized 78x30 min size, which
+   — combined with a fixed row height — was letting old, merely-hidden
+   cell widgets from previous table reloads show through as "ghosted"
+   duplicate buttons. */
+QPushButton[actionRole="approve"] {
+    background-color: #16a34a;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole="approve"]:hover {
+    background-color: #15803d;
+}
+
+QPushButton[actionRole="decline"] {
+    background-color: #dc2626;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole="decline"]:hover {
+    background-color: #991b1b;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_main">

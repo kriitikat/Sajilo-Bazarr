@@ -10,21 +10,26 @@
 #include <QHeaderView>
 #include <QTableWidgetItem>
 #include <QColor>
+#include <QByteArray>
+
+#include <cstdio>   // snprintf  (Ch. 4.4, Features of stdio.h)
+#include <cstring>  // strcmp    (Ch. 5.1c mentions switch works on int/char, not strings)
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Constructor / Destructor
 //
 //  NOTE: All static visual styling (table colors, header colors, alternating
-//  row colors, fonts, card frame, etc.) now lives ENTIRELY in pending.ui.
-//  This file only sets things Qt Designer cannot express as a static
-//  property — per-column resize *behavior* (a runtime layout policy) and the
-//  dynamically-generated Approve/Decline button widgets, which don't exist
-//  until a row is populated from the database.
+//  row colors, fonts, card frame, etc.) lives ENTIRELY in pending.ui and is
+//  untouched here. This file only sets things Qt Designer cannot express as
+//  a static property — per-column resize *behavior* (a runtime layout
+//  policy) and the dynamically-generated Approve/Decline button widgets,
+//  which don't exist until a row is populated from the database.
 // ─────────────────────────────────────────────────────────────────────────────
 
 pending::pending(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::pending)
+    , rowCount(0)
 {
     ui->setupUi(this);
     setWindowTitle("Pending Registration Requests");
@@ -37,7 +42,14 @@ pending::pending(QWidget *parent)
     ui->pendingTable->horizontalHeader()->setSectionResizeMode(4, QHeaderView::Stretch);          // EMAIL
     ui->pendingTable->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents); // PHONE
     ui->pendingTable->horizontalHeader()->setSectionResizeMode(6, QHeaderView::Fixed);            // ACTIONS
-    ui->pendingTable->setColumnWidth(6, 200);
+    ui->pendingTable->setColumnWidth(6, 160); // fits the compact, staff-style Approve/Decline pills
+
+    // Row height now follows the buttons' real rendered size via
+    // resizeRowsToContents() in loadPendingTable(), the same approach
+    // staff.cpp uses. The previous fixed-52px-row approach is what let
+    // stale, merely-hidden cell widgets from earlier reloads peek out as
+    // "ghosted" duplicate buttons whenever a reload's rendered height
+    // didn't exactly match the hard-coded value.
 
     loadPendingTable();
 }
@@ -48,19 +60,24 @@ pending::~pending()
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Load table
+//  Fetch rows into a caller-provided array
 //
 //  Pulls straight from `pending_requests` — the self-registration queue.
-//  That table has no status column at all (see main.cpp's schema comment):
-//  every row sitting in it is implicitly "pending", so no WHERE clause is
-//  needed.
+//  That table has no status column at all: every row sitting in it is
+//  implicitly "pending", so no WHERE clause is needed.
+//
+//  outRows / outCount are written through, the way a C function "returns"
+//  more than one value via pointer parameters (Ch. 9.4, Pointer and Array).
 // ─────────────────────────────────────────────────────────────────────────────
 
-void pending::loadPendingTable()
+void pending::fetchPendingRows(PendingRow *outRows, int *outCount)
 {
+    int count = 0;
+
     QSqlDatabase db = QSqlDatabase::database(); // default connection opened in main()
     if (!db.isOpen()) {
         QMessageBox::critical(this, tr("Database Error"), tr("No open database connection."));
+        *outCount = 0;
         return;
     }
 
@@ -72,113 +89,172 @@ void pending::loadPendingTable()
     if (!query.exec()) {
         QMessageBox::critical(this, tr("Database Error"),
                               tr("Failed to load pending requests: %1").arg(query.lastError().text()));
+        *outCount = 0;
         return;
     }
 
-    ui->pendingTable->setRowCount(0);
+    // Copy each result row into the fixed array, one struct at a time,
+    // stopping if we ever hit MAX_PENDING_ROWS (the same bounds-check a C
+    // program has to do by hand when filling a fixed-size array).
+    while (query.next() && count < MAX_PENDING_ROWS) {
+        PendingRow *row = &outRows[count];
 
-    int row = 0;
-    while (query.next()) {
-        const int     id       = query.value(0).toInt();
-        const QString fullName = query.value(1).toString().trimmed()
-                                 + QLatin1Char(' ')
-                                 + query.value(2).toString().trimmed();
-        const QString username = query.value(3).toString();
-        const QString role     = query.value(4).toString();
-        const QString email    = query.value(5).toString();
-        const QString phone    = query.value(6).toString();
+        row->id = query.value(0).toInt();
 
-        ui->pendingTable->insertRow(row);
+        QByteArray firstNameBytes = query.value(1).toString().trimmed().toUtf8();
+        QByteArray lastNameBytes  = query.value(2).toString().trimmed().toUtf8();
+        QByteArray usernameBytes  = query.value(3).toString().toUtf8();
+        QByteArray roleBytes      = query.value(4).toString().toUtf8();
+        QByteArray emailBytes     = query.value(5).toString().toUtf8();
+        QByteArray phoneBytes     = query.value(6).toString().toUtf8();
 
-        // Helper: create a non-editable cell item. Text color intentionally
-        // NOT set here — the .ui stylesheet's QTableWidget::item { color: ... }
-        // rule already applies to every cell, so setting it again per-item
-        // would just be a second, redundant place styling could drift out
-        // of sync.
-        auto makeCell = [](const QString &text) -> QTableWidgetItem * {
-            auto *item = new QTableWidgetItem(text);
-            item->setFlags(item->flags() & ~Qt::ItemIsEditable);
-            return item;
-        };
+        snprintf(row->firstName, sizeof(row->firstName), "%s", firstNameBytes.constData());
+        snprintf(row->lastName,  sizeof(row->lastName),  "%s", lastNameBytes.constData());
+        snprintf(row->username,  sizeof(row->username),  "%s", usernameBytes.constData());
+        snprintf(row->role,      sizeof(row->role),      "%s", roleBytes.constData());
+        snprintf(row->email,     sizeof(row->email),     "%s", emailBytes.constData());
+        snprintf(row->phone,     sizeof(row->phone),     "%s", phoneBytes.constData());
 
-        ui->pendingTable->setItem(row, 0, makeCell(QString::number(id)));
-        ui->pendingTable->setItem(row, 1, makeCell(fullName));
-        ui->pendingTable->setItem(row, 2, makeCell(username));
-
-        // Capitalise the role string for display (e.g. "frontdesk" -> "Front Desk").
-        QString roleDisplay = role;
-        if (role == QLatin1String("staff"))
-            roleDisplay = tr("Staff");
-        else if (role == QLatin1String("frontdesk"))
-            roleDisplay = tr("Front Desk");
-        ui->pendingTable->setItem(row, 3, makeCell(roleDisplay));
-
-        ui->pendingTable->setItem(row, 4, makeCell(email));
-        ui->pendingTable->setItem(row, 5, makeCell(phone));
-
-        ui->pendingTable->setCellWidget(row, 6, buildActionsWidget(id));
-
-        ++row;
+        count = count + 1;
     }
 
-    ui->pendingTable->resizeRowsToContents();
+    *outCount = count;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Role code -> display label (Ch. 5.1c: C can only switch on int/char, not
+//  a string, so this is an if-else chain rather than a switch statement).
+// ─────────────────────────────────────────────────────────────────────────────
+
+void pending::roleDisplayLabel(const char *roleCode, char *outLabel, int outLabelSize)
+{
+    if (strcmp(roleCode, "staff") == 0) {
+        snprintf(outLabel, outLabelSize, "%s", "Staff");
+    } else if (strcmp(roleCode, "frontdesk") == 0) {
+        snprintf(outLabel, outLabelSize, "%s", "Front Desk");
+    } else {
+        snprintf(outLabel, outLabelSize, "%s", roleCode);
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Load table — refills pendingRows[] via fetchPendingRows(), then walks
+//  the array with a plain indexed for-loop to build each table row
+//  (Ch. 8.2, Processing an Array).
+// ─────────────────────────────────────────────────────────────────────────────
+
+void pending::loadPendingTable()
+{
+    fetchPendingRows(pendingRows, &rowCount);
+
+    // QTableWidget::setCellWidget() only *hides* whatever widget was
+    // previously in a cell — it does not delete it (see Qt docs). Simply
+    // calling setRowCount(0) below removes the rows, but on some Qt
+    // versions/styles a still-alive-but-hidden Approve/Decline pair from
+    // an earlier reload can briefly repaint underneath the new one,
+    // which is exactly the doubled/"ghosted" button look on this page.
+    // Explicitly tearing down every ACTIONS cell widget first guarantees
+    // each one is actually deleted before its row disappears.
+    for (int r = 0; r < ui->pendingTable->rowCount(); ++r)
+        ui->pendingTable->removeCellWidget(r, 6);
+
+    ui->pendingTable->setRowCount(0);
+
+    int i;
+    for (i = 0; i < rowCount; i = i + 1) {
+        PendingRow *row = &pendingRows[i];
+
+        char fullName[128];
+        snprintf(fullName, sizeof(fullName), "%s %s", row->firstName, row->lastName);
+
+        char roleLabel[32];
+        roleDisplayLabel(row->role, roleLabel, sizeof(roleLabel));
+
+        ui->pendingTable->insertRow(i);
+
+        // Non-editable cell items. Text color intentionally NOT set here —
+        // the .ui stylesheet's QTableWidget::item { color: ... } rule
+        // already applies to every cell.
+        QTableWidgetItem *idItem       = new QTableWidgetItem(QString::number(row->id));
+        QTableWidgetItem *nameItem     = new QTableWidgetItem(QString::fromUtf8(fullName));
+        QTableWidgetItem *usernameItem = new QTableWidgetItem(QString::fromUtf8(row->username));
+        QTableWidgetItem *roleItem     = new QTableWidgetItem(QString::fromUtf8(roleLabel));
+        QTableWidgetItem *emailItem    = new QTableWidgetItem(QString::fromUtf8(row->email));
+        QTableWidgetItem *phoneItem    = new QTableWidgetItem(QString::fromUtf8(row->phone));
+
+        idItem->setFlags(idItem->flags() & ~Qt::ItemIsEditable);
+        nameItem->setFlags(nameItem->flags() & ~Qt::ItemIsEditable);
+        usernameItem->setFlags(usernameItem->flags() & ~Qt::ItemIsEditable);
+        roleItem->setFlags(roleItem->flags() & ~Qt::ItemIsEditable);
+        emailItem->setFlags(emailItem->flags() & ~Qt::ItemIsEditable);
+        phoneItem->setFlags(phoneItem->flags() & ~Qt::ItemIsEditable);
+
+        ui->pendingTable->setItem(i, 0, idItem);
+        ui->pendingTable->setItem(i, 1, nameItem);
+        ui->pendingTable->setItem(i, 2, usernameItem);
+        ui->pendingTable->setItem(i, 3, roleItem);
+        ui->pendingTable->setItem(i, 4, emailItem);
+        ui->pendingTable->setItem(i, 5, phoneItem);
+
+        ui->pendingTable->setCellWidget(i, 6, buildActionsWidget(row->id));
+    }
 
     // Friendly placeholder message when the queue is empty.
-    if (row == 0) {
+    if (rowCount == 0) {
         ui->pendingTable->insertRow(0);
-        auto *placeholder = new QTableWidgetItem(tr("No pending requests at this time."));
+        QTableWidgetItem *placeholder = new QTableWidgetItem(tr("No pending requests at this time."));
         placeholder->setFlags(placeholder->flags() & ~Qt::ItemIsEditable);
         placeholder->setForeground(QColor(QStringLiteral("#94a3b8"))); // matches subtitle muted color
         placeholder->setTextAlignment(Qt::AlignCenter);
         ui->pendingTable->setItem(0, 0, placeholder);
         ui->pendingTable->setSpan(0, 0, 1, 7); // merge all columns
     }
+
+    // Size every row to its actual rendered content — same approach
+    // staff.cpp uses for its ACTIONS column — instead of a hard-coded
+    // pixel height that can drift out of sync with the buttons' real size.
+    ui->pendingTable->resizeRowsToContents();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Build per-row Approve / Decline widget
 //
 //  These buttons are generated dynamically, one pair per row, only after the
-//  database returns results — Qt Designer has no way to predefine a widget
-//  that doesn't exist until runtime, so their styling has to stay here.
-//  Colors are semantic action colors (green = approve, red = decline) and
-//  deliberately kept separate from the neutral table theme.
+//  database returns results. Each button's row id is stored as a plain
+//  "userId" property on the button itself rather than captured by a lambda —
+//  onApproveClicked()/onDeclineClicked() below read it back out via
+//  sender(), the same idea as passing an extra argument into a function.
 // ─────────────────────────────────────────────────────────────────────────────
 
 QWidget *pending::buildActionsWidget(int userId)
 {
-    auto *container = new QWidget(ui->pendingTable);
-    auto *layout    = new QHBoxLayout(container);
+    QWidget     *container = new QWidget(ui->pendingTable);
+    QHBoxLayout *layout    = new QHBoxLayout(container);
     layout->setContentsMargins(4, 2, 4, 2);
-    layout->setSpacing(6);
+    layout->setSpacing(4);
 
-    const QString baseStyle = QStringLiteral(
-        "QPushButton {"
-        "  border: none;"
-        "  border-radius: 6px;"
-        "  padding: 4px 10px;"
-        "  font-size: 11px;"
-        "  font-weight: bold;"
-        "  color: white;"
-        "}");
+    // No colors/padding/sizes set here at all — pending.ui's stylesheet
+    // targets these via the "actionRole" dynamic property (the same
+    // pattern staff.cpp/staff.ui use for their ACTIONS buttons: e.g.
+    // QPushButton[actionRole="approve"]) and Qt applies it automatically
+    // even though these widgets are created after the window is already
+    // built. setProperty("actionRole", ...) is the only thing tying a
+    // button to its look, so both pages' action buttons render as the
+    // same compact pill style.
 
-    // Approve — green (semantic action colour).
-    auto *approveBtn = new QPushButton(tr("Approve"), container);
+    // Approve.
+    QPushButton *approveBtn = new QPushButton(tr("Approve"), container);
+    approveBtn->setProperty("actionRole", QStringLiteral("approve"));
     approveBtn->setCursor(Qt::PointingHandCursor);
-    approveBtn->setStyleSheet(baseStyle + QStringLiteral(
-                                  "QPushButton { background-color: #16A34A; }"
-                                  "QPushButton:hover { background-color: #15803D; }"));
-    connect(approveBtn, &QPushButton::clicked,
-            this, [this, userId]() { approveRequest(userId); });
+    approveBtn->setProperty("userId", userId);
+    connect(approveBtn, &QPushButton::clicked, this, &pending::onApproveClicked);
 
-    // Decline — red (semantic action colour).
-    auto *declineBtn = new QPushButton(tr("Decline"), container);
+    // Decline.
+    QPushButton *declineBtn = new QPushButton(tr("Decline"), container);
+    declineBtn->setProperty("actionRole", QStringLiteral("decline"));
     declineBtn->setCursor(Qt::PointingHandCursor);
-    declineBtn->setStyleSheet(baseStyle + QStringLiteral(
-                                  "QPushButton { background-color: #DC2626; }"
-                                  "QPushButton:hover { background-color: #991B1B; }"));
-    connect(declineBtn, &QPushButton::clicked,
-            this, [this, userId]() { declineRequest(userId); });
+    declineBtn->setProperty("userId", userId);
+    connect(declineBtn, &QPushButton::clicked, this, &pending::onDeclineClicked);
 
     layout->addWidget(approveBtn);
     layout->addWidget(declineBtn);
@@ -188,24 +264,42 @@ QWidget *pending::buildActionsWidget(int userId)
     return container;
 }
 
+void pending::onApproveClicked()
+{
+    QPushButton *button = qobject_cast<QPushButton *>(sender());
+    if (button == nullptr)
+        return;
+
+    int userId = button->property("userId").toInt();
+    approveRequest(userId);
+}
+
+void pending::onDeclineClicked()
+{
+    QPushButton *button = qobject_cast<QPushButton *>(sender());
+    if (button == nullptr)
+        return;
+
+    int userId = button->property("userId").toInt();
+    declineRequest(userId);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 //  Approve
 //
 //  Moves the row from `pending_requests` into `information` with
 //  status = 'enabled' (the registrant becomes an employee who can log in
 //  immediately), then removes it from the pending queue. Both steps run
-//  inside a single transaction: if the
-//  INSERT or DELETE fails for any reason (e.g. a UNIQUE username collision
-//  against an existing account), everything rolls back so the request is
-//  never silently lost or duplicated.
+//  inside a single transaction: if the INSERT or DELETE fails for any
+//  reason (e.g. a UNIQUE username collision against an existing account),
+//  everything rolls back so the request is never silently lost or
+//  duplicated.
 // ─────────────────────────────────────────────────────────────────────────────
 
 void pending::approveRequest(int userId)
 {
     QSqlDatabase db = QSqlDatabase::database();
 
-    // Fetch the full pending record — building the new `information` row
-    // needs every column, not just the name shown in the confirmation dialog.
     QSqlQuery fetch(db);
     fetch.prepare(QStringLiteral(
         "SELECT first_name, last_name, username, role, email, phone, password "
@@ -218,21 +312,24 @@ void pending::approveRequest(int userId)
         return;
     }
 
-    const QString firstName = fetch.value(0).toString();
-    const QString lastName  = fetch.value(1).toString();
-    const QString username  = fetch.value(2).toString();
-    const QString role      = fetch.value(3).toString();
-    const QString email     = fetch.value(4).toString();
-    const QString phone     = fetch.value(5).toString();
-    const QString password  = fetch.value(6).toString();
+    QString firstName = fetch.value(0).toString();
+    QString lastName  = fetch.value(1).toString();
+    QString username  = fetch.value(2).toString();
+    QString role      = fetch.value(3).toString();
+    QString email     = fetch.value(4).toString();
+    QString phone     = fetch.value(5).toString();
+    QString password  = fetch.value(6).toString();
 
-    const QString name = (firstName + QLatin1Char(' ') + lastName).trimmed();
+    char fullName[128];
+    QByteArray firstNameBytes = firstName.toUtf8();
+    QByteArray lastNameBytes  = lastName.toUtf8();
+    snprintf(fullName, sizeof(fullName), "%s %s", firstNameBytes.constData(), lastNameBytes.constData());
 
-    const auto reply = QMessageBox::question(
+    QMessageBox::StandardButton reply = QMessageBox::question(
         this, tr("Confirm Approval"),
         tr("Approve the registration request for %1 (username: %2)?\n\n"
            "They will be added to the system as an employee and will be able to log in.")
-            .arg(name, username),
+            .arg(QString::fromUtf8(fullName), username),
         QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
     if (reply != QMessageBox::Yes)
@@ -245,9 +342,8 @@ void pending::approveRequest(int userId)
     }
 
     // NOTE: `information.status` has CHECK(status IN ('enabled','disabled','expired')) —
-    // 'approved' is NOT a valid value and would violate that constraint, causing
-    // this INSERT to fail (and the whole approval to roll back) every single time.
-    // A newly-approved account should simply be 'enabled' so it can log in.
+    // 'approved' is NOT a valid value and would violate that constraint. A
+    // newly-approved account should simply be 'enabled' so it can log in.
     QSqlQuery insert(db);
     insert.prepare(QStringLiteral(
         "INSERT INTO information (first_name, last_name, username, role, email, phone, password, status) "
@@ -289,7 +385,7 @@ void pending::approveRequest(int userId)
 
     QMessageBox::information(this, tr("Approved"),
                              tr("%1's account has been approved. They can now log in.")
-                                 .arg(name));
+                                 .arg(QString::fromUtf8(fullName)));
 
     loadPendingTable(); // refresh
 }
@@ -312,14 +408,18 @@ void pending::declineRequest(int userId)
         return;
     }
 
-    const QString name     = (fetch.value(0).toString() + QLatin1Char(' ') + fetch.value(1).toString()).trimmed();
-    const QString username = fetch.value(2).toString();
+    char fullName[128];
+    QByteArray firstNameBytes = fetch.value(0).toString().toUtf8();
+    QByteArray lastNameBytes  = fetch.value(1).toString().toUtf8();
+    snprintf(fullName, sizeof(fullName), "%s %s", firstNameBytes.constData(), lastNameBytes.constData());
 
-    const auto reply = QMessageBox::question(
+    QString username = fetch.value(2).toString();
+
+    QMessageBox::StandardButton reply = QMessageBox::question(
         this, tr("Confirm Decline"),
         tr("Decline and permanently remove the registration request for %1 (username: %2)?\n\n"
            "This cannot be undone.")
-            .arg(name, username),
+            .arg(QString::fromUtf8(fullName), username),
         QMessageBox::Yes | QMessageBox::No, QMessageBox::No);
 
     if (reply != QMessageBox::Yes)
@@ -337,7 +437,7 @@ void pending::declineRequest(int userId)
 
     QMessageBox::information(this, tr("Declined"),
                              tr("The registration request for %1 has been declined and removed.")
-                                 .arg(name));
+                                 .arg(QString::fromUtf8(fullName)));
 
     loadPendingTable(); // refresh
 }

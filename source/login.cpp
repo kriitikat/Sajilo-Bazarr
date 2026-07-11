@@ -17,6 +17,64 @@
 #include <QCryptographicHash>
 #include <QAction>
 #include <QStyle>
+#include <QPainter>
+#include <QPainterPath>
+#include <QPixmap>
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Local helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+namespace {
+
+// Renders a small "eye" glyph for the password show/hide action, drawn with
+// QPainter instead of shipping a .qrc/icon asset. crossed == true draws the
+// slashed variant (used while the password is currently visible).
+QIcon makeEyeIcon(bool crossed)
+{
+    const int size = 20;
+    QPixmap pixmap(size, size);
+    pixmap.fill(Qt::transparent);
+
+    QPainter painter(&pixmap);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+
+    // Matches the muted label/placeholder tone already used in login.ui
+    // (QLabel#subtitleLabel), so the glyph blends with the existing look.
+    const QColor strokeColor(QStringLiteral("#7a8aaa"));
+
+    QPen pen(strokeColor);
+    pen.setWidthF(1.6);
+    pen.setCapStyle(Qt::RoundCap);
+    pen.setJoinStyle(Qt::RoundJoin);
+    painter.setPen(pen);
+    painter.setBrush(Qt::NoBrush);
+
+    // Eye outline: two symmetric curves meeting at the outer corners.
+    QPainterPath eyePath;
+    eyePath.moveTo(2.5, size / 2.0);
+    eyePath.quadTo(size / 2.0, 3.5, size - 2.5, size / 2.0);
+    eyePath.quadTo(size / 2.0, size - 3.5, 2.5, size / 2.0);
+    painter.drawPath(eyePath);
+
+    // Pupil
+    painter.setBrush(strokeColor);
+    painter.setPen(Qt::NoPen);
+    painter.drawEllipse(QPointF(size / 2.0, size / 2.0), 2.6, 2.6);
+
+    if (crossed) {
+        // Diagonal slash — password is currently visible, click to hide.
+        pen.setWidthF(1.8);
+        painter.setPen(pen);
+        painter.setBrush(Qt::NoBrush);
+        painter.drawLine(QPointF(3.5, size - 4.5), QPointF(size - 3.5, 4.5));
+    }
+
+    painter.end();
+    return QIcon(pixmap);
+}
+
+} // namespace
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Constructor / Destructor
@@ -35,8 +93,11 @@ Login::Login(QWidget *parent)
     // selectors in the .ui stylesheet.
 
     // Password show/hide toggle (trailing action inside the field).
+    // Starts hidden (echoMode is Password by default in login.ui), so the
+    // plain (non-slashed) eye icon is shown first — clicking it reveals
+    // the password.
     m_togglePasswordAction = ui->passwordEdit->addAction(
-        QIcon(), QLineEdit::TrailingPosition);
+        makeEyeIcon(false), QLineEdit::TrailingPosition);
     m_togglePasswordAction->setText("Show");
     m_togglePasswordAction->setToolTip("Show/hide password");
     connect(m_togglePasswordAction, &QAction::triggered,
@@ -94,7 +155,12 @@ void Login::togglePasswordVisibility()
 {
     const bool showing = ui->passwordEdit->echoMode() == QLineEdit::Normal;
     ui->passwordEdit->setEchoMode(showing ? QLineEdit::Password : QLineEdit::Normal);
-    m_togglePasswordAction->setText(showing ? "Show" : "Hide");
+
+    // `showing` is the state *before* this toggle; after it, visibility is
+    // the opposite. Swap in the matching icon (slashed while visible).
+    const bool nowVisible = !showing;
+    m_togglePasswordAction->setText(nowVisible ? "Hide" : "Show");
+    m_togglePasswordAction->setIcon(makeEyeIcon(nowVisible));
 }
 
 void Login::openDashboard(const QString &role,
@@ -201,27 +267,42 @@ void Login::on_loginButton_clicked()
     // Self-registrations never appear here with a "pending" status — they sit
     // in the separate `pending_requests` table until an admin approves them,
     // at which point they're inserted into `information` with status='enabled'.
-    const QString status    = query.value("status").toString();
+    //
+    // staff.cpp is the only place that ever changes this value post-seed
+    // (Disable/Enable and Expire/Unexpire buttons on the staff table), so
+    // the three branches below map 1:1 onto what an admin can set there.
+    const QString status    = query.value("status").toString().trimmed().toLower();
     const QString role      = query.value("role").toString();
     const QString firstName = query.value("first_name").toString();
     const QString lastName  = query.value("last_name").toString();
 
+    if (status == "enabled") {
+        // ── All good — open the correct dashboard ──────────────────────────
+        setStatus("Login successful. Opening dashboard…", false);
+        openDashboard(role, username, firstName, lastName);
+        return;
+    }
+
+    setBusy(false);
+
+    if (status == "disabled") {
+        setStatus("Your account has been disabled. Please contact your administrator.", true);
+        ui->passwordEdit->clear();
+        return;
+    }
+
     if (status == "expired") {
-        setBusy(false);
         setStatus("Your account has expired. Please contact your administrator.", true);
+        ui->passwordEdit->clear();
         return;
     }
 
-    if (status != "enabled") {
-        // Covers "disabled" and any unexpected/unknown value.
-        setBusy(false);
-        setStatus("Your account is disabled. Please contact your administrator.", true);
-        return;
-    }
-
-    // ── All good — open the correct dashboard ─────────────────────────────────
-    setStatus("Login successful. Opening dashboard…", false);
-    openDashboard(role, username, firstName, lastName);
+    // Anything else is a data problem (bad manual DB edit, migration bug,
+    // etc.) rather than an expected account state — surface it as a real
+    // error instead of a generic status message.
+    QMessageBox::critical(this, "Login Error",
+                          QString("Unknown account status \"%1\". Contact your administrator.")
+                              .arg(status));
 }
 
 void Login::checkPendingStatus(const QString &username, const QString &hashedPassword)
