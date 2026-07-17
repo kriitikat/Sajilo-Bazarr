@@ -32,12 +32,12 @@ public:
     ~AdminDashboard();
 
 private slots:
-    void on_btnCategories_clicked();
-    void on_btnProducts_clicked();
-    void on_btnInventory_clicked();
-    void on_btnStaff_clicked();
-    void on_btnSuppliers_clicked();
-    void on_btnPending_Request_clicked();
+    void handleCategories_clicked();
+    void handleProducts_clicked();
+    void handleInventory_clicked();
+    void handleStaff_clicked();
+    void handleSuppliers_clicked();
+    void handlePending_Request_clicked();
 
 private:
     Ui::AdminDashboard *ui;

@@ -32,12 +32,12 @@ AdminDashboard::AdminDashboard(QWidget *parent)
 {
     ui->setupUi(this);
 
-    connect(ui->btnCategories, &QPushButton::clicked, this, &AdminDashboard::on_btnCategories_clicked);
-    connect(ui->btnProducts, &QPushButton::clicked, this, &AdminDashboard::on_btnProducts_clicked);
-    connect(ui->btnInventory, &QPushButton::clicked, this, &AdminDashboard::on_btnInventory_clicked);
-    connect(ui->btnStaff, &QPushButton::clicked, this, &AdminDashboard::on_btnStaff_clicked);
-    connect(ui->btnSuppliers, &QPushButton::clicked, this, &AdminDashboard::on_btnSuppliers_clicked);
-    connect(ui->btnPending_Request, &QPushButton::clicked, this, &AdminDashboard::on_btnPending_Request_clicked);
+    connect(ui->btnCategories, &QPushButton::clicked, this, &AdminDashboard::handleCategories_clicked);
+    connect(ui->btnProducts, &QPushButton::clicked, this, &AdminDashboard::handleProducts_clicked);
+    connect(ui->btnInventory, &QPushButton::clicked, this, &AdminDashboard::handleInventory_clicked);
+    connect(ui->btnStaff, &QPushButton::clicked, this, &AdminDashboard::handleStaff_clicked);
+    connect(ui->btnSuppliers, &QPushButton::clicked, this, &AdminDashboard::handleSuppliers_clicked);
+    connect(ui->btnPending_Request, &QPushButton::clicked, this, &AdminDashboard::handlePending_Request_clicked);
     connect(ui->btnLogout,
             &QPushButton::clicked,
             this,
@@ -271,19 +271,19 @@ void AdminDashboard::setupMonthlySalesChart()
 //  NAVIGATION SLOTS
 // ─────────────────────────────────────────────────────────────────
 
-void AdminDashboard::on_btnCategories_clicked()
+void AdminDashboard::handleCategories_clicked()
 {
     category *categoryPage = new category();
     categoryPage->show();
 }
 
-void AdminDashboard::on_btnProducts_clicked()
+void AdminDashboard::handleProducts_clicked()
 {
     Product *productPage = new Product();
     productPage->show();
 }
 
-void AdminDashboard::on_btnInventory_clicked()
+void AdminDashboard::handleInventory_clicked()
 {
     if (!inventoryPage) {
         inventoryPage = new inventory();
@@ -293,20 +293,20 @@ void AdminDashboard::on_btnInventory_clicked()
     inventoryPage->activateWindow();
 }
 
-void AdminDashboard::on_btnStaff_clicked()
+void AdminDashboard::handleStaff_clicked()
 {
     staff *staffPage = new staff();
     staffPage->show();
 }
 
-void AdminDashboard::on_btnPending_Request_clicked()
+void AdminDashboard::handlePending_Request_clicked()
 {
     pending *pendingPage = new pending();
     pendingPage->setAttribute(Qt::WA_DeleteOnClose);
     pendingPage->show();
 }
 
-void AdminDashboard::on_btnSuppliers_clicked()
+void AdminDashboard::handleSuppliers_clicked()
 {
     supplier *suppliersPage = new supplier();
     suppliersPage->setAttribute(Qt::WA_DeleteOnClose);
