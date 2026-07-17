@@ -11,6 +11,7 @@
 
 #include <QHBoxLayout>
 #include <QDateTime>
+#include <QDate>
 #include <QTableWidget>
 #include <QTableWidgetItem>
 #include <QHeaderView>
@@ -19,6 +20,13 @@
 #include <QColor>
 #include <QFont>
 #include <QInputDialog>
+#include <QCheckBox>
+#include <climits>
+
+// ── Expiry warning threshold ────────────────────────────────────
+// Products expiring within this many days get flagged amber.
+// 0 or negative days-left (today / already expired) is always flagged red.
+static constexpr int EXPIRY_WARNING_DAYS = 5;
 
 // ── Static data ───────────────────────────────────────────────────
 
@@ -74,6 +82,22 @@ static ProductDTO fetchById(int id)
     return p;
 }
 
+// Returns days remaining until expiry (negative if already expired).
+// Returns INT_MIN if expiryDate is empty/unparseable, meaning "no expiry data".
+// Expects expiry_date stored as "yyyy-MM-dd" (adjust the format string below
+// if your DB stores dates differently, e.g. "dd-MM-yyyy").
+static int daysUntilExpiry(const QString &expiryDateStr)
+{
+    if (expiryDateStr.isEmpty())
+        return INT_MIN;
+
+    QDate expiry = QDate::fromString(expiryDateStr, "yyyy-MM-dd");
+    if (!expiry.isValid())
+        return INT_MIN;
+
+    return QDate::currentDate().daysTo(expiry);
+}
+
 // ═══════════════════════════════════════════════════════════════════
 //  PRODUCT WIDGET  –  Main Screen (Admin: view + update stock + delete)
 // ═══════════════════════════════════════════════════════════════════
@@ -90,18 +114,31 @@ Product::Product(QWidget *parent)
     tbl->verticalHeader()->setVisible(false);
     tbl->setWordWrap(false);
     tbl->setColumnWidth(0,  50);   // Id
-    tbl->setColumnWidth(1, 160);   // Name
-    tbl->setColumnWidth(2, 110);   // Category
+    tbl->setColumnWidth(1, 150);   // Name
+    tbl->setColumnWidth(2,  95);   // Category
     tbl->setColumnWidth(3,  60);   // Unit
     tbl->setColumnWidth(4,  90);   // Price
     tbl->setColumnWidth(5,  60);   // Stock
-    tbl->setColumnWidth(6,  95);   // Expiry
+    tbl->setColumnWidth(6, 130);   // Expiry
     tbl->setColumnWidth(7,  90);   // Status
-    tbl->setColumnWidth(8, 120);   // Supplier
+    tbl->setColumnWidth(8, 100);   // Supplier
     tbl->setColumnWidth(9,  90);   // SKU
     tbl->horizontalHeader()->setSectionResizeMode(10, QHeaderView::Stretch); // Action
 
     populateCategoryFilter();
+
+    // ── "Expiring Soon" filter checkbox ────────────────────────────
+    // NOTE: requires one new member in product.h:
+    //     QCheckBox *chkExpiringSoon = nullptr;
+    // Inserted programmatically next to the category filter so you
+    // don't have to touch the .ui file by hand.
+    chkExpiringSoon = new QCheckBox(
+        QString("⚠ Expiring Soon (≤%1 days)").arg(EXPIRY_WARNING_DAYS), this);
+    if (auto *filterLayout = ui->cmbFilterCategory->parentWidget()
+                                 ? ui->cmbFilterCategory->parentWidget()->layout()
+                                 : nullptr) {
+        filterLayout->addWidget(chkExpiringSoon);
+    }
 
     connect(ui->txtSearch,         &QLineEdit::textChanged,
             this,                  &Product::onSearchChanged);
@@ -113,6 +150,8 @@ Product::Product(QWidget *parent)
             this,                  &Product::onPrevPage);
     connect(ui->btnNextPage,       &QPushButton::clicked,
             this,                  &Product::onNextPage);
+    connect(chkExpiringSoon,       &QCheckBox::toggled,
+            this,                  &Product::onExpiringSoonToggled);
 
     loadProducts();
 }
@@ -152,7 +191,8 @@ bool Product::updateStock(int id, int newStock)
 
 QList<ProductDTO> Product::fetchProducts(const QString &search,
                                          const QString &category,
-                                         int limit, int offset)
+                                         int limit, int offset,
+                                         bool expiringSoonOnly)
 {
     QList<ProductDTO> list;
 
@@ -165,6 +205,9 @@ QList<ProductDTO> Product::fetchProducts(const QString &search,
         sql += " AND (product_name LIKE :search OR sku LIKE :search)";
     if (!category.isEmpty())
         sql += " AND category = :category";
+    if (expiringSoonOnly)
+        sql += " AND expiry_date IS NOT NULL AND TRIM(expiry_date) <> '' "
+               " AND date(expiry_date) <= date('now', :windowDays)";
     sql += " ORDER BY product_name ASC LIMIT :limit OFFSET :offset";
 
     QSqlQuery q;
@@ -173,6 +216,8 @@ QList<ProductDTO> Product::fetchProducts(const QString &search,
         q.bindValue(":search", "%" + search + "%");
     if (!category.isEmpty())
         q.bindValue(":category", category);
+    if (expiringSoonOnly)
+        q.bindValue(":windowDays", QString("+%1 days").arg(EXPIRY_WARNING_DAYS));
     q.bindValue(":limit", limit);
     q.bindValue(":offset", offset);
 
@@ -198,7 +243,8 @@ QList<ProductDTO> Product::fetchProducts(const QString &search,
     return list;
 }
 
-int Product::countProducts(const QString &search, const QString &category)
+int Product::countProducts(const QString &search, const QString &category,
+                           bool expiringSoonOnly)
 {
     QString sql = "SELECT COUNT(*) FROM products WHERE 1=1";
 
@@ -206,6 +252,9 @@ int Product::countProducts(const QString &search, const QString &category)
         sql += " AND (product_name LIKE :search OR sku LIKE :search)";
     if (!category.isEmpty())
         sql += " AND category = :category";
+    if (expiringSoonOnly)
+        sql += " AND expiry_date IS NOT NULL AND TRIM(expiry_date) <> '' "
+               " AND date(expiry_date) <= date('now', :windowDays)";
 
     QSqlQuery q;
     q.prepare(sql);
@@ -213,6 +262,8 @@ int Product::countProducts(const QString &search, const QString &category)
         q.bindValue(":search", "%" + search + "%");
     if (!category.isEmpty())
         q.bindValue(":category", category);
+    if (expiringSoonOnly)
+        q.bindValue(":windowDays", QString("+%1 days").arg(EXPIRY_WARNING_DAYS));
 
     if (!q.exec() || !q.next()) {
         qWarning() << "[DB] countProducts error:" << q.lastError().text();
@@ -245,16 +296,18 @@ void Product::loadProducts()
 {
     const QString search   = ui->txtSearch->text().trimmed();
     const QString category = currentCategoryFilter();
+    const bool expiringSoonOnly = chkExpiringSoon && chkExpiringSoon->isChecked();
 
     // Recompute total + clamp current page (handles deletes shrinking
     // the result set, or a fresh search/filter resetting things).
-    m_totalCount = countProducts(search, category);
+    m_totalCount = countProducts(search, category, expiringSoonOnly);
     const int maxPage = m_totalCount > 0 ? (m_totalCount - 1) / PAGE_SIZE : 0;
     if (m_currentPage > maxPage) m_currentPage = maxPage;
     if (m_currentPage < 0)       m_currentPage = 0;
 
     const int offset = m_currentPage * PAGE_SIZE;
-    const QList<ProductDTO> products = fetchProducts(search, category, PAGE_SIZE, offset);
+    const QList<ProductDTO> products =
+        fetchProducts(search, category, PAGE_SIZE, offset, expiringSoonOnly);
 
     QTableWidget *tbl = ui->tblProducts;
     tbl->setUpdatesEnabled(false);
@@ -316,10 +369,36 @@ void Product::setRowData(int row, const ProductDTO &p)
         itemStock->setFont(f);
     }
 
-    // Col 6 – Expiry
-    auto *itemExp = new QTableWidgetItem(
-        p.expiryDate.isEmpty() ? "—" : p.expiryDate);
+    // Col 6 – Expiry  (colour-coded warning when nearing expiry)
+    const int daysLeft = daysUntilExpiry(p.expiryDate);
+    QString expText = p.expiryDate.isEmpty() ? "—" : p.expiryDate;
+
+    if (daysLeft != INT_MIN) {
+        if (daysLeft < 0)
+            expText = "⛔ Expired";
+        else if (daysLeft == 0)
+            expText = "⛔ Today";
+        else if (daysLeft == 1)
+            expText = "⛔ Tomorrow";
+        else if (daysLeft <= EXPIRY_WARNING_DAYS)
+            expText = QString("⚠ %1 days").arg(daysLeft);
+    }
+
+    auto *itemExp = new QTableWidgetItem(expText);
     itemExp->setTextAlignment(Qt::AlignCenter);
+    itemExp->setToolTip(p.expiryDate.isEmpty() ? "No expiry set" : "Expiry: " + p.expiryDate);
+
+    if (daysLeft != INT_MIN) {
+        if (daysLeft <= 1) {
+            itemExp->setForeground(QColor("#C0392B"));
+            itemExp->setBackground(QColor("#FDEDEC"));
+            QFont f; f.setBold(true);
+            itemExp->setFont(f);
+        } else if (daysLeft <= EXPIRY_WARNING_DAYS) {
+            itemExp->setForeground(QColor("#856404"));
+            itemExp->setBackground(QColor("#FFF3CD"));
+        }
+    }
 
     // Col 7 – Status  (colour-coded)
     auto *itemStatus = new QTableWidgetItem(p.status);
@@ -413,10 +492,18 @@ void Product::onFilterCategoryChanged(int /*index*/)
     loadProducts();
 }
 
+void Product::onExpiringSoonToggled(bool /*checked*/)
+{
+    m_currentPage = 0;   // any new filter restarts at page 1
+    loadProducts();
+}
+
 void Product::onClearSearch()
 {
     ui->txtSearch->clear();
     ui->cmbFilterCategory->setCurrentIndex(0);
+    if (chkExpiringSoon)
+        chkExpiringSoon->setChecked(false);
     m_currentPage = 0;
     loadProducts();
 }
