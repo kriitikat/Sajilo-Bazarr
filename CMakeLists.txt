@@ -11,6 +11,9 @@ set(PROJECT_SOURCES
        include/staffperform.h
        source/staffperform.cpp
        ui/staffperform.ui
+       include/frontproduct.h
+       source/frontproduct.cpp
+       ui/frontproduct.ui
        resources.qrc
        app.rc
        source/main.cpp
