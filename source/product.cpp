@@ -178,16 +178,24 @@ bool Product::deleteProduct(int id)
 
 bool Product::updateStock(int id, int newStock)
 {
+    QString newStatus;
+    if (newStock <= 0)
+        newStatus = "Out of Stock";
+    else if (newStock <= 10)          // यो number अरू ठाउँमा प्रयोग भएको threshold सँग मिल्नुपर्छ
+        newStatus = "Low Stock";
+    else
+        newStatus = "In Stock";
+
     QSqlQuery q;
-    q.prepare("UPDATE products SET stock = :stock WHERE id = :id");
+    q.prepare("UPDATE products SET stock = :stock, status = :status WHERE id = :id");
     q.bindValue(":stock", newStock);
+    q.bindValue(":status", newStatus);
     q.bindValue(":id", id);
     if (!q.exec()) {
         QMessageBox::critical(this, "Database Error", q.lastError().text());
         return false;
     }
-    return true;
-}
+    return true;}
 
 QList<ProductDTO> Product::fetchProducts(const QString &search,
                                          const QString &category,
