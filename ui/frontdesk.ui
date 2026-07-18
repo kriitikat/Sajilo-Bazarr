@@ -215,22 +215,6 @@
       <string>Front Desk Dashboard</string>
      </property>
     </widget>
-    <widget class="QLineEdit" name="searchBar">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>60</y>
-       <width>760</width>
-       <height>35</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QLineEdit { border: 1px solid #cccccc; border-radius: 4px; padding: 5px 10px; font-size: 13px; color: #333; }</string>
-     </property>
-     <property name="placeholderText">
-      <string>Search Product...</string>
-     </property>
-    </widget>
     <widget class="QTableWidget" name="productTable">
      <property name="geometry">
       <rect>
@@ -242,54 +226,6 @@
      </property>
      <property name="styleSheet">
       <string notr="true">QTableWidget { border: 1px solid #dddddd; gridline-color: #eeeeee; font-size: 13px; } QHeaderView::section { background-color: #1a2a4a; color: white; padding: 6px; font-weight: bold; }</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btnViewProductsMain">
-     <property name="geometry">
-      <rect>
-       <x>20</x>
-       <y>465</y>
-       <width>180</width>
-       <height>40</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QPushButton { background-color: #1a2a4a; color: white; border-radius: 4px; font-size: 13px; font-weight: bold; } QPushButton:hover { background-color: #2e4a7a; }</string>
-     </property>
-     <property name="text">
-      <string>View Products</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btnBillingMain">
-     <property name="geometry">
-      <rect>
-       <x>220</x>
-       <y>465</y>
-       <width>180</width>
-       <height>40</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QPushButton { background-color: #1a2a4a; color: white; border-radius: 4px; font-size: 13px; font-weight: bold; } QPushButton:hover { background-color: #2e4a7a; }</string>
-     </property>
-     <property name="text">
-      <string>Billing</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="btnViewStockMain">
-     <property name="geometry">
-      <rect>
-       <x>420</x>
-       <y>465</y>
-       <width>180</width>
-       <height>40</height>
-      </rect>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QPushButton { background-color: #1a2a4a; color: white; border-radius: 4px; font-size: 13px; font-weight: bold; } QPushButton:hover { background-color: #2e4a7a; }</string>
-     </property>
-     <property name="text">
-      <string>View Stock</string>
      </property>
     </widget>
    </widget>
