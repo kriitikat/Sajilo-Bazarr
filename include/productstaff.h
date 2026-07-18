@@ -1,52 +1,42 @@
 #ifndef PRODUCTSTAFF_H
 #define PRODUCTSTAFF_H
-#include <QWidget>
+
+#include "productbase.h"
 #include <QDialog>
-#include <QString>
-#include <QStringList>
-#include <QList>
+
 class QLineEdit;
 class QComboBox;
 class QSpinBox;
 class QDateEdit;
 class QPushButton;
+class QCheckBox;
 namespace Ui { class ProductStaff; }
+
 // ─────────────────────────────────────────────
-//  Data Transfer Object  (matches bazar.db "products" table)
-// ─────────────────────────────────────────────
-struct StaffProductDTO {
-    int     id          = 0;
-    QString productName;   // product_name
-    QString category;
-    QString unit;
-    double  price       = 0.0;
-    int     stock       = 0;
-    QString expiryDate;    // expiry_date  "YYYY-MM-DD"
-    QString status;
-    QString supplier;
-    QString sku;
-};
-// ─────────────────────────────────────────────
-//  Add / Edit Dialog
+//  Add / Edit Dialog — builds/edits a ProductRecord
 // ─────────────────────────────────────────────
 class ProductStaffDialog : public QDialog
 {
     Q_OBJECT
 public:
     explicit ProductStaffDialog(QWidget *parent = nullptr,
-                                const StaffProductDTO &product = StaffProductDTO());
+                                const ProductRecord &product = ProductRecord());
     ~ProductStaffDialog() override;
-    StaffProductDTO getProduct() const;
+    ProductRecord getProduct() const;
+
 private slots:
     void onGenerateSku();
     void onAccept();
+
 private:
     void setupUi();
-    void populateFields(const StaffProductDTO &p);
+    void populateFields(const ProductRecord &p);
     QString generateSku();
     bool validateInputs();
+
     bool m_editMode = false;
     int  m_editId   = 0;
+
     QLineEdit   *txtName     = nullptr;
     QComboBox   *cmbCategory = nullptr;
     QComboBox   *cmbUnit     = nullptr;
@@ -60,56 +50,64 @@ private:
     QPushButton *btnSave     = nullptr;
     QPushButton *btnCancel   = nullptr;
 };
+
 // ─────────────────────────────────────────────
-//  Main Product Staff Widget
+//  ProductStaff  —  Staff page (view + ADD + edit + delete)
+//  Inherits shared fetch/table/search/filter/pagination/delete
+//  logic from ProductBase, and additionally owns:
+//    • "Add Product" (staff-only capability)
+//    • The full expiry-warning system (checkbox filter +
+//      colour-coded ⚠ / ⛔ labels on the Expiry column), which
+//      used to live on the admin Product page and has moved here.
 // ─────────────────────────────────────────────
-class ProductStaff : public QWidget
+class ProductStaff : public ProductBase
 {
     Q_OBJECT
 public:
     explicit ProductStaff(QWidget *parent = nullptr);
     ~ProductStaff() override;
-    // Reads distinct category names live from the "categories" table,
-    // used to populate category dropdowns.
-    static QStringList loadCategoriesFromDb();
+
     static QStringList s_units;
+
+protected:
+    // ── ProductBase widget accessors ───────────────────────────
+    QTableWidget* tableWidget()    const override;
+    QLineEdit*    searchBox()      const override;
+    QComboBox*    categoryFilter() const override;
+    QPushButton*  clearButton()    const override;
+    QPushButton*  prevPageButton() const override;
+    QPushButton*  nextPageButton() const override;
+    QLabel*       pageInfoLabel()  const override;
+    QLabel*       statusBarLabel() const override;
+    QLabel*       totalLabel()     const override;
+
+    void addActionButtons(int row, const ProductRecord &p) override;
+
+    // ── Expiry-warning system lives HERE (overridden from ProductBase) ──
+    bool    expiringSoonFilterActive() const override;
+    int     expiryWarningWindowDays()  const override;
+    QString formatExpiryText(const ProductRecord &p, int daysLeft) const override;
+    void    decorateExpiryCell(QTableWidgetItem *item, int daysLeft) const override;
+
+    // ── Staff-only extras: Add button + expiry-soon checkbox ──────────
+    void setupExtraUi() override;
+    void connectExtraSignals() override;
+
 private slots:
     void onAddProduct();
-    void onSearchChanged(const QString &text);
-    void onFilterCategoryChanged(int index);
-    void onClearSearch();
     void onEditProduct();
-    void onDeleteProduct();
     void onTableDoubleClicked(int row, int column);
-    void onPrevPage();
-    void onNextPage();
+    void onExpiringSoonToggled(bool checked);
+
 private:
-    bool saveProduct(const StaffProductDTO &p);
-    bool updateProduct(const StaffProductDTO &p);
-    bool deleteProduct(int id);
+    bool saveProduct(const ProductRecord &p);
+    bool updateProductInDb(const ProductRecord &p);
 
-    // limit/offset aware fetch: limit <= 0 means "no limit" (fetch all)
-    QList<StaffProductDTO> fetchProducts(const QString &search   = QString(),
-                                         const QString &category = QString(),
-                                         int limit = -1,
-                                         int offset = 0);
-    int  fetchProductCount(const QString &search, const QString &category);
+    // Expiry-warning threshold: products expiring within this many
+    // days get flagged amber; 0/negative days-left is always red.
+    static constexpr int EXPIRY_WARNING_DAYS = 5;
 
-    void loadProducts(const QString &search   = QString(),
-                      const QString &category = QString());
-    void populateCategoryFilter();
-    void setRowData(int row, const StaffProductDTO &p);
-    void addActionButtons(int row, int productId);
-    void updateStatusBar(int rowsShownOnPage);
-    void updatePaginationControls();
-
-    // ── Pagination state ────────────────────────────────
-    int     m_currentPage   = 1;
-    int     m_pageSize      = 10;
-    int     m_totalRecords  = 0;
-    int     m_totalPages    = 1;
-    QString m_lastSearch;
-    QString m_lastCategory;
+    QCheckBox *m_chkExpiringSoon = nullptr;
 
     Ui::ProductStaff *ui;
 };

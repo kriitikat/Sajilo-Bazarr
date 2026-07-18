@@ -37,6 +37,8 @@ set(PROJECT_SOURCES
        source/admindashboard.cpp
        include/admindashboard.h
        ui/admindashboard.ui
+       source/productbase.cpp
+       include/productbase.h
        source/product.cpp
        include/product.h
        ui/product.ui

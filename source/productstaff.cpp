@@ -1,9 +1,11 @@
 // ═══════════════════════════════════════════════════════════════════
 //  Sajilo Bazar – Product Staff Module
 //  productstaff.cpp
-//  Reads/writes bazar.db → products table
-//  Columns: id, product_name, category, unit, price, stock,
-//           expiry_date, status, supplier, sku
+//  Reads/writes bazar.db → products table.
+//  Shared fetch/table/search/filter/pagination/delete logic lives in
+//  ProductBase. This file adds what is unique to staff: "Add Product"
+//  and the full expiry-warning system (checkbox filter + colour-coded
+//  ⚠ / ⛔ labels), which now lives here instead of on the admin page.
 // ═══════════════════════════════════════════════════════════════════
 
 #include "../include/productstaff.h"
@@ -14,7 +16,6 @@
 #include <QFormLayout>
 #include <QLabel>
 #include <QFrame>
-#include <QDateTime>
 #include <QDate>
 #include <QMap>
 #include <QRandomGenerator>
@@ -31,8 +32,12 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QDateEdit>
+#include <QCheckBox>
 #include <QPushButton>
 #include <QMessageBox>
+#include <climits>
+
+constexpr int ProductStaff::EXPIRY_WARNING_DAYS;   // out-of-class definition (C++17 odr-use safety)
 
 // ── Static data ───────────────────────────────────────────────────
 QStringList ProductStaff::s_units = {
@@ -41,69 +46,14 @@ QStringList ProductStaff::s_units = {
     "meter", "pair", "set", "piece", "pieces"
 };
 
-QStringList ProductStaff::loadCategoriesFromDb()
-{
-    QStringList categories;
-
-    QSqlQuery q;
-    if (!q.exec("SELECT category_name FROM categories "
-                "WHERE category_name IS NOT NULL AND TRIM(category_name) <> '' "
-                "ORDER BY category_name ASC")) {
-        qWarning() << "ProductStaff: failed to load categories from DB -"
-                   << q.lastError().text();
-        return { "Other" };
-    }
-
-    while (q.next())
-        categories << q.value(0).toString();
-
-    if (categories.isEmpty())
-        categories << "Other";
-
-    return categories;
-}
-
-// ═══════════════════════════════════════════════════════════════════
-//  STATIC HELPERS  (file-scope)
-// ═══════════════════════════════════════════════════════════════════
-static int idFromRow(QTableWidget *tbl, int row)
-{
-    auto *item = tbl->item(row, 0);
-    return item ? item->data(Qt::UserRole).toInt() : -1;
-}
-
-static StaffProductDTO fetchById(int id)
-{
-    StaffProductDTO p;
-    QSqlQuery q;
-    q.prepare(
-        "SELECT id, product_name, category, unit, price, stock, "
-        "       expiry_date, status, supplier, sku "
-        "FROM products WHERE id = :id");
-    q.bindValue(":id", id);
-    if (q.exec() && q.next()) {
-        p.id          = q.value(0).toInt();
-        p.productName = q.value(1).toString();
-        p.category    = q.value(2).toString();
-        p.unit        = q.value(3).toString();
-        p.price       = q.value(4).toDouble();
-        p.stock       = q.value(5).toInt();
-        p.expiryDate  = q.value(6).toString();
-        p.status      = q.value(7).toString();
-        p.supplier    = q.value(8).toString();
-        p.sku         = q.value(9).toString();
-    }
-    return p;
-}
-
 // ═══════════════════════════════════════════════════════════════════
 //  PRODUCT STAFF DIALOG  –  Add / Edit
 // ═══════════════════════════════════════════════════════════════════
-ProductStaffDialog::ProductStaffDialog(QWidget *parent, const StaffProductDTO &product)
+ProductStaffDialog::ProductStaffDialog(QWidget *parent, const ProductRecord &product)
     : QDialog(parent)
 {
-    m_editMode = (product.id > 0);
-    m_editId   = product.id;
+    m_editMode = (product.id() > 0);
+    m_editId   = product.id();
 
     setWindowTitle(m_editMode ? "Edit Product" : "Add New Product");
     setMinimumWidth(500);
@@ -138,11 +88,10 @@ void ProductStaffDialog::setupUi()
     for (const auto &c : ProductStaff::loadCategoriesFromDb())
         cmbCategory->addItem(c);
 
-    // ── Unit dropdown (editable so user can still type a custom unit) ──
     cmbUnit = new QComboBox(this);
     cmbUnit->setEditable(true);
     cmbUnit->addItems(ProductStaff::s_units);
-    cmbUnit->setCurrentIndex(-1);                 // start empty
+    cmbUnit->setCurrentIndex(-1);
     if (cmbUnit->lineEdit())
         cmbUnit->lineEdit()->setPlaceholderText("e.g. kg, pcs, litre");
 
@@ -166,7 +115,6 @@ void ProductStaffDialog::setupUi()
     txtSupplier = new QLineEdit(this);
     txtSupplier->setPlaceholderText("Supplier name");
 
-    // SKU row
     txtSku = new QLineEdit(this);
     txtSku->setPlaceholderText("e.g. SKU001");
     txtSku->setMaxLength(50);
@@ -183,7 +131,6 @@ void ProductStaffDialog::setupUi()
     skuRow->addWidget(txtSku);
     skuRow->addWidget(btnGenSku);
 
-    // ── Form layout ──────────────────────────────────────────────
     auto *form = new QFormLayout;
     form->setLabelAlignment(Qt::AlignRight | Qt::AlignVCenter);
     form->setSpacing(12);
@@ -205,7 +152,6 @@ void ProductStaffDialog::setupUi()
     form->addRow(makeLabel("Supplier"),       txtSupplier);
     form->addRow(makeLabel("SKU"),            skuRow);
 
-    // ── Buttons ──────────────────────────────────────────────────
     btnSave   = new QPushButton(
         m_editMode ? "💾  Save Changes" : "✔  Add Product", this);
     btnCancel = new QPushButton("✕  Cancel", this);
@@ -227,7 +173,6 @@ void ProductStaffDialog::setupUi()
     btnRow->addWidget(btnCancel);
     btnRow->addWidget(btnSave);
 
-    // ── Master layout ────────────────────────────────────────────
     auto *master = new QVBoxLayout(this);
     master->setSpacing(8);
     master->setContentsMargins(0, 12, 0, 12);
@@ -253,47 +198,43 @@ void ProductStaffDialog::setupUi()
     )");
 }
 
-void ProductStaffDialog::populateFields(const StaffProductDTO &p)
+void ProductStaffDialog::populateFields(const ProductRecord &p)
 {
-    txtName->setText(p.productName);
-
-    // ── Product Name cannot be changed while editing ──
-    // (still visible/selectable for copying, just not editable)
+    txtName->setText(p.name());
     txtName->setReadOnly(true);
     txtName->setCursor(Qt::ArrowCursor);
     txtName->setToolTip("Product name cannot be changed once created.");
 
-    int catIdx = cmbCategory->findText(p.category);
-    if (catIdx < 0 && !p.category.isEmpty()) {
-        cmbCategory->addItem(p.category);
+    int catIdx = cmbCategory->findText(p.category());
+    if (catIdx < 0 && !p.category().isEmpty()) {
+        cmbCategory->addItem(p.category());
         catIdx = cmbCategory->count() - 1;
     }
     cmbCategory->setCurrentIndex(catIdx >= 0 ? catIdx : 0);
 
-    // ── Unit: select if it exists in the list, otherwise add it ──
-    int unitIdx = cmbUnit->findText(p.unit, Qt::MatchFixedString);
-    if (unitIdx < 0 && !p.unit.isEmpty()) {
-        cmbUnit->addItem(p.unit);
+    int unitIdx = cmbUnit->findText(p.unit(), Qt::MatchFixedString);
+    if (unitIdx < 0 && !p.unit().isEmpty()) {
+        cmbUnit->addItem(p.unit());
         unitIdx = cmbUnit->count() - 1;
     }
     cmbUnit->setCurrentIndex(unitIdx);
     if (unitIdx < 0)
-        cmbUnit->setCurrentText(p.unit);
+        cmbUnit->setCurrentText(p.unit());
 
-    txtPrice->setText(QString::number(p.price, 'f', 2));
-    spnStock->setValue(p.stock);
+    txtPrice->setText(QString::number(p.price(), 'f', 2));
+    spnStock->setValue(p.stock());
 
-    if (!p.expiryDate.isEmpty()) {
-        QDate d = QDate::fromString(p.expiryDate, "yyyy-MM-dd");
+    if (!p.expiryDate().isEmpty()) {
+        QDate d = QDate::fromString(p.expiryDate(), "yyyy-MM-dd");
         if (d.isValid()) deExpiry->setDate(d);
     }
 
-    int stIdx = cmbStatus->findText(p.status);
+    int stIdx = cmbStatus->findText(p.status());
     cmbStatus->setCurrentIndex(stIdx >= 0 ? stIdx : 0);
 
-    txtSupplier->setText(p.supplier);
+    txtSupplier->setText(p.supplier());
 
-    txtSku->setText(p.sku);
+    txtSku->setText(p.sku());
     txtSku->setReadOnly(true);
     btnGenSku->setEnabled(false);
 }
@@ -341,19 +282,19 @@ void ProductStaffDialog::onAccept()
         accept();
 }
 
-StaffProductDTO ProductStaffDialog::getProduct() const
+ProductRecord ProductStaffDialog::getProduct() const
 {
-    StaffProductDTO p;
-    p.id          = m_editId;
-    p.productName = txtName->text().trimmed();
-    p.category    = cmbCategory->currentText();
-    p.unit        = cmbUnit->currentText().trimmed();
-    p.price       = txtPrice->text().toDouble();
-    p.stock       = spnStock->value();
-    p.expiryDate  = deExpiry->date().toString("yyyy-MM-dd");
-    p.status      = cmbStatus->currentText();
-    p.supplier    = txtSupplier->text().trimmed();
-    p.sku         = txtSku->text().trimmed();
+    ProductRecord p;
+    p.setId(m_editId);
+    p.setName(txtName->text().trimmed());
+    p.setCategory(cmbCategory->currentText());
+    p.setUnit(cmbUnit->currentText().trimmed());
+    p.setPrice(txtPrice->text().toDouble());
+    p.setStock(spnStock->value());
+    p.setExpiryDate(deExpiry->date().toString("yyyy-MM-dd"));
+    p.setStatus(cmbStatus->currentText());
+    p.setSupplier(txtSupplier->text().trimmed());
+    p.setSku(txtSku->text().trimmed());
     return p;
 }
 
@@ -361,47 +302,19 @@ StaffProductDTO ProductStaffDialog::getProduct() const
 //  PRODUCT STAFF WIDGET  –  Main Screen
 // ═══════════════════════════════════════════════════════════════════
 ProductStaff::ProductStaff(QWidget *parent)
-    : QWidget(parent)
+    : ProductBase(parent)
     , ui(new Ui::ProductStaff)
 {
     ui->setupUi(this);
 
-    // ── Table setup ──────────────────────────────────────────────
-    // Columns: 0=Id, 1=Name, 2=Category, 3=Unit, 4=Price,
-    //          5=Stock, 6=Expiry, 7=Status, 8=Supplier, 9=SKU, 10=Action
-    QTableWidget *tbl = ui->tblProducts;
-    tbl->verticalHeader()->setVisible(false);
-    tbl->setWordWrap(false);
-    tbl->setColumnWidth(0,  50);   // Id
-    tbl->setColumnWidth(1, 160);   // Name
-    tbl->setColumnWidth(2, 110);   // Category
-    tbl->setColumnWidth(3,  60);   // Unit
-    tbl->setColumnWidth(4,  90);   // Price
-    tbl->setColumnWidth(5,  60);   // Stock
-    tbl->setColumnWidth(6,  95);   // Expiry
-    tbl->setColumnWidth(7,  90);   // Status
-    tbl->setColumnWidth(8, 120);   // Supplier
-    tbl->setColumnWidth(9,  90);   // SKU
-    tbl->horizontalHeader()->setSectionResizeMode(10, QHeaderView::Stretch); // Action
+    connect(ui->btnAddProduct, &QPushButton::clicked,
+            this,              &ProductStaff::onAddProduct);
+    connect(ui->tblProducts,   &QTableWidget::cellDoubleClicked,
+            this,              &ProductStaff::onTableDoubleClicked);
 
-    populateCategoryFilter();
-
-    connect(ui->btnAddProduct,     &QPushButton::clicked,
-            this,                  &ProductStaff::onAddProduct);
-    connect(ui->txtSearch,         &QLineEdit::textChanged,
-            this,                  &ProductStaff::onSearchChanged);
-    connect(ui->cmbFilterCategory, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this,                  &ProductStaff::onFilterCategoryChanged);
-    connect(ui->btnClearSearch,    &QPushButton::clicked,
-            this,                  &ProductStaff::onClearSearch);
-    connect(ui->tblProducts,       &QTableWidget::cellDoubleClicked,
-            this,                  &ProductStaff::onTableDoubleClicked);
-    connect(ui->btnPrevPage,       &QPushButton::clicked,
-            this,                  &ProductStaff::onPrevPage);
-    connect(ui->btnNextPage,       &QPushButton::clicked,
-            this,                  &ProductStaff::onNextPage);
-
-    loadProducts();
+    // Common wiring (columns, search/filter/pagination, initial load)
+    // + setupExtraUi()/connectExtraSignals() below (expiry checkbox).
+    initializeCommonUi();
 }
 
 ProductStaff::~ProductStaff()
@@ -409,281 +322,85 @@ ProductStaff::~ProductStaff()
     delete ui;
 }
 
-// ─────────────────────────────────────────────────────────────────
-//  DATABASE OPERATIONS
-// ─────────────────────────────────────────────────────────────────
-bool ProductStaff::saveProduct(const StaffProductDTO &p)
-{
-    QSqlQuery q;
-    q.prepare(R"(
-        INSERT INTO products
-            (product_name, category, unit, price, stock, expiry_date, status, supplier, sku)
-        VALUES
-            (:name, :cat, :unit, :price, :stock, :exp, :status, :supplier, :sku)
-    )");
-    q.bindValue(":name",     p.productName);
-    q.bindValue(":cat",      p.category);
-    q.bindValue(":unit",     p.unit);
-    q.bindValue(":price",    p.price);
-    q.bindValue(":stock",    p.stock);
-    q.bindValue(":exp",      p.expiryDate);
-    q.bindValue(":status",   p.status);
-    q.bindValue(":supplier", p.supplier);
-    q.bindValue(":sku",      p.sku);
+// ── ProductBase widget accessors ───────────────────────────────────
+QTableWidget* ProductStaff::tableWidget()    const { return ui->tblProducts; }
+QLineEdit*    ProductStaff::searchBox()      const { return ui->txtSearch; }
+QComboBox*    ProductStaff::categoryFilter() const { return ui->cmbFilterCategory; }
+QPushButton*  ProductStaff::clearButton()    const { return ui->btnClearSearch; }
+QPushButton*  ProductStaff::prevPageButton() const { return ui->btnPrevPage; }
+QPushButton*  ProductStaff::nextPageButton() const { return ui->btnNextPage; }
+QLabel*       ProductStaff::pageInfoLabel()  const { return ui->lblPageInfo; }
+QLabel*       ProductStaff::statusBarLabel() const { return ui->lblStatusBar; }
+QLabel*       ProductStaff::totalLabel()     const { return ui->lblTotalProducts; }
 
-    if (!q.exec()) {
-        QMessageBox::critical(this, "Database Error", q.lastError().text());
-        return false;
+// ── Staff-only extras: expiry-soon checkbox, inserted next to the
+//    category filter so the .ui file doesn't need hand-editing ──────
+void ProductStaff::setupExtraUi()
+{
+    m_chkExpiringSoon = new QCheckBox(
+        QString("⚠ Expiring Soon (≤%1 days)").arg(EXPIRY_WARNING_DAYS), this);
+
+    if (auto *filterLayout = ui->cmbFilterCategory->parentWidget()
+                                 ? ui->cmbFilterCategory->parentWidget()->layout()
+                                 : nullptr) {
+        filterLayout->addWidget(m_chkExpiringSoon);
     }
-    return true;
 }
 
-bool ProductStaff::updateProduct(const StaffProductDTO &p)
+void ProductStaff::connectExtraSignals()
 {
-    // NOTE: product_name is intentionally NOT updated here.
-    // The Edit dialog locks the name field, so whatever came back
-    // in p.productName is simply the original, unchanged name —
-    // but we still exclude it explicitly from the UPDATE for safety.
-    QSqlQuery q;
-    q.prepare(R"(
-        UPDATE products
-        SET category     = :cat,
-            unit         = :unit,
-            price        = :price,
-            stock        = :stock,
-            expiry_date  = :exp,
-            status       = :status,
-            supplier     = :supplier,
-            sku          = :sku
-        WHERE id = :id
-    )");
-    q.bindValue(":cat",      p.category);
-    q.bindValue(":unit",     p.unit);
-    q.bindValue(":price",    p.price);
-    q.bindValue(":stock",    p.stock);
-    q.bindValue(":exp",      p.expiryDate);
-    q.bindValue(":status",   p.status);
-    q.bindValue(":supplier", p.supplier);
-    q.bindValue(":sku",      p.sku);
-    q.bindValue(":id",       p.id);
-
-    if (!q.exec()) {
-        QMessageBox::critical(this, "Database Error", q.lastError().text());
-        return false;
-    }
-    return true;
+    connect(m_chkExpiringSoon, &QCheckBox::toggled,
+            this,              &ProductStaff::onExpiringSoonToggled);
 }
 
-bool ProductStaff::deleteProduct(int id)
+// ── Expiry-warning system (moved here from the admin Product page) ──
+bool ProductStaff::expiringSoonFilterActive() const
 {
-    QSqlQuery q;
-    q.prepare("DELETE FROM products WHERE id = :id");
-    q.bindValue(":id", id);
-    if (!q.exec()) {
-        QMessageBox::critical(this, "Database Error", q.lastError().text());
-        return false;
-    }
-    return true;
+    return m_chkExpiringSoon && m_chkExpiringSoon->isChecked();
 }
 
-QList<StaffProductDTO> ProductStaff::fetchProducts(const QString &search,
-                                                   const QString &category,
-                                                   int limit,
-                                                   int offset)
+int ProductStaff::expiryWarningWindowDays() const
 {
-    QList<StaffProductDTO> list;
-
-    QString sql =
-        "SELECT id, product_name, category, unit, price, stock, "
-        "       expiry_date, status, supplier, sku "
-        "FROM products WHERE 1=1";
-
-    if (!search.isEmpty())
-        sql += " AND (product_name LIKE :search OR sku LIKE :search)";
-    if (!category.isEmpty())
-        sql += " AND category = :category";
-    sql += " ORDER BY product_name ASC";
-
-    if (limit > 0)
-        sql += " LIMIT :limit OFFSET :offset";
-
-    QSqlQuery q;
-    q.prepare(sql);
-    if (!search.isEmpty())
-        q.bindValue(":search", "%" + search + "%");
-    if (!category.isEmpty())
-        q.bindValue(":category", category);
-    if (limit > 0) {
-        q.bindValue(":limit",  limit);
-        q.bindValue(":offset", offset);
-    }
-
-    if (!q.exec()) {
-        qWarning() << "[DB] fetchProducts error:" << q.lastError().text();
-        return list;
-    }
-
-    while (q.next()) {
-        StaffProductDTO p;
-        p.id          = q.value(0).toInt();
-        p.productName = q.value(1).toString();
-        p.category    = q.value(2).toString();
-        p.unit        = q.value(3).toString();
-        p.price       = q.value(4).toDouble();
-        p.stock       = q.value(5).toInt();
-        p.expiryDate  = q.value(6).toString();
-        p.status      = q.value(7).toString();
-        p.supplier    = q.value(8).toString();
-        p.sku         = q.value(9).toString();
-        list.append(p);
-    }
-    return list;
+    return EXPIRY_WARNING_DAYS;
 }
 
-int ProductStaff::fetchProductCount(const QString &search, const QString &category)
+QString ProductStaff::formatExpiryText(const ProductRecord &p, int daysLeft) const
 {
-    QString sql = "SELECT COUNT(*) FROM products WHERE 1=1";
+    if (p.expiryDate().isEmpty())
+        return QStringLiteral("—");
 
-    if (!search.isEmpty())
-        sql += " AND (product_name LIKE :search OR sku LIKE :search)";
-    if (!category.isEmpty())
-        sql += " AND category = :category";
+    if (daysLeft == INT_MIN)
+        return p.expiryDate();
+    if (daysLeft < 0)
+        return QStringLiteral("⛔ Expired");
+    if (daysLeft == 0)
+        return QStringLiteral("⛔ Today");
+    if (daysLeft == 1)
+        return QStringLiteral("⛔ Tomorrow");
+    if (daysLeft <= EXPIRY_WARNING_DAYS)
+        return QString("⚠ %1 days").arg(daysLeft);
 
-    QSqlQuery q;
-    q.prepare(sql);
-    if (!search.isEmpty())
-        q.bindValue(":search", "%" + search + "%");
-    if (!category.isEmpty())
-        q.bindValue(":category", category);
-
-    if (!q.exec() || !q.next()) {
-        qWarning() << "[DB] fetchProductCount error:" << q.lastError().text();
-        return 0;
-    }
-    return q.value(0).toInt();
+    return p.expiryDate();
 }
 
-// ─────────────────────────────────────────────────────────────────
-//  UI HELPERS
-// ─────────────────────────────────────────────────────────────────
-void ProductStaff::populateCategoryFilter()
+void ProductStaff::decorateExpiryCell(QTableWidgetItem *item, int daysLeft) const
 {
-    ui->cmbFilterCategory->blockSignals(true);
-    ui->cmbFilterCategory->clear();
-    ui->cmbFilterCategory->addItem("All Categories");
-    for (const auto &c : loadCategoriesFromDb())
-        ui->cmbFilterCategory->addItem(c);
-    ui->cmbFilterCategory->blockSignals(false);
-}
+    if (daysLeft == INT_MIN)
+        return;
 
-void ProductStaff::loadProducts(const QString &search, const QString &category)
-{
-    m_lastSearch   = search;
-    m_lastCategory = category;
-
-    // ── Work out pagination bounds for this (search, category) ──
-    m_totalRecords = fetchProductCount(search, category);
-    m_totalPages   = qMax(1, (m_totalRecords + m_pageSize - 1) / m_pageSize);
-
-    if (m_currentPage > m_totalPages) m_currentPage = m_totalPages;
-    if (m_currentPage < 1)            m_currentPage = 1;
-
-    const int offset = (m_currentPage - 1) * m_pageSize;
-
-    QTableWidget *tbl = ui->tblProducts;
-    tbl->setUpdatesEnabled(false);
-    tbl->setSortingEnabled(false);
-    tbl->setRowCount(0);
-
-    const QList<StaffProductDTO> products =
-        fetchProducts(search, category, m_pageSize, offset);
-
-    for (int row = 0; row < products.size(); ++row) {
-        tbl->insertRow(row);
-        setRowData(row, products[row]);
-        addActionButtons(row, products[row].id);
-    }
-
-    tbl->setSortingEnabled(true);
-    tbl->setUpdatesEnabled(true);
-
-    updatePaginationControls();
-    updateStatusBar(products.size());
-}
-
-void ProductStaff::setRowData(int row, const StaffProductDTO &p)
-{
-    QTableWidget *tbl = ui->tblProducts;
-
-    // Col 0 – Id  (store real DB id as UserRole for later retrieval)
-    auto *itemId = new QTableWidgetItem(QString::number(p.id));
-    itemId->setData(Qt::UserRole, p.id);
-    itemId->setTextAlignment(Qt::AlignCenter);
-
-    // Col 1 – Product Name
-    auto *itemName = new QTableWidgetItem(p.productName);
-
-    // Col 2 – Category
-    auto *itemCat = new QTableWidgetItem(p.category);
-
-    // Col 3 – Unit
-    auto *itemUnit = new QTableWidgetItem(p.unit);
-    itemUnit->setTextAlignment(Qt::AlignCenter);
-
-    // Col 4 – Price
-    auto *itemPrice = new QTableWidgetItem(
-        QString("Rs. %1").arg(p.price, 0, 'f', 2));
-    itemPrice->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
-
-    // Col 5 – Stock  (red + bold when low)
-    auto *itemStock = new QTableWidgetItem(QString::number(p.stock));
-    itemStock->setTextAlignment(Qt::AlignCenter);
-    if (p.stock <= 10) {
-        itemStock->setForeground(QColor("#C0392B"));
+    if (daysLeft <= 1) {
+        item->setForeground(QColor("#C0392B"));
+        item->setBackground(QColor("#FDEDEC"));
         QFont f; f.setBold(true);
-        itemStock->setFont(f);
+        item->setFont(f);
+    } else if (daysLeft <= EXPIRY_WARNING_DAYS) {
+        item->setForeground(QColor("#856404"));
+        item->setBackground(QColor("#FFF3CD"));
     }
-
-    // Col 6 – Expiry
-    auto *itemExp = new QTableWidgetItem(
-        p.expiryDate.isEmpty() ? "—" : p.expiryDate);
-    itemExp->setTextAlignment(Qt::AlignCenter);
-
-    // Col 7 – Status  (colour-coded)
-    auto *itemStatus = new QTableWidgetItem(p.status);
-    itemStatus->setTextAlignment(Qt::AlignCenter);
-    if (p.status == "In Stock" || p.status == "High Stock") {
-        itemStatus->setForeground(QColor("#1B8A44"));
-        itemStatus->setBackground(QColor("#E6F4EA"));
-    } else if (p.status == "Low Stock") {
-        itemStatus->setForeground(QColor("#856404"));
-        itemStatus->setBackground(QColor("#FFF3CD"));
-    } else {
-        itemStatus->setForeground(QColor("#C0392B"));
-        itemStatus->setBackground(QColor("#FDEDEC"));
-    }
-
-    // Col 8 – Supplier
-    auto *itemSupplier = new QTableWidgetItem(p.supplier);
-
-    // Col 9 – SKU
-    auto *itemSku = new QTableWidgetItem(p.sku);
-    itemSku->setTextAlignment(Qt::AlignCenter);
-
-    tbl->setItem(row, 0, itemId);
-    tbl->setItem(row, 1, itemName);
-    tbl->setItem(row, 2, itemCat);
-    tbl->setItem(row, 3, itemUnit);
-    tbl->setItem(row, 4, itemPrice);
-    tbl->setItem(row, 5, itemStock);
-    tbl->setItem(row, 6, itemExp);
-    tbl->setItem(row, 7, itemStatus);
-    tbl->setItem(row, 8, itemSupplier);
-    tbl->setItem(row, 9, itemSku);
-    // Col 10 = action buttons (set by addActionButtons)
 }
 
-void ProductStaff::addActionButtons(int row, int productId)
+// ── Row actions: Edit + Delete (Delete's slot lives in base) ───────
+void ProductStaff::addActionButtons(int row, const ProductRecord &p)
 {
     auto *cell   = new QWidget;
     auto *layout = new QHBoxLayout(cell);
@@ -693,8 +410,8 @@ void ProductStaff::addActionButtons(int row, int productId)
     auto *btnEdit = new QPushButton("✏ Edit");
     auto *btnDel  = new QPushButton("🗑 Delete");
 
-    btnEdit->setProperty("productId", productId);
-    btnDel ->setProperty("productId", productId);
+    btnEdit->setProperty("productId", p.id());
+    btnDel ->setProperty("productId", p.id());
 
     btnEdit->setStyleSheet(
         "QPushButton{background:#E6F4EA;color:#1B5E3C;border:1px solid #1B5E3C;"
@@ -717,77 +434,83 @@ void ProductStaff::addActionButtons(int row, int productId)
     ui->tblProducts->setRowHeight(row, 42);
 }
 
-void ProductStaff::updateStatusBar(int rowsShownOnPage)
+// ─────────────────────────────────────────────────────────────────
+//  DB OPERATIONS specific to staff (INSERT / UPDATE — Add/Edit)
+// ─────────────────────────────────────────────────────────────────
+bool ProductStaff::saveProduct(const ProductRecord &p)
 {
-    Q_UNUSED(rowsShownOnPage);
+    QSqlQuery q;
+    q.prepare(R"(
+        INSERT INTO products
+            (product_name, category, unit, price, stock, expiry_date, status, supplier, sku)
+        VALUES
+            (:name, :cat, :unit, :price, :stock, :exp, :status, :supplier, :sku)
+    )");
+    q.bindValue(":name",     p.name());
+    q.bindValue(":cat",      p.category());
+    q.bindValue(":unit",     p.unit());
+    q.bindValue(":price",    p.price());
+    q.bindValue(":stock",    p.stock());
+    q.bindValue(":exp",      p.expiryDate());
+    q.bindValue(":status",   p.status());
+    q.bindValue(":supplier", p.supplier());
+    q.bindValue(":sku",      p.sku());
 
-    ui->lblTotalProducts->setText(
-        QString("Total: %1 product%2")
-            .arg(m_totalRecords)
-            .arg(m_totalRecords == 1 ? "" : "s"));
-
-    const int startRow = (m_totalRecords == 0)
-                             ? 0
-                             : (m_currentPage - 1) * m_pageSize + 1;
-    const int endRow = qMin(m_currentPage * m_pageSize, m_totalRecords);
-
-    ui->lblStatusBar->setText(
-        QString("Showing %1–%2 of %3      Last refreshed: %4")
-            .arg(startRow)
-            .arg(endRow)
-            .arg(m_totalRecords)
-            .arg(QDateTime::currentDateTime().toString("dd-MMM-yyyy  hh:mm:ss")));
+    if (!q.exec()) {
+        QMessageBox::critical(this, "Database Error", q.lastError().text());
+        return false;
+    }
+    return true;
 }
 
-void ProductStaff::updatePaginationControls()
+bool ProductStaff::updateProductInDb(const ProductRecord &p)
 {
-    ui->lblPageInfo->setText(
-        QString("Page %1 of %2").arg(m_currentPage).arg(m_totalPages));
+    // product_name is intentionally NOT updated: the Edit dialog locks
+    // the name field, so we exclude it from the UPDATE for safety too.
+    QSqlQuery q;
+    q.prepare(R"(
+        UPDATE products
+        SET category     = :cat,
+            unit         = :unit,
+            price        = :price,
+            stock        = :stock,
+            expiry_date  = :exp,
+            status       = :status,
+            supplier     = :supplier,
+            sku          = :sku
+        WHERE id = :id
+    )");
+    q.bindValue(":cat",      p.category());
+    q.bindValue(":unit",     p.unit());
+    q.bindValue(":price",    p.price());
+    q.bindValue(":stock",    p.stock());
+    q.bindValue(":exp",      p.expiryDate());
+    q.bindValue(":status",   p.status());
+    q.bindValue(":supplier", p.supplier());
+    q.bindValue(":sku",      p.sku());
+    q.bindValue(":id",       p.id());
 
-    ui->btnPrevPage->setEnabled(m_currentPage > 1);
-    ui->btnNextPage->setEnabled(m_currentPage < m_totalPages);
+    if (!q.exec()) {
+        QMessageBox::critical(this, "Database Error", q.lastError().text());
+        return false;
+    }
+    return true;
 }
 
 // ─────────────────────────────────────────────────────────────────
-//  SLOTS
+//  SLOTS specific to staff
 // ─────────────────────────────────────────────────────────────────
 void ProductStaff::onAddProduct()
 {
     ProductStaffDialog dlg(this);
     if (dlg.exec() == QDialog::Accepted) {
-        const StaffProductDTO p = dlg.getProduct();
+        const ProductRecord p = dlg.getProduct();
         if (saveProduct(p)) {
-            ui->lblStatusBar->setText(
-                QString("✔  '%1' added successfully.").arg(p.productName));
-            loadProducts(m_lastSearch, m_lastCategory);
+            statusBarLabel()->setText(
+                QString("✔  '%1' added successfully.").arg(p.name()));
+            loadProducts();
         }
     }
-}
-
-void ProductStaff::onSearchChanged(const QString &text)
-{
-    QString cat = ui->cmbFilterCategory->currentIndex() == 0
-                      ? QString()
-                      : ui->cmbFilterCategory->currentText();
-    m_currentPage = 1;   // new search → back to page 1
-    loadProducts(text.trimmed(), cat);
-}
-
-void ProductStaff::onFilterCategoryChanged(int)
-{
-    QString cat = ui->cmbFilterCategory->currentIndex() == 0
-                      ? QString()
-                      : ui->cmbFilterCategory->currentText();
-    m_currentPage = 1;   // new filter → back to page 1
-    loadProducts(ui->txtSearch->text().trimmed(), cat);
-}
-
-void ProductStaff::onClearSearch()
-{
-    ui->txtSearch->clear();
-    ui->cmbFilterCategory->setCurrentIndex(0);
-    m_currentPage = 1;
-    loadProducts();
 }
 
 void ProductStaff::onEditProduct()
@@ -796,79 +519,47 @@ void ProductStaff::onEditProduct()
     if (!btn) return;
 
     int id = btn->property("productId").toInt();
-    StaffProductDTO p = fetchById(id);
-    if (p.id <= 0) {
+    ProductRecord p = fetchById(id);
+    if (p.id() <= 0) {
         QMessageBox::warning(this, "Not Found", "Product record not found.");
         return;
     }
 
     ProductStaffDialog dlg(this, p);
     if (dlg.exec() == QDialog::Accepted) {
-        StaffProductDTO updated = dlg.getProduct();
-        updated.productName = p.productName;   // name is locked; keep original
-        if (updateProduct(updated)) {
-            ui->lblStatusBar->setText(
-                QString("✔  '%1' updated successfully.").arg(updated.productName));
-            loadProducts(m_lastSearch, m_lastCategory);
+        ProductRecord updated = dlg.getProduct();
+        updated.setName(p.name());   // name is locked; keep original
+        if (updateProductInDb(updated)) {
+            statusBarLabel()->setText(
+                QString("✔  '%1' updated successfully.").arg(updated.name()));
+            loadProducts();
         }
     }
 }
 
-void ProductStaff::onDeleteProduct()
+void ProductStaff::onTableDoubleClicked(int row, int /*column*/)
 {
-    auto *btn = qobject_cast<QPushButton*>(sender());
-    if (!btn) return;
-
-    int id = btn->property("productId").toInt();
-    StaffProductDTO p = fetchById(id);
-
-    auto ans = QMessageBox::question(
-        this, "Confirm Delete",
-        QString("Delete <b>%1</b> (SKU: %2)?<br>"
-                "<span style='color:red;'>This action cannot be undone.</span>")
-            .arg(p.productName, p.sku),
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No);
-
-    if (ans == QMessageBox::Yes && deleteProduct(id)) {
-        ui->lblStatusBar->setText(
-            QString("🗑  '%1' deleted.").arg(p.productName));
-        loadProducts(m_lastSearch, m_lastCategory);
-    }
-}
-
-void ProductStaff::onTableDoubleClicked(int row, int)
-{
-    int id = idFromRow(ui->tblProducts, row);
+    auto *item = ui->tblProducts->item(row, 0);
+    int id = item ? item->data(Qt::UserRole).toInt() : -1;
     if (id <= 0) return;
 
-    StaffProductDTO p = fetchById(id);
-    if (p.id <= 0) return;
+    ProductRecord p = fetchById(id);
+    if (p.id() <= 0) return;
 
     ProductStaffDialog dlg(this, p);
     if (dlg.exec() == QDialog::Accepted) {
-        StaffProductDTO updated = dlg.getProduct();
-        updated.productName = p.productName;   // name is locked; keep original
-        if (updateProduct(updated)) {
-            ui->lblStatusBar->setText(
-                QString("✔  '%1' updated.").arg(updated.productName));
-            loadProducts(m_lastSearch, m_lastCategory);
+        ProductRecord updated = dlg.getProduct();
+        updated.setName(p.name());   // name is locked; keep original
+        if (updateProductInDb(updated)) {
+            statusBarLabel()->setText(
+                QString("✔  '%1' updated.").arg(updated.name()));
+            loadProducts();
         }
     }
 }
 
-void ProductStaff::onPrevPage()
+void ProductStaff::onExpiringSoonToggled(bool /*checked*/)
 {
-    if (m_currentPage > 1) {
-        --m_currentPage;
-        loadProducts(m_lastSearch, m_lastCategory);
-    }
-}
-
-void ProductStaff::onNextPage()
-{
-    if (m_currentPage < m_totalPages) {
-        ++m_currentPage;
-        loadProducts(m_lastSearch, m_lastCategory);
-    }
+    m_currentPage = 0;   // new filter → back to page 1
+    loadProducts();
 }
