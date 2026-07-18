@@ -16,9 +16,13 @@
 #include <QFrame>
 #include <QScrollArea>
 #include <QDate>
+#include <QTime>
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QMessageBox>
+#include <QBrush>
+#include <QColor>
+#include <QFont>
 
 namespace {
 // Centralised style strings so every panel/widget looks consistent and is
@@ -62,29 +66,44 @@ const QString kViewTaskButtonStyle =
     "QPushButton { background-color:#2D4A7A; color:white; border:none;"
     "  border-radius:4px; padding:5px 12px; font-size:12px; font-weight:bold; }"
     "QPushButton:hover { background-color:#223A61; }";
+
+// Small pill-style buttons used on the attendance cards. Disabled state is
+// styled explicitly (rather than left to the platform default) so a greyed
+// -out "Log In" on an already-online staff member reads as unavailable at a
+// glance, not just as a lighter version of the same button.
+const QString kAttendanceLoginButtonStyle =
+    "QPushButton { background-color:#38A169; color:white; border:none;"
+    "  border-radius:5px; padding:6px 10px; font-size:11px; font-weight:bold; }"
+    "QPushButton:hover:!disabled { background-color:#2F855A; }"
+    "QPushButton:disabled { background-color:#E2E8F0; color:#A0AEC0; }";
+
+const QString kAttendanceCheckInButtonStyle =
+    "QPushButton { background-color:#3182CE; color:white; border:none;"
+    "  border-radius:5px; padding:6px 10px; font-size:11px; font-weight:bold; }"
+    "QPushButton:hover:!disabled { background-color:#2B6CB0; }"
+    "QPushButton:disabled { background-color:#E2E8F0; color:#A0AEC0; }";
+
+const QString kAttendanceLogoutButtonStyle =
+    "QPushButton { background-color:#E53E3E; color:white; border:none;"
+    "  border-radius:5px; padding:6px 10px; font-size:11px; font-weight:bold; }"
+    "QPushButton:hover:!disabled { background-color:#C53030; }"
+    "QPushButton:disabled { background-color:#E2E8F0; color:#A0AEC0; }";
+
+QString dashIfEmpty(const QString &value)
+{
+    return value.isEmpty() ? QStringLiteral("—") : value;
+}
 }
 
 TaskManagement::TaskManagement(QWidget *parent)
     : QMainWindow(parent)
+    , ui(new Ui::TaskManagement)
 {
-    resize(950, 980);
-    setWindowTitle("Inventory Management - Task Management");
+    ui->setupUi(this);
 
-    auto *scrollArea = new QScrollArea(this);
-    scrollArea->setWidgetResizable(true);
-    scrollArea->setFrameShape(QFrame::NoFrame);
-
-    auto *central = new QWidget();
-    central->setStyleSheet("background-color:#F8FAFC;");
-    scrollArea->setWidget(central);
-    setCentralWidget(scrollArea);
-
-    auto *mainLayout = new QVBoxLayout(central);
-    mainLayout->setContentsMargins(24, 24, 24, 24);
-    mainLayout->setSpacing(24);
-
-    mainLayout->addWidget(buildSummaryPanel());
-    mainLayout->addWidget(buildTaskTablePanel());
+    setupSummaryPanel();
+    setupAttendancePanel();
+    setupTaskTablePanel();
 
     // ---- sample rows so the page is not empty on first run ----
     insertTaskRow("John Doe",    "10", "4", "6");
@@ -108,102 +127,218 @@ TaskManagement::TaskManagement(QWidget *parent)
         {"Label Printer Maintenance", "Replace ribbon and clean print heads.",
          "Low", QDate::currentDate().addDays(-3).toString("yyyy-MM-dd"), "Completed"}
     };
+
+    // ---- sample attendance so the panel demonstrates all three states:
+    // currently online, logged out after a full day, and never signed in
+    // today. Replace these three lines with real recordLogin()/
+    // recordCheckIn()/recordLogout() calls once wired to actual sessions. ----
+    staffAttendance["John Doe"]    = {true,  "9:02 AM", "9:05 AM", QString(), "3h 40m so far"};
+    staffAttendance["Jane Smith"]  = {false, "8:47 AM", "8:50 AM", "5:30 PM", "8h 40m"};
+    staffAttendance["Alex Mercer"] = {false, QString(), QString(), QString(), QString()};
+
+    for (const QString &staff : {QStringLiteral("John Doe"), QStringLiteral("Jane Smith"),
+                                  QStringLiteral("Alex Mercer")}) {
+        refreshAttendanceCard(staff);
+        refreshStatusInTable(staff);
+    }
+}
+
+TaskManagement::~TaskManagement()
+{
+    delete ui;
 }
 
 // ---------------------------------------------------------------------------
 // Box 1: Search + summary metrics
+// The header bar, panel titles, search box, and metric-card labels are all
+// defined as static widgets in taskmanagement.ui (reached via ui->), styled
+// centrally through that file's styleSheet property. This just wires up the
+// one thing that needs a signal connection.
 // ---------------------------------------------------------------------------
-QWidget *TaskManagement::buildSummaryPanel()
+void TaskManagement::setupSummaryPanel()
 {
-    auto *frame = new QFrame();
-    frame->setStyleSheet(kPanelStyle);
+    connect(ui->searchBox, &QLineEdit::textChanged, this, &TaskManagement::onSearchFilterChanged);
+}
 
-    auto *layout = new QVBoxLayout(frame);
-    layout->setContentsMargins(16, 16, 16, 16);
-    layout->setSpacing(12);
+// ---------------------------------------------------------------------------
+// Box 2: Staff attendance overview (login / check-in / logout)
+// The panel frame/title/online-count label live in the .ui file; the actual
+// per-staff cards are built here and dropped into ui->attendanceCardsLayout,
+// since the staff roster isn't fixed at design time.
+// ---------------------------------------------------------------------------
+void TaskManagement::setupAttendancePanel()
+{
+    ui->attendanceCardsLayout->addWidget(buildAttendanceCard("John Doe"));
+    ui->attendanceCardsLayout->addWidget(buildAttendanceCard("Jane Smith"));
+    ui->attendanceCardsLayout->addWidget(buildAttendanceCard("Alex Mercer"));
+}
 
-    auto *title = new QLabel("TASK OVERVIEW");
-    title->setStyleSheet(kPanelTitleStyle);
-    layout->addWidget(title, 0, Qt::AlignCenter);
+// Builds one staff member's attendance card: a status dot + name, the three
+// timestamps (Login / Check-in / Logout), hours worked, and three quick
+// -action buttons that call recordLogin()/recordCheckIn()/recordLogout() so
+// the card, the summary count, and the main table all stay in sync.
+QWidget *TaskManagement::buildAttendanceCard(const QString &staffName)
+{
+    auto *card = new QFrame();
+    card->setStyleSheet(
+        "QFrame { background-color:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; }");
 
-    // -- search row --
-    searchBox = new QLineEdit();
-    searchBox->setPlaceholderText("Search staff name...");
-    searchBox->setStyleSheet(kInputStyle);
-    connect(searchBox, &QLineEdit::textChanged, this, &TaskManagement::onSearchFilterChanged);
-    layout->addWidget(searchBox);
+    auto *layout = new QVBoxLayout(card);
+    layout->setContentsMargins(14, 12, 14, 12);
+    layout->setSpacing(8);
 
-    // -- summary metric labels row --
-    auto *metricsRow = new QHBoxLayout();
-    metricsRow->setSpacing(16);
+    // -- name + status dot row --
+    auto *nameRow = new QHBoxLayout();
+    nameRow->setSpacing(6);
 
-    auto makeMetricLabel = [](const QString &text, const QString &color) {
-        auto *label = new QLabel(text);
-        label->setStyleSheet(
-            QString("font-size:13px; font-weight:bold; color:%1; border:none;").arg(color));
-        return label;
+    auto *dot = new QLabel("●");
+    dot->setStyleSheet("color:#A0AEC0; font-size:12px; border:none;");
+    attendanceDot[staffName] = dot;
+
+    auto *nameLabel = new QLabel(staffName);
+    nameLabel->setStyleSheet("color:#1A202C; font-size:13px; font-weight:bold; border:none;");
+
+    auto *statusText = new QLabel("Offline");
+    statusText->setStyleSheet("color:#718096; font-size:11px; border:none;");
+    attendanceStatusText[staffName] = statusText;
+
+    nameRow->addWidget(dot);
+    nameRow->addWidget(nameLabel, 1);
+    nameRow->addWidget(statusText);
+    layout->addLayout(nameRow);
+
+    auto *divider = new QFrame();
+    divider->setFrameShape(QFrame::HLine);
+    divider->setStyleSheet("color:#E2E8F0;");
+    layout->addWidget(divider);
+
+    // -- timestamps grid --
+    auto *grid = new QGridLayout();
+    grid->setSpacing(4);
+    grid->setColumnStretch(1, 1);
+
+    auto addRow = [&](int r, const QString &caption, QLabel *&outValue) {
+        auto *cap = new QLabel(caption);
+        cap->setStyleSheet("color:#718096; font-size:11px; border:none;");
+        outValue = new QLabel("—");
+        outValue->setStyleSheet("color:#1A202C; font-size:11px; font-weight:600; border:none;");
+        outValue->setAlignment(Qt::AlignRight);
+        grid->addWidget(cap, r, 0);
+        grid->addWidget(outValue, r, 1);
     };
 
-    totalTasksLabel = makeMetricLabel("Total Tasks: 0", "#2D4A7A");
-    pendingLabel    = makeMetricLabel("Pending: 0", "#DD6B20");
-    inProgressLabel = makeMetricLabel("In Progress: 0", "#3182CE");
-    completedLabel  = makeMetricLabel("Completed: 0", "#38A169");
+    QLabel *loginVal = nullptr, *checkInVal = nullptr, *logoutVal = nullptr, *hoursVal = nullptr;
+    addRow(0, "Login",     loginVal);
+    addRow(1, "Check-in",  checkInVal);
+    addRow(2, "Logout",    logoutVal);
+    addRow(3, "Hours",     hoursVal);
 
-    metricsRow->addWidget(totalTasksLabel);
-    metricsRow->addWidget(pendingLabel);
-    metricsRow->addWidget(inProgressLabel);
-    metricsRow->addWidget(completedLabel);
-    metricsRow->addStretch();
+    attendanceLoginLabel[staffName]   = loginVal;
+    attendanceCheckInLabel[staffName] = checkInVal;
+    attendanceLogoutLabel[staffName]  = logoutVal;
+    attendanceHoursLabel[staffName]   = hoursVal;
 
-    layout->addLayout(metricsRow);
-    return frame;
+    layout->addLayout(grid);
+
+    // -- quick-action buttons --
+    auto *buttonRow = new QHBoxLayout();
+    buttonRow->setSpacing(6);
+
+    auto *btnLogin = new QPushButton("Log In");
+    btnLogin->setStyleSheet(kAttendanceLoginButtonStyle);
+    btnLogin->setCursor(Qt::PointingHandCursor);
+    btnLogin->setProperty("staffName", staffName);
+    connect(btnLogin, &QPushButton::clicked, this, &TaskManagement::onAttendanceLoginClicked);
+    attendanceLoginButton[staffName] = btnLogin;
+
+    auto *btnCheckIn = new QPushButton("Check In");
+    btnCheckIn->setStyleSheet(kAttendanceCheckInButtonStyle);
+    btnCheckIn->setCursor(Qt::PointingHandCursor);
+    btnCheckIn->setProperty("staffName", staffName);
+    connect(btnCheckIn, &QPushButton::clicked, this, &TaskManagement::onAttendanceCheckInClicked);
+    attendanceCheckInButton[staffName] = btnCheckIn;
+
+    auto *btnLogout = new QPushButton("Log Out");
+    btnLogout->setStyleSheet(kAttendanceLogoutButtonStyle);
+    btnLogout->setCursor(Qt::PointingHandCursor);
+    btnLogout->setProperty("staffName", staffName);
+    connect(btnLogout, &QPushButton::clicked, this, &TaskManagement::onAttendanceLogoutClicked);
+    attendanceLogoutButton[staffName] = btnLogout;
+
+    buttonRow->addWidget(btnLogin);
+    buttonRow->addWidget(btnCheckIn);
+    buttonRow->addWidget(btnLogout);
+    layout->addLayout(buttonRow);
+
+    return card;
+}
+
+// Pushes the current staffAttendance[staffName] values into that staff
+// member's card widgets, and recomputes the "N online" badge. Called after
+// every login/check-in/logout event instead of rebuilding the panel.
+void TaskManagement::refreshAttendanceCard(const QString &staffName)
+{
+    if (!staffAttendance.contains(staffName))
+        return;
+
+    const StaffAttendance &state = staffAttendance.value(staffName);
+
+    if (QLabel *dot = attendanceDot.value(staffName))
+        dot->setStyleSheet(QString("color:%1; font-size:12px; border:none;")
+                                .arg(state.online ? "#38A169" : "#A0AEC0"));
+
+    if (QLabel *statusText = attendanceStatusText.value(staffName))
+        statusText->setText(state.online ? "Online" : "Offline");
+
+    if (QLabel *loginVal = attendanceLoginLabel.value(staffName))
+        loginVal->setText(dashIfEmpty(state.loginTime));
+    if (QLabel *checkInVal = attendanceCheckInLabel.value(staffName))
+        checkInVal->setText(dashIfEmpty(state.checkInTime));
+    if (QLabel *logoutVal = attendanceLogoutLabel.value(staffName))
+        logoutVal->setText(dashIfEmpty(state.logoutTime));
+    if (QLabel *hoursVal = attendanceHoursLabel.value(staffName))
+        hoursVal->setText(dashIfEmpty(state.hoursToday));
+
+    // Log In only makes sense while offline; Check In / Log Out only make
+    // sense once a session is open.
+    if (QPushButton *btn = attendanceLoginButton.value(staffName))
+        btn->setEnabled(!state.online);
+    if (QPushButton *btn = attendanceCheckInButton.value(staffName))
+        btn->setEnabled(state.online);
+    if (QPushButton *btn = attendanceLogoutButton.value(staffName))
+        btn->setEnabled(state.online);
+
+    // Recompute the "N online" badge across everyone we know about.
+    int onlineCount = 0;
+    for (const StaffAttendance &s : staffAttendance)
+        if (s.online) ++onlineCount;
+
+    if (ui->onlineCountLabel)
+        ui->onlineCountLabel->setText(QString("%1 online").arg(onlineCount));
 }
 
 // ---------------------------------------------------------------------------
 // Box 3: Assigned tasks table
+// The frame, title, table widget, and its 8 column headers (ID, Staff Name,
+// Total/Pending/Completed Task, Status, Login Time, Action) are all defined
+// in taskmanagement.ui. Resize-mode/column-width tuning is easiest to keep
+// in code (Designer's column editor doesn't expose per-column resize mode),
+// so that's all that happens here.
 // ---------------------------------------------------------------------------
-QWidget *TaskManagement::buildTaskTablePanel()
+void TaskManagement::setupTaskTablePanel()
 {
-    auto *frame = new QFrame();
-    frame->setStyleSheet(kPanelStyle);
+    ui->assignedTasksTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    // Status, Login Time, and Action size to their content instead of
+    // stretching, so the timestamp/badge/buttons are always fully readable.
+    ui->assignedTasksTable->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
+    ui->assignedTasksTable->horizontalHeader()->setSectionResizeMode(6, QHeaderView::ResizeToContents);
+    ui->assignedTasksTable->horizontalHeader()->setSectionResizeMode(7, QHeaderView::ResizeToContents);
+    ui->assignedTasksTable->setColumnWidth(5, 100);
+    ui->assignedTasksTable->setColumnWidth(6, 100);
+    ui->assignedTasksTable->setColumnWidth(7, 210);
 
-    auto *layout = new QVBoxLayout(frame);
-    layout->setContentsMargins(16, 16, 16, 16);
-    layout->setSpacing(12);
-
-    auto *title = new QLabel("ASSIGNED TASKS DATABASE RECORD");
-    title->setStyleSheet(kPanelTitleStyle);
-    layout->addWidget(title, 0, Qt::AlignCenter);
-
-    assignedTasksTable = new QTableWidget(0, 6);
-    assignedTasksTable->setStyleSheet(
-        "QTableWidget { background-color:#FFFFFF; border:none; gridline-color:#EDF2F7; }"
-        "QTableWidget::item { padding:6px; color:#000000; }"
-        "QTableWidget::item:selected { background-color:#EBF2FF; color:#000000; }");
-    assignedTasksTable->setAlternatingRowColors(true);
-    assignedTasksTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    assignedTasksTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    assignedTasksTable->setSelectionMode(QAbstractItemView::SingleSelection);
-
-    const QStringList headers = {"ID", "Staff Name", "Total Task",
-                                 "Pending Task", "Completed Task", "Action"};
-    assignedTasksTable->setHorizontalHeaderLabels(headers);
-    assignedTasksTable->horizontalHeader()->setStyleSheet(
-        "QHeaderView::section { background-color:#2D4A7A; color:#FFFFFF;"
-        " font-weight:bold; border:none; padding:6px; }");
-
-    assignedTasksTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-    // The Action column sizes to its buttons instead of stretching, and we
-    // give it a generous minimum so "Add Task" / "View Task" are always
-    // fully readable.
-    assignedTasksTable->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
-    assignedTasksTable->setColumnWidth(5, 210);
-
-    assignedTasksTable->verticalHeader()->setVisible(false);
-    assignedTasksTable->verticalHeader()->setDefaultSectionSize(42);
-
-    layout->addWidget(assignedTasksTable);
-    return frame;
+    ui->assignedTasksTable->verticalHeader()->setVisible(false);
+    ui->assignedTasksTable->verticalHeader()->setDefaultSectionSize(42);
 }
 
 // ---------------------------------------------------------------------------
@@ -212,14 +347,21 @@ QWidget *TaskManagement::buildTaskTablePanel()
 void TaskManagement::insertTaskRow(const QString &staff, const QString &total,
                                    const QString &pending, const QString &completed)
 {
-    int row = assignedTasksTable->rowCount();
-    assignedTasksTable->insertRow(row);
+    int row = ui->assignedTasksTable->rowCount();
+    ui->assignedTasksTable->insertRow(row);
 
-    assignedTasksTable->setItem(row, 0, new QTableWidgetItem(QString::number(row + 101)));
-    assignedTasksTable->setItem(row, 1, new QTableWidgetItem(staff));
-    assignedTasksTable->setItem(row, 2, new QTableWidgetItem(total));
-    assignedTasksTable->setItem(row, 3, new QTableWidgetItem(pending));
-    assignedTasksTable->setItem(row, 4, new QTableWidgetItem(completed));
+    ui->assignedTasksTable->setItem(row, 0, new QTableWidgetItem(QString::number(row + 101)));
+    ui->assignedTasksTable->setItem(row, 1, new QTableWidgetItem(staff));
+    ui->assignedTasksTable->setItem(row, 2, new QTableWidgetItem(total));
+    ui->assignedTasksTable->setItem(row, 3, new QTableWidgetItem(pending));
+    ui->assignedTasksTable->setItem(row, 4, new QTableWidgetItem(completed));
+    // Status (col 5) and Login Time (col 6) are filled in by
+    // refreshStatusInTable() once attendance data exists for this staff
+    // member; seed them with placeholders so the row isn't blank meanwhile.
+    ui->assignedTasksTable->setItem(row, 5, new QTableWidgetItem("Offline"));
+    ui->assignedTasksTable->setItem(row, 6, new QTableWidgetItem("—"));
+
+    staffRowIndex[staff] = row;
 
     attachRowActionButtons(row);
     updateSummaryMetrics();
@@ -249,7 +391,7 @@ void TaskManagement::attachRowActionButtons(int row)
     layout->addWidget(btnAdd);
     layout->addWidget(btnView);
 
-    assignedTasksTable->setCellWidget(row, 5, container);
+    ui->assignedTasksTable->setCellWidget(row, 7, container);
 }
 
 // Finds which row a clicked action button belongs to by matching the cell
@@ -261,8 +403,8 @@ int TaskManagement::rowForActionButton(QPushButton *button) const
         return -1;
 
     QWidget *container = button->parentWidget();
-    for (int row = 0; row < assignedTasksTable->rowCount(); ++row) {
-        if (assignedTasksTable->cellWidget(row, 5) == container)
+    for (int row = 0; row < ui->assignedTasksTable->rowCount(); ++row) {
+        if (ui->assignedTasksTable->cellWidget(row, 7) == container)
             return row;
     }
     return -1;
@@ -296,11 +438,11 @@ void TaskManagement::onAssignTaskClicked()
     detail.dueDate      = dueDateInput ? dueDateInput->date().toString("yyyy-MM-dd") : QString();
     detail.status       = "Pending";
 
-    for (int row = 0; row < assignedTasksTable->rowCount(); ++row) {
-        QTableWidgetItem *nameItem = assignedTasksTable->item(row, 1);
+    for (int row = 0; row < ui->assignedTasksTable->rowCount(); ++row) {
+        QTableWidgetItem *nameItem = ui->assignedTasksTable->item(row, 1);
         if (nameItem && nameItem->text() == staff) {
-            QTableWidgetItem *totalItem   = assignedTasksTable->item(row, 2);
-            QTableWidgetItem *pendingItem = assignedTasksTable->item(row, 3);
+            QTableWidgetItem *totalItem   = ui->assignedTasksTable->item(row, 2);
+            QTableWidgetItem *pendingItem = ui->assignedTasksTable->item(row, 3);
             if (totalItem && pendingItem) {
                 totalItem->setText(QString::number(totalItem->text().toInt() + 1));
                 pendingItem->setText(QString::number(pendingItem->text().toInt() + 1));
@@ -329,18 +471,18 @@ void TaskManagement::onClearFieldsClicked()
 
 void TaskManagement::onSearchFilterChanged()
 {
-    if (!searchBox || !assignedTasksTable)
+    if (!ui->searchBox || !ui->assignedTasksTable)
         return;
 
-    const QString query = searchBox->text().trimmed().toLower();
+    const QString query = ui->searchBox->text().trimmed().toLower();
 
-    for (int row = 0; row < assignedTasksTable->rowCount(); ++row) {
+    for (int row = 0; row < ui->assignedTasksTable->rowCount(); ++row) {
         bool matchesSearch = query.isEmpty();
-        QTableWidgetItem *nameItem = assignedTasksTable->item(row, 1);
+        QTableWidgetItem *nameItem = ui->assignedTasksTable->item(row, 1);
         if (!matchesSearch && nameItem && nameItem->text().toLower().contains(query))
             matchesSearch = true;
 
-        assignedTasksTable->setRowHidden(row, !matchesSearch);
+        ui->assignedTasksTable->setRowHidden(row, !matchesSearch);
     }
 
     updateSummaryMetrics();
@@ -355,7 +497,7 @@ void TaskManagement::onRowAddTaskClicked()
     if (row < 0)
         return;
 
-    const QString staffName = assignedTasksTable->item(row, 1)->text();
+    const QString staffName = ui->assignedTasksTable->item(row, 1)->text();
 
     QDialog dialog(this);
     dialog.setWindowTitle("Add Task");
@@ -439,8 +581,8 @@ void TaskManagement::onRowAddTaskClicked()
     connect(buttonBox, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
     if (dialog.exec() == QDialog::Accepted) {
-        QTableWidgetItem *totalItem   = assignedTasksTable->item(row, 2);
-        QTableWidgetItem *pendingItem = assignedTasksTable->item(row, 3);
+        QTableWidgetItem *totalItem   = ui->assignedTasksTable->item(row, 2);
+        QTableWidgetItem *pendingItem = ui->assignedTasksTable->item(row, 3);
         if (totalItem && pendingItem) {
             totalItem->setText(QString::number(totalItem->text().toInt() + 1));
             pendingItem->setText(QString::number(pendingItem->text().toInt() + 1));
@@ -458,7 +600,8 @@ void TaskManagement::onRowAddTaskClicked()
 }
 
 // "View Task" button on a row: opens a themed dialog (matching the rest of
-// the page) with the staff member's info and a color-coded stat breakdown.
+// the page) with the staff member's info, attendance snapshot, and a
+// color-coded stat breakdown.
 void TaskManagement::onRowViewTaskClicked()
 {
     auto *button = qobject_cast<QPushButton *>(sender());
@@ -466,15 +609,15 @@ void TaskManagement::onRowViewTaskClicked()
     if (row < 0)
         return;
 
-    const QString id        = assignedTasksTable->item(row, 0)->text();
-    const QString staff     = assignedTasksTable->item(row, 1)->text();
-    const QString total     = assignedTasksTable->item(row, 2)->text();
-    const QString pending   = assignedTasksTable->item(row, 3)->text();
-    const QString completed = assignedTasksTable->item(row, 4)->text();
+    const QString id        = ui->assignedTasksTable->item(row, 0)->text();
+    const QString staff     = ui->assignedTasksTable->item(row, 1)->text();
+    const QString total     = ui->assignedTasksTable->item(row, 2)->text();
+    const QString pending   = ui->assignedTasksTable->item(row, 3)->text();
+    const QString completed = ui->assignedTasksTable->item(row, 4)->text();
 
     QDialog dialog(this);
     dialog.setWindowTitle("View Task");
-    dialog.resize(460, 560);
+    dialog.resize(460, 640);
     dialog.setStyleSheet("background-color:#F8FAFC;");
 
     auto *dialogLayout = new QVBoxLayout(&dialog);
@@ -508,6 +651,14 @@ void TaskManagement::onRowViewTaskClicked()
 
     addInfoRow(0, "Staff ID", id);
     addInfoRow(1, "Employee Name", staff);
+
+    const StaffAttendance attendance = staffAttendance.value(staff);
+    addInfoRow(2, "Status", attendance.online ? "Online" : "Offline");
+    addInfoRow(3, "Login Time", dashIfEmpty(attendance.loginTime));
+    addInfoRow(4, "Check-in Time", dashIfEmpty(attendance.checkInTime));
+    addInfoRow(5, "Logout Time", dashIfEmpty(attendance.logoutTime));
+    addInfoRow(6, "Hours Today", dashIfEmpty(attendance.hoursToday));
+
     cardLayout->addLayout(infoGrid);
 
     auto *divider = new QFrame();
@@ -651,13 +802,13 @@ void TaskManagement::updateSummaryMetrics()
 {
     int totalTasks = 0, totalPending = 0, totalCompleted = 0;
 
-    for (int row = 0; row < assignedTasksTable->rowCount(); ++row) {
-        if (assignedTasksTable->isRowHidden(row))
+    for (int row = 0; row < ui->assignedTasksTable->rowCount(); ++row) {
+        if (ui->assignedTasksTable->isRowHidden(row))
             continue;
 
-        QTableWidgetItem *totalItem     = assignedTasksTable->item(row, 2);
-        QTableWidgetItem *pendingItem   = assignedTasksTable->item(row, 3);
-        QTableWidgetItem *completedItem = assignedTasksTable->item(row, 4);
+        QTableWidgetItem *totalItem     = ui->assignedTasksTable->item(row, 2);
+        QTableWidgetItem *pendingItem   = ui->assignedTasksTable->item(row, 3);
+        QTableWidgetItem *completedItem = ui->assignedTasksTable->item(row, 4);
 
         if (totalItem)     totalTasks     += totalItem->text().toInt();
         if (pendingItem)   totalPending   += pendingItem->text().toInt();
@@ -668,8 +819,102 @@ void TaskManagement::updateSummaryMetrics()
     if (inProgress < 0)
         inProgress = 0;
 
-    if (totalTasksLabel) totalTasksLabel->setText(QString("Total Tasks: %1").arg(totalTasks));
-    if (pendingLabel)    pendingLabel->setText(QString("Pending: %1").arg(totalPending));
-    if (inProgressLabel) inProgressLabel->setText(QString("In Progress: %1").arg(inProgress));
-    if (completedLabel)  completedLabel->setText(QString("Completed: %1").arg(totalCompleted));
+    if (ui->totalTasksLabel) ui->totalTasksLabel->setText(QString("Total Tasks: %1").arg(totalTasks));
+    if (ui->pendingLabel)    ui->pendingLabel->setText(QString("Pending: %1").arg(totalPending));
+    if (ui->inProgressLabel) ui->inProgressLabel->setText(QString("In Progress: %1").arg(inProgress));
+    if (ui->completedLabel)  ui->completedLabel->setText(QString("Completed: %1").arg(totalCompleted));
+}
+
+// ---------------------------------------------------------------------------
+// Attendance: public slots (wire these to real login/logout/check-in events)
+// ---------------------------------------------------------------------------
+QString TaskManagement::currentTimeLabel() const
+{
+    return QTime::currentTime().toString("h:mm AP");
+}
+
+void TaskManagement::recordLogin(const QString &staffName)
+{
+    StaffAttendance &state = staffAttendance[staffName];
+    state.online    = true;
+    state.loginTime = currentTimeLabel();
+    state.logoutTime.clear();
+    state.hoursToday = "In progress";
+
+    refreshAttendanceCard(staffName);
+    refreshStatusInTable(staffName);
+}
+
+void TaskManagement::recordCheckIn(const QString &staffName)
+{
+    StaffAttendance &state = staffAttendance[staffName];
+    state.checkInTime = currentTimeLabel();
+
+    refreshAttendanceCard(staffName);
+    refreshStatusInTable(staffName);
+}
+
+void TaskManagement::recordLogout(const QString &staffName)
+{
+    StaffAttendance &state = staffAttendance[staffName];
+    state.online     = false;
+    state.logoutTime  = currentTimeLabel();
+    state.hoursToday  = QString("Logged out at %1").arg(state.logoutTime);
+
+    refreshAttendanceCard(staffName);
+    refreshStatusInTable(staffName);
+}
+
+void TaskManagement::onAttendanceLoginClicked()
+{
+    auto *button = qobject_cast<QPushButton *>(sender());
+    if (!button)
+        return;
+    recordLogin(button->property("staffName").toString());
+}
+
+void TaskManagement::onAttendanceCheckInClicked()
+{
+    auto *button = qobject_cast<QPushButton *>(sender());
+    if (!button)
+        return;
+
+    const QString staffName = button->property("staffName").toString();
+    if (!staffAttendance.value(staffName).online) {
+        QMessageBox::information(this, "Check In",
+                                 staffName + " needs to log in before checking in.");
+        return;
+    }
+    recordCheckIn(staffName);
+}
+
+void TaskManagement::onAttendanceLogoutClicked()
+{
+    auto *button = qobject_cast<QPushButton *>(sender());
+    if (!button)
+        return;
+    recordLogout(button->property("staffName").toString());
+}
+
+// Writes the Status badge + Login Time text into that staff member's row in
+// the main table (columns 5 and 6), keeping the table in sync with the
+// attendance card above it.
+void TaskManagement::refreshStatusInTable(const QString &staffName)
+{
+    if (!ui->assignedTasksTable || !staffRowIndex.contains(staffName))
+        return;
+
+    const int row = staffRowIndex.value(staffName);
+    const StaffAttendance state = staffAttendance.value(staffName);
+
+    if (QTableWidgetItem *statusItem = ui->assignedTasksTable->item(row, 5)) {
+        statusItem->setText(state.online ? "Online" : "Offline");
+        statusItem->setForeground(QBrush(state.online ? QColor("#38A169") : QColor("#A0AEC0")));
+        QFont font = statusItem->font();
+        font.setBold(true);
+        statusItem->setFont(font);
+    }
+
+    if (QTableWidgetItem *loginItem = ui->assignedTasksTable->item(row, 6))
+        loginItem->setText(dashIfEmpty(state.loginTime));
 }
