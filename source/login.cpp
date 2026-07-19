@@ -163,14 +163,18 @@ void Login::togglePasswordVisibility()
     m_togglePasswordAction->setIcon(makeEyeIcon(nowVisible));
 }
 
-void Login::openDashboard(const QString &role,
+void Login::openDashboard(int userId,
+                          const QString &role,
                           const QString &username,
                           const QString &firstName,
                           const QString &lastName)
 {
     Q_UNUSED(username)
-    Q_UNUSED(firstName)
-    Q_UNUSED(lastName)
+
+    // Display name only - used for greeting text/dialog titles. Actual task
+    // lookups now go through userId (information.id), not this string, so a
+    // later name edit or two staff sharing a name can't cross tasks.
+    const QString fullName = (firstName + " " + lastName).trimmed();
 
     if (role == "admin") {
         // AdminDashboard class name — matches admindashboard.h
@@ -180,7 +184,10 @@ void Login::openDashboard(const QString &role,
 
     } else if (role == "staff") {
         // StaffDashboard class name — matches staffdashboard.h
-        StaffDashboard *w = new StaffDashboard();
+        // Constructor is StaffDashboard(int staffId, const QString &staffName,
+        // QWidget *parent = nullptr) — it forwards both straight into MyTasks,
+        // which filters the `tasks` table by staff_id.
+        StaffDashboard *w = new StaffDashboard(userId, fullName);
         w->setAttribute(Qt::WA_DeleteOnClose);
         w->show();
 
@@ -271,6 +278,7 @@ void Login::on_loginButton_clicked()
     // staff.cpp is the only place that ever changes this value post-seed
     // (Disable/Enable and Expire/Unexpire buttons on the staff table), so
     // the three branches below map 1:1 onto what an admin can set there.
+    const int     userId    = query.value("id").toInt();
     const QString status    = query.value("status").toString().trimmed().toLower();
     const QString role      = query.value("role").toString();
     const QString firstName = query.value("first_name").toString();
@@ -279,7 +287,7 @@ void Login::on_loginButton_clicked()
     if (status == "enabled") {
         // ── All good — open the correct dashboard ──────────────────────────
         setStatus("Login successful. Opening dashboard…", false);
-        openDashboard(role, username, firstName, lastName);
+        openDashboard(userId, role, username, firstName, lastName);
         return;
     }
 

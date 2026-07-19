@@ -1,356 +1,236 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>TaskManagement</class>
-
  <widget class="QMainWindow" name="TaskManagement">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>980</width>
-    <height>1080</height>
+    <width>950</width>
+    <height>980</height>
    </rect>
   </property>
-
   <property name="windowTitle">
    <string>Inventory Management - Task Management</string>
   </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="centralLayout">
+    <property name="leftMargin"><number>0</number></property>
+    <property name="topMargin"><number>0</number></property>
+    <property name="rightMargin"><number>0</number></property>
+    <property name="bottomMargin"><number>0</number></property>
+    <item>
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="frameShape">
+       <enum>QFrame::Shape::NoFrame</enum>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>902</width>
+         <height>932</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string>background-color:#F8FAFC;</string>
+       </property>
+       <layout class="QVBoxLayout" name="mainLayout">
+        <property name="spacing"><number>24</number></property>
+        <property name="leftMargin"><number>24</number></property>
+        <property name="topMargin"><number>24</number></property>
+        <property name="rightMargin"><number>24</number></property>
+        <property name="bottomMargin"><number>24</number></property>
 
-  <property name="styleSheet">
-   <string notr="true">
-    QMainWindow, QWidget#scrollAreaWidgetContents {
-        background-color: #F8FAFC;
-    }
-
-    /* ── Header bar ─────────────────────────────────────────────── */
-    QFrame#headerBar {
-        background-color: #2D4A7A;
-        border-radius: 10px;
-    }
-    QLabel#headerTitleLabel {
-        color: #FFFFFF;
-        font-size: 20px;
-        font-weight: 700;
-    }
-    QLabel#headerSubtitleLabel {
-        color: #C7D6EC;
-        font-size: 12px;
-    }
-
-    /* ── Generic white panel used by every section below the header ─ */
-    QFrame#summaryPanel, QFrame#attendancePanel, QFrame#taskTablePanel {
-        background-color: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 10px;
-    }
-    QLabel#summaryTitleLabel, QLabel#attendanceTitleLabel, QLabel#tableTitleLabel {
-        font-size: 14px;
-        font-weight: 700;
-        color: #2D4A7A;
-        letter-spacing: 0.5px;
-        border: none;
-    }
-
-    /* ── Summary metric cards ───────────────────────────────────── */
-    QFrame#totalTasksCard  { background-color: #EBF2FF; border-radius: 8px; }
-    QFrame#pendingCard     { background-color: #FFF3E0; border-radius: 8px; }
-    QFrame#inProgressCard  { background-color: #EBF8FF; border-radius: 8px; }
-    QFrame#completedCard   { background-color: #E9F9EF; border-radius: 8px; }
-
-    QLabel#totalTasksLabel { color: #2D4A7A; font-size: 16px; font-weight: 700; border: none; }
-    QLabel#pendingLabel    { color: #DD6B20; font-size: 16px; font-weight: 700; border: none; }
-    QLabel#inProgressLabel { color: #3182CE; font-size: 16px; font-weight: 700; border: none; }
-    QLabel#completedLabel  { color: #38A169; font-size: 16px; font-weight: 700; border: none; }
-
-    /* ── Search box ──────────────────────────────────────────────── */
-    QLineEdit#searchBox {
-        background-color: #FFFFFF;
-        border: 1px solid #CBD5E0;
-        color: #000000;
-        border-radius: 6px;
-        padding: 6px;
-        font-size: 13px;
-    }
-    QLineEdit#searchBox:focus { border: 1px solid #2D4A7A; }
-
-    /* ── Attendance panel ────────────────────────────────────────── */
-    QLabel#onlineCountLabel {
-        background-color: #E9F9EF;
-        color: #38A169;
-        border: none;
-        border-radius: 8px;
-        padding: 2px 10px;
-        font-size: 11px;
-        font-weight: 700;
-    }
-    QWidget#attendanceCardsContainer {
-        background: transparent;
-    }
-
-    /* ── Assigned tasks table ────────────────────────────────────── */
-    QTableWidget#assignedTasksTable {
-        background-color: #FFFFFF;
-        border: none;
-        gridline-color: #EDF2F7;
-    }
-    QTableWidget#assignedTasksTable::item { padding: 6px; color: #000000; }
-    QTableWidget#assignedTasksTable::item:selected {
-        background-color: #EBF2FF; color: #000000;
-    }
-    QTableWidget#assignedTasksTable QHeaderView::section {
-        background-color: #2D4A7A;
-        color: #FFFFFF;
-        font-weight: 700;
-        border: none;
-        padding: 6px;
-    }
-   </string>
-  </property>
-
-  <widget class="QScrollArea" name="centralwidget">
-   <property name="widgetResizable"><bool>true</bool></property>
-   <property name="frameShape"><enum>QFrame::NoFrame</enum></property>
-
-   <widget class="QWidget" name="scrollAreaWidgetContents">
-    <property name="geometry"><rect><x>0</x><y>0</y><width>932</width><height>1032</height></rect></property>
-
-    <layout class="QVBoxLayout" name="mainLayout">
-     <property name="leftMargin"><number>24</number></property>
-     <property name="topMargin"><number>24</number></property>
-     <property name="rightMargin"><number>24</number></property>
-     <property name="bottomMargin"><number>24</number></property>
-     <property name="spacing"><number>20</number></property>
-
-     <!-- ── Header bar ───────────────────────────────────────────── -->
-     <item>
-      <widget class="QFrame" name="headerBar">
-       <layout class="QVBoxLayout" name="headerLayout">
-        <property name="leftMargin"><number>20</number></property>
-        <property name="topMargin"><number>16</number></property>
-        <property name="rightMargin"><number>20</number></property>
-        <property name="bottomMargin"><number>16</number></property>
-        <property name="spacing"><number>4</number></property>
-
+        <!-- ── Summary panel ─────────────────────────────────────── -->
         <item>
-         <widget class="QLabel" name="headerTitleLabel">
-          <property name="text"><string>Task Management</string></property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="headerSubtitleLabel">
-          <property name="text">
-           <string>Assign tasks, track progress, and monitor staff attendance in one place.</string>
+         <widget class="QFrame" name="summaryPanel">
+          <property name="styleSheet">
+           <string>QFrame { background-color:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; }</string>
           </property>
-          <property name="wordWrap"><bool>true</bool></property>
-         </widget>
-        </item>
-       </layout>
-      </widget>
-     </item>
-
-     <!-- ── Summary panel ────────────────────────────────────────── -->
-     <item>
-      <widget class="QFrame" name="summaryPanel">
-       <layout class="QVBoxLayout" name="summaryLayout">
-        <property name="leftMargin"><number>16</number></property>
-        <property name="topMargin"><number>16</number></property>
-        <property name="rightMargin"><number>16</number></property>
-        <property name="bottomMargin"><number>16</number></property>
-        <property name="spacing"><number>12</number></property>
-
-        <item>
-         <widget class="QLabel" name="summaryTitleLabel">
-          <property name="text"><string>TASK OVERVIEW</string></property>
-          <property name="alignment"><set>Qt::AlignCenter</set></property>
-         </widget>
-        </item>
-
-        <item>
-         <widget class="QLineEdit" name="searchBox">
-          <property name="placeholderText"><string>Search staff name...</string></property>
-         </widget>
-        </item>
-
-        <item>
-         <layout class="QHBoxLayout" name="metricsRow">
-          <property name="spacing"><number>12</number></property>
-
-          <item>
-           <widget class="QFrame" name="totalTasksCard">
-            <layout class="QVBoxLayout" name="totalTasksCardLayout">
-             <property name="leftMargin"><number>14</number></property>
-             <property name="topMargin"><number>10</number></property>
-             <property name="rightMargin"><number>14</number></property>
-             <property name="bottomMargin"><number>10</number></property>
-             <property name="spacing"><number>2</number></property>
+          <layout class="QVBoxLayout" name="summaryPanelLayout">
+           <property name="spacing"><number>12</number></property>
+           <property name="leftMargin"><number>16</number></property>
+           <property name="topMargin"><number>16</number></property>
+           <property name="rightMargin"><number>16</number></property>
+           <property name="bottomMargin"><number>16</number></property>
+           <item>
+            <widget class="QLabel" name="lblOverviewTitle">
+             <property name="styleSheet">
+              <string>font-size:14px; font-weight:bold; color:#2D4A7A; letter-spacing:0.5px; border:none;</string>
+             </property>
+             <property name="text">
+              <string>TASK OVERVIEW</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="searchBox">
+             <property name="styleSheet">
+              <string>QLineEdit { background-color:#FFFFFF; border:1px solid #CBD5E0; color:#000000; border-radius:6px; padding:6px; font-size:13px; }
+QLineEdit:focus { border:1px solid #2D4A7A; }</string>
+             </property>
+             <property name="placeholderText">
+              <string>Search staff name...</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="metricsRow">
+             <property name="spacing"><number>16</number></property>
              <item>
               <widget class="QLabel" name="totalTasksLabel">
-               <property name="text"><string>Total Tasks: 0</string></property>
+               <property name="styleSheet">
+                <string>font-size:13px; font-weight:bold; color:#2D4A7A; border:none;</string>
+               </property>
+               <property name="text">
+                <string>Total Tasks: 0</string>
+               </property>
               </widget>
              </item>
-            </layout>
-           </widget>
-          </item>
-
-          <item>
-           <widget class="QFrame" name="pendingCard">
-            <layout class="QVBoxLayout" name="pendingCardLayout">
-             <property name="leftMargin"><number>14</number></property>
-             <property name="topMargin"><number>10</number></property>
-             <property name="rightMargin"><number>14</number></property>
-             <property name="bottomMargin"><number>10</number></property>
-             <property name="spacing"><number>2</number></property>
              <item>
               <widget class="QLabel" name="pendingLabel">
-               <property name="text"><string>Pending: 0</string></property>
+               <property name="styleSheet">
+                <string>font-size:13px; font-weight:bold; color:#DD6B20; border:none;</string>
+               </property>
+               <property name="text">
+                <string>Pending: 0</string>
+               </property>
               </widget>
              </item>
-            </layout>
-           </widget>
-          </item>
-
-          <item>
-           <widget class="QFrame" name="inProgressCard">
-            <layout class="QVBoxLayout" name="inProgressCardLayout">
-             <property name="leftMargin"><number>14</number></property>
-             <property name="topMargin"><number>10</number></property>
-             <property name="rightMargin"><number>14</number></property>
-             <property name="bottomMargin"><number>10</number></property>
-             <property name="spacing"><number>2</number></property>
              <item>
               <widget class="QLabel" name="inProgressLabel">
-               <property name="text"><string>In Progress: 0</string></property>
+               <property name="styleSheet">
+                <string>font-size:13px; font-weight:bold; color:#3182CE; border:none;</string>
+               </property>
+               <property name="text">
+                <string>In Progress: 0</string>
+               </property>
               </widget>
              </item>
-            </layout>
-           </widget>
-          </item>
-
-          <item>
-           <widget class="QFrame" name="completedCard">
-            <layout class="QVBoxLayout" name="completedCardLayout">
-             <property name="leftMargin"><number>14</number></property>
-             <property name="topMargin"><number>10</number></property>
-             <property name="rightMargin"><number>14</number></property>
-             <property name="bottomMargin"><number>10</number></property>
-             <property name="spacing"><number>2</number></property>
              <item>
               <widget class="QLabel" name="completedLabel">
-               <property name="text"><string>Completed: 0</string></property>
+               <property name="styleSheet">
+                <string>font-size:13px; font-weight:bold; color:#38A169; border:none;</string>
+               </property>
+               <property name="text">
+                <string>Completed: 0</string>
+               </property>
               </widget>
              </item>
+             <item>
+              <spacer name="metricsSpacer">
+               <property name="orientation">
+                <enum>Qt::Orientation::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size><width>40</width><height>20</height></size>
+               </property>
+              </spacer>
+             </item>
             </layout>
-           </widget>
-          </item>
-
-         </layout>
-        </item>
-
-       </layout>
-      </widget>
-     </item>
-
-     <!-- ── Attendance panel ─────────────────────────────────────── -->
-     <item>
-      <widget class="QFrame" name="attendancePanel">
-       <layout class="QVBoxLayout" name="attendancePanelLayout">
-        <property name="leftMargin"><number>16</number></property>
-        <property name="topMargin"><number>16</number></property>
-        <property name="rightMargin"><number>16</number></property>
-        <property name="bottomMargin"><number>16</number></property>
-        <property name="spacing"><number>12</number></property>
-
-        <item>
-         <layout class="QHBoxLayout" name="attendanceTitleRow">
-          <item>
-           <spacer name="attendanceTitleLeftSpacer">
-            <property name="orientation"><enum>Qt::Horizontal</enum></property>
-            <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
-           </spacer>
-          </item>
-          <item>
-           <widget class="QLabel" name="attendanceTitleLabel">
-            <property name="text"><string>STAFF ATTENDANCE</string></property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="onlineCountLabel">
-            <property name="text"><string>0 online</string></property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="attendanceTitleRightSpacer">
-            <property name="orientation"><enum>Qt::Horizontal</enum></property>
-            <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-
-        <item>
-         <!-- Populated at runtime: one card per staff member is built and
-              inserted into attendanceCardsLayout in C++, since the staff
-              roster is dynamic and not fixed at design time. -->
-         <widget class="QWidget" name="attendanceCardsContainer" native="true">
-          <layout class="QHBoxLayout" name="attendanceCardsLayout">
-           <property name="leftMargin"><number>0</number></property>
-           <property name="topMargin"><number>0</number></property>
-           <property name="rightMargin"><number>0</number></property>
-           <property name="bottomMargin"><number>0</number></property>
-           <property name="spacing"><number>14</number></property>
+           </item>
           </layout>
          </widget>
         </item>
 
-       </layout>
-      </widget>
-     </item>
-
-     <!-- ── Assigned tasks table panel ───────────────────────────── -->
-     <item>
-      <widget class="QFrame" name="taskTablePanel">
-       <layout class="QVBoxLayout" name="taskTablePanelLayout">
-        <property name="leftMargin"><number>16</number></property>
-        <property name="topMargin"><number>16</number></property>
-        <property name="rightMargin"><number>16</number></property>
-        <property name="bottomMargin"><number>16</number></property>
-        <property name="spacing"><number>12</number></property>
-
+        <!-- ── Task table panel ──────────────────────────────────── -->
         <item>
-         <widget class="QLabel" name="tableTitleLabel">
-          <property name="text"><string>ASSIGNED TASKS DATABASE RECORD</string></property>
-          <property name="alignment"><set>Qt::AlignCenter</set></property>
+         <widget class="QFrame" name="tablePanel">
+          <property name="styleSheet">
+           <string>QFrame { background-color:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; }</string>
+          </property>
+          <layout class="QVBoxLayout" name="tablePanelLayout">
+           <property name="spacing"><number>12</number></property>
+           <property name="leftMargin"><number>16</number></property>
+           <property name="topMargin"><number>16</number></property>
+           <property name="rightMargin"><number>16</number></property>
+           <property name="bottomMargin"><number>16</number></property>
+           <item>
+            <widget class="QLabel" name="lblTableTitle">
+             <property name="styleSheet">
+              <string>font-size:14px; font-weight:bold; color:#2D4A7A; letter-spacing:0.5px; border:none;</string>
+             </property>
+             <property name="text">
+              <string>ASSIGNED TASKS DATABASE RECORD</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignmentFlag::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QTableWidget" name="assignedTasksTable">
+             <property name="styleSheet">
+              <string>QTableWidget { background-color:#FFFFFF; border:none; gridline-color:#EDF2F7; outline:none; }
+QTableWidget::item { padding:6px; color:#000000; }
+QTableWidget::item:selected { background-color:#EBF2FF; color:#000000; }
+QTableWidget::item:hover { background-color:#F7FAFC; }
+QHeaderView::section { background-color:#2D4A7A; color:#FFFFFF; font-weight:bold; border:none; padding:6px; }</string>
+             </property>
+             <property name="alternatingRowColors">
+              <bool>true</bool>
+             </property>
+             <property name="editTriggers">
+              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+             </property>
+             <property name="selectionMode">
+              <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+             </property>
+             <attribute name="horizontalHeaderStretchLastSection">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="verticalHeaderDefaultSectionSize">
+              <number>42</number>
+             </attribute>
+             <column>
+              <property name="text"><string>ID</string></property>
+             </column>
+             <column>
+              <property name="text"><string>Staff Name</string></property>
+             </column>
+             <column>
+              <property name="text"><string>Total Task</string></property>
+             </column>
+             <column>
+              <property name="text"><string>Pending Task</string></property>
+             </column>
+             <column>
+              <property name="text"><string>Completed Task</string></property>
+             </column>
+             <column>
+              <property name="text"><string>Action</string></property>
+             </column>
+            </widget>
+           </item>
+          </layout>
          </widget>
         </item>
-
-        <item>
-         <widget class="QTableWidget" name="assignedTasksTable">
-          <property name="alternatingRowColors"><bool>true</bool></property>
-          <property name="selectionMode"><enum>QAbstractItemView::SingleSelection</enum></property>
-          <property name="selectionBehavior"><enum>QAbstractItemView::SelectRows</enum></property>
-          <property name="editTriggers"><set>QAbstractItemView::NoEditTriggers</set></property>
-          <column><property name="text"><string>ID</string></property></column>
-          <column><property name="text"><string>Staff Name</string></property></column>
-          <column><property name="text"><string>Total Task</string></property></column>
-          <column><property name="text"><string>Pending Task</string></property></column>
-          <column><property name="text"><string>Completed Task</string></property></column>
-          <column><property name="text"><string>Status</string></property></column>
-          <column><property name="text"><string>Login Time</string></property></column>
-          <column><property name="text"><string>Action</string></property></column>
-         </widget>
-        </item>
-
        </layout>
       </widget>
-     </item>
-
-    </layout>
-   </widget>
+     </widget>
+    </item>
+   </layout>
   </widget>
-
-  <widget class="QMenuBar" name="menubar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect><x>0</x><y>0</y><width>950</width><height>26</height></rect>
+   </property>
+  </widget>
   <widget class="QStatusBar" name="statusbar"/>
-
  </widget>
  <resources/>
  <connections/>

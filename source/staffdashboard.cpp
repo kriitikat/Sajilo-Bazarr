@@ -1,6 +1,8 @@
 #include "../include/staffdashboard.h"
 #include "../ui/ui_staffdashboard.h"
 #include "../include/productstaff.h"
+#include "../include/profile.h"
+#include "../include/mytasks.h"
 
 #include <QPushButton>
 #include <QLabel>
@@ -14,10 +16,18 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QDebug>
+#include <QPainter>
+#include <QPainterPath>
+#include <QFile>
+#include <QCoreApplication>
+#include <QFont>
+#include <QIcon>
 
-StaffDashboard::StaffDashboard(QWidget *parent)
+StaffDashboard::StaffDashboard(int staffId, const QString &staffName, QWidget *parent)
     : ClassLogout(parent)
     , ui(new Ui::StaffDashboard)
+    , m_staffId(staffId)
+    , m_staffName(staffName)
 {
     ui->setupUi(this);
 
@@ -39,7 +49,20 @@ StaffDashboard::StaffDashboard(QWidget *parent)
             this,
             &StaffDashboard::refreshDashboardStats);
 
+    // Profile avatar (top-right) -> opens Profile page
+    connect(ui->btnProfile,
+            &QPushButton::clicked,
+            this,
+            &StaffDashboard::handleProfileClicked);
+
+    // Sidebar "View Tasks" -> opens MyTasks, filtered by this staff member's id
+    connect(ui->btnViewTasks,
+            &QPushButton::clicked,
+            this,
+            &StaffDashboard::on_btnViewTasks_clicked);
+
     setupDashboardContent();
+    loadCurrentUserInfo();
     refreshDashboardStats();
 }
 
@@ -130,6 +153,124 @@ void StaffDashboard::setupDashboardContent()
 }
 
 // ─────────────────────────────────────────────────────────────────
+//  Pulls this staff member's username/first_name/last_name/picture
+//  from 'information' BY ID (m_staffId), and applies them to the
+//  topbar (welcome text + circular avatar button). Falls back to an
+//  initials avatar if no photo file can be found. m_username is
+//  cached here purely so handleProfileClicked() has something to
+//  hand to Profile — Profile itself still looks everything else up
+//  by username internally.
+// ─────────────────────────────────────────────────────────────────
+void StaffDashboard::loadCurrentUserInfo()
+{
+    if (m_staffId < 0) {
+        qWarning() << "StaffDashboard: no staffId supplied, cannot personalize dashboard";
+        ui->welcomeLabel->setText(m_staffName.isEmpty()
+                                       ? QStringLiteral("Welcome back, Staff!")
+                                       : QStringLiteral("Welcome back, %1!").arg(m_staffName));
+        return;
+    }
+
+    QSqlQuery q;
+    q.prepare("SELECT first_name, last_name, username, picture "
+              "FROM information WHERE id = :id");
+    q.bindValue(":id", m_staffId);
+
+    QString firstName;
+    QString lastName;
+    QString picture;
+
+    if (q.exec() && q.next()) {
+        firstName  = q.value(0).toString();
+        lastName   = q.value(1).toString();
+        m_username = q.value(2).toString();
+        picture    = q.value(3).toString();
+
+        // Keep m_staffName authoritative for anything shown after this
+        // (welcome text below, and MyTasks' header the next time View
+        // Tasks is clicked) — DB values are fresher than whatever Login
+        // captured at sign-in time.
+        const QString freshFullName = QStringLiteral("%1 %2").arg(firstName, lastName).trimmed();
+        if (!freshFullName.isEmpty())
+            m_staffName = freshFullName;
+    } else {
+        qWarning() << "StaffDashboard: could not load user info for staffId"
+                   << m_staffId << "-" << q.lastError().text();
+    }
+
+    ui->welcomeLabel->setText(
+        firstName.isEmpty() ? QStringLiteral("Welcome back, %1!").arg(
+                                   m_staffName.isEmpty() ? QStringLiteral("Staff") : m_staffName)
+                             : QStringLiteral("Welcome back, %1!").arg(firstName));
+
+    // ── Avatar ───────────────────────────────────────────────────
+    QPixmap avatar;
+    bool loaded = false;
+
+    if (!picture.isEmpty()) {
+        // Adjust this if staff photos live somewhere else in your project.
+        const QString diskPath =
+            QCoreApplication::applicationDirPath() + "/resources/staff_photos/" + picture;
+
+        if (QFile::exists(diskPath))
+            loaded = avatar.load(diskPath);
+
+        if (!loaded)
+            loaded = avatar.load(":/staff_photos/" + picture); // Qt resource fallback
+    }
+
+    if (!loaded) {
+        // No photo available -> draw a simple initials avatar instead.
+        QString initials;
+        if (!firstName.isEmpty()) initials += firstName.at(0).toUpper();
+        if (!lastName.isEmpty())  initials += lastName.at(0).toUpper();
+        if (initials.isEmpty())   initials = "?";
+
+        avatar = QPixmap(AVATAR_DIAMETER, AVATAR_DIAMETER);
+        avatar.fill(Qt::transparent);
+
+        QPainter p(&avatar);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor("#4A9EE8"));
+        p.drawEllipse(0, 0, AVATAR_DIAMETER, AVATAR_DIAMETER);
+
+        QFont f = p.font();
+        f.setBold(true);
+        f.setPixelSize(AVATAR_DIAMETER / 2);
+        p.setFont(f);
+        p.setPen(Qt::white);
+        p.drawText(avatar.rect(), Qt::AlignCenter, initials);
+    }
+
+    ui->btnProfile->setIcon(QIcon(makeCircularPixmap(avatar, AVATAR_DIAMETER)));
+    ui->btnProfile->setIconSize(QSize(AVATAR_DIAMETER, AVATAR_DIAMETER));
+}
+
+QPixmap StaffDashboard::makeCircularPixmap(const QPixmap &source, int diameter)
+{
+    QPixmap scaled = source.scaled(diameter, diameter,
+                                    Qt::KeepAspectRatioByExpanding,
+                                    Qt::SmoothTransformation);
+
+    QPixmap circular(diameter, diameter);
+    circular.fill(Qt::transparent);
+
+    QPainter painter(&circular);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    QPainterPath clipPath;
+    clipPath.addEllipse(0, 0, diameter, diameter);
+    painter.setClipPath(clipPath);
+
+    const int x = (diameter - scaled.width())  / 2;
+    const int y = (diameter - scaled.height()) / 2;
+    painter.drawPixmap(x, y, scaled);
+
+    return circular;
+}
+
+// ─────────────────────────────────────────────────────────────────
 //  Pulls fresh numbers from the DB and repopulates the dashboard.
 //  Call this any time stock might have changed (e.g. after coming
 //  back from the Update Stock page).
@@ -159,8 +300,17 @@ void StaffDashboard::refreshDashboardStats()
             lblOutOfStockCount->setText(QString::number(q.value(0).toInt()));
     }
 
-    // TODO: replace with a real query once taskmanagement.h schema is shared
-    lblPendingTasks->setText("0");
+    // Pending tasks — filtered by staff_id, same rule MyTasks uses, so
+    // this card always matches what View Tasks shows.
+    {
+        QSqlQuery q;
+        q.prepare("SELECT COUNT(*) FROM tasks WHERE staff_id = :id AND status = 'Pending'");
+        q.bindValue(":id", m_staffId);
+        if (q.exec() && q.next())
+            lblPendingTasks->setText(QString::number(q.value(0).toInt()));
+        else
+            lblPendingTasks->setText("0");
+    }
 
     // Populate low-stock table
     tblLowStock->setRowCount(0);
@@ -217,6 +367,24 @@ void StaffDashboard::refreshDashboardStats()
 
 void StaffDashboard::handleProductsClicked()
 {
-    ProductStaff *productPage = new ProductStaff();
+    ProductStaff *productPage = new ProductStaff(this); // Passing 'this' handles memory automatically
+    productPage->setAttribute(Qt::WA_DeleteOnClose);
     productPage->show();
+}
+
+void StaffDashboard::handleProfileClicked()
+{
+    Profile *profileWindow = new Profile(m_username, this);
+    profileWindow->setAttribute(Qt::WA_DeleteOnClose);
+    profileWindow->exec();
+}
+
+void StaffDashboard::on_btnViewTasks_clicked()
+{
+    // Pass BOTH id and name straight into the constructor - MyTasks loads
+    // its own data as soon as it's built, so there's no separate
+    // loadTasksForStaff() call needed here.
+    MyTasks *tasksPage = new MyTasks(m_staffId, m_staffName, this);
+    tasksPage->setAttribute(Qt::WA_DeleteOnClose);
+    tasksPage->show();
 }

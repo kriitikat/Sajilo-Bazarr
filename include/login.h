@@ -28,7 +28,11 @@ private:
 
     QString hashPassword(const QString &plainText) const;
 
-    void openDashboard(const QString &role,
+    // userId = information.id for the row that just matched - needed so
+    // StaffDashboard (and in turn MyTasks) can filter tasks by staff_id
+    // instead of by name.
+    void openDashboard(int userId,
+                       const QString &role,
                        const QString &username,
                        const QString &firstName,
                        const QString &lastName);

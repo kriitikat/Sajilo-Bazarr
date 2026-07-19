@@ -14,6 +14,12 @@ set(PROJECT_SOURCES
        include/frontproduct.h
        source/frontproduct.cpp
        ui/frontproduct.ui
+       include/profile.h
+       source/profile.cpp
+       ui/profile.ui
+       include/mytasks.h
+       source/mytasks.cpp
+       ui/mytasks.ui
        resources.qrc
        app.rc
        source/main.cpp

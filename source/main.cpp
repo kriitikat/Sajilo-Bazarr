@@ -171,14 +171,21 @@ const QVector<QString> kStatements = {
     QStringLiteral(R"sql(
     CREATE TABLE IF NOT EXISTS tasks (
         id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        staff_id         INTEGER,
         staff_name       TEXT,
         task_title       TEXT,
         task_description TEXT,
         deadline         TEXT,
         priority         TEXT,
-        status           TEXT
+        category         TEXT,
+        status           TEXT,
+        created_at       TEXT
     );
     )sql"),
+
+    QStringLiteral(R"sql(ALTER TABLE tasks ADD COLUMN category TEXT;)sql"),
+    QStringLiteral(R"sql(ALTER TABLE tasks ADD COLUMN created_at TEXT;)sql"),
+    QStringLiteral(R"sql(ALTER TABLE tasks ADD COLUMN staff_id INTEGER;)sql"),
 
     // ── pending_requests (self-registration queue) ───────────────
     QStringLiteral(R"sql(
@@ -195,9 +202,8 @@ const QVector<QString> kStatements = {
     );
     )sql"),
 
-    // ── reset AUTOINCREMENT counters ────────────────────────────
     QStringLiteral(R"sql(
-    INSERT OR REPLACE INTO sqlite_sequence (name, seq) VALUES
+    INSERT OR IGNORE INTO sqlite_sequence (name, seq) VALUES
         ('categories',       11),
         ('information',      14),
         ('products',         51),
@@ -236,10 +242,18 @@ static bool initBazarDatabase(const QString &dbPath, QString *errorMessage)
             for (int i = 0; i < kStatements.size(); ++i) {
                 QSqlQuery query(db);
                 if (!query.exec(kStatements[i])) {
+                    // ALTER TABLE ... ADD COLUMN statements are expected to
+                    // fail once the column already exists ("duplicate
+                    // column name") on subsequent app launches - that's
+                    // fine, so don't treat it as a fatal schema error.
+                    const QString errText = query.lastError().text();
+                    if (errText.contains(QStringLiteral("duplicate column name"), Qt::CaseInsensitive))
+                        continue;
+
                     allOk = false;
                     const QString msg = QStringLiteral("[Statement %1] SQL error: %2")
                                             .arg(i)
-                                            .arg(query.lastError().text());
+                                            .arg(errText);
                     qWarning().noquote() << msg;
                     if (firstError.isEmpty())
                         firstError = msg;
