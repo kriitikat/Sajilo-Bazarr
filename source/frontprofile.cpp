@@ -1,5 +1,5 @@
-#include "../include/profile.h"
-#include "../ui/ui_profile.h"
+#include "../include/frontprofile.h"
+#include "../ui/ui_frontprofile.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -14,25 +14,25 @@
 #include <QStyle>
 #include <QDebug>
 
-Profile::Profile(const QString &username, QWidget *parent)
+FrontProfile::FrontProfile(const QString &username, QWidget *parent)
     : QDialog(parent)
-    , ui(new Ui::Profile)
+    , ui(new Ui::FrontProfile)
     , m_username(username)
 {
     ui->setupUi(this);
     setWindowTitle("My Profile");
 
-    connect(ui->btnSave,       &QPushButton::clicked, this, &Profile::handleSaveClicked);
-    connect(ui->btnCancel,     &QPushButton::clicked, this, &Profile::handleCancelClicked);
-    connect(ui->btnEditEmail,  &QPushButton::clicked, this, &Profile::handleEditEmailClicked);
-    connect(ui->btnEditPhone,  &QPushButton::clicked, this, &Profile::handleEditPhoneClicked);
+    connect(ui->btnSave,       &QPushButton::clicked, this, &FrontProfile::handleSaveClicked);
+    connect(ui->btnCancel,     &QPushButton::clicked, this, &FrontProfile::handleCancelClicked);
+    connect(ui->btnEditEmail,  &QPushButton::clicked, this, &FrontProfile::handleEditEmailClicked);
+    connect(ui->btnEditPhone,  &QPushButton::clicked, this, &FrontProfile::handleEditPhoneClicked);
 
     ui->statusMessageLabel->setVisible(false);
 
     loadUserData();
 }
 
-Profile::~Profile()
+FrontProfile::~FrontProfile()
 {
     delete ui;
 }
@@ -44,7 +44,7 @@ Profile::~Profile()
 //  behind their own Edit button until the person chooses to change
 //  them.
 // ─────────────────────────────────────────────────────────────────
-void Profile::loadUserData()
+void FrontProfile::loadUserData()
 {
     if (m_username.isEmpty()) {
         showStatusMessage("No user is currently logged in.", true);
@@ -60,7 +60,7 @@ void Profile::loadUserData()
     q.bindValue(":u", m_username);
 
     if (!q.exec() || !q.next()) {
-        qWarning() << "Profile: failed to load user -" << q.lastError().text();
+        qWarning() << "FrontProfile: failed to load user -" << q.lastError().text();
         showStatusMessage("Could not load profile data.", true);
         ui->btnSave->setEnabled(false);
         ui->btnEditEmail->setEnabled(false);
@@ -145,11 +145,11 @@ void Profile::loadUserData()
     ui->avatarLabel->setPixmap(makeCircularPixmap(avatar, AVATAR_DIAMETER));
 }
 
-QPixmap Profile::makeCircularPixmap(const QPixmap &source, int diameter)
+QPixmap FrontProfile::makeCircularPixmap(const QPixmap &source, int diameter)
 {
     QPixmap scaled = source.scaled(diameter, diameter,
-                                   Qt::KeepAspectRatioByExpanding,
-                                   Qt::SmoothTransformation);
+                                    Qt::KeepAspectRatioByExpanding,
+                                    Qt::SmoothTransformation);
 
     QPixmap circular(diameter, diameter);
     circular.fill(Qt::transparent);
@@ -168,20 +168,20 @@ QPixmap Profile::makeCircularPixmap(const QPixmap &source, int diameter)
     return circular;
 }
 
-bool Profile::isValidEmail(const QString &email)
+bool FrontProfile::isValidEmail(const QString &email)
 {
     static const QRegularExpression pattern(
         R"(^[\w.+-]+@[\w-]+\.[A-Za-z]{2,}$)");
     return pattern.match(email).hasMatch();
 }
 
-bool Profile::isValidPhone(const QString &phone)
+bool FrontProfile::isValidPhone(const QString &phone)
 {
     static const QRegularExpression pattern(R"(^\d{7,15}$)");
     return pattern.match(phone).hasMatch();
 }
 
-void Profile::showStatusMessage(const QString &text, bool isError)
+void FrontProfile::showStatusMessage(const QString &text, bool isError)
 {
     ui->statusMessageLabel->setText(text);
     ui->statusMessageLabel->setStyleSheet(
@@ -195,12 +195,12 @@ void Profile::showStatusMessage(const QString &text, bool isError)
 
 // ─────────────────────────────────────────────────────────────────
 //  Flips a field between locked/unlocked. All the actual colors for
-//  each state are defined in profile.ui via the "fieldEditable"
+//  each state are defined in frontprofile.ui via the "fieldEditable"
 //  dynamic-property QSS selectors on the QLineEdit; this just sets
 //  the property and asks the style to repaint, plus updates the
 //  read-only flag and button label.
 // ─────────────────────────────────────────────────────────────────
-void Profile::setFieldEditable(QLineEdit *field, QPushButton *editButton, bool editable)
+void FrontProfile::setFieldEditable(QLineEdit *field, QPushButton *editButton, bool editable)
 {
     if (!field || !editButton)
         return;
@@ -219,7 +219,7 @@ void Profile::setFieldEditable(QLineEdit *field, QPushButton *editButton, bool e
     }
 }
 
-void Profile::handleEditEmailClicked()
+void FrontProfile::handleEditEmailClicked()
 {
     const bool nowEditable = ui->leEmail->isReadOnly();
     setFieldEditable(ui->leEmail, ui->btnEditEmail, nowEditable);
@@ -231,7 +231,7 @@ void Profile::handleEditEmailClicked()
     }
 }
 
-void Profile::handleEditPhoneClicked()
+void FrontProfile::handleEditPhoneClicked()
 {
     const bool nowEditable = ui->lePhone->isReadOnly();
     setFieldEditable(ui->lePhone, ui->btnEditPhone, nowEditable);
@@ -245,7 +245,7 @@ void Profile::handleEditPhoneClicked()
 //  Validates + saves email/phone only. Username, name, role and
 //  status are never written back from this dialog.
 // ─────────────────────────────────────────────────────────────────
-void Profile::handleSaveClicked()
+void FrontProfile::handleSaveClicked()
 {
     const QString newEmail = ui->leEmail->text().trimmed();
     const QString newPhone = ui->lePhone->text().trimmed();
@@ -277,7 +277,7 @@ void Profile::handleSaveClicked()
     q.bindValue(":u", m_username);
 
     if (!q.exec()) {
-        qWarning() << "Profile: update failed -" << q.lastError().text();
+        qWarning() << "FrontProfile: update failed -" << q.lastError().text();
         showStatusMessage("Failed to save changes. Please try again.", true);
         return;
     }
@@ -294,7 +294,7 @@ void Profile::handleSaveClicked()
     emit profileUpdated();
 }
 
-void Profile::handleCancelClicked()
+void FrontProfile::handleCancelClicked()
 {
     // Discard any unsaved edits, relock both fields, and close.
     ui->leEmail->setText(m_originalEmail);

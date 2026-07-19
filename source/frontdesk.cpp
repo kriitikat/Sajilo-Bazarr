@@ -2,6 +2,7 @@
 #include "../ui/ui_frontdesk.h"
 #include "../include/billing.h"
 #include "../include/frontproduct.h"
+#include "../include/frontprofile.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -11,11 +12,19 @@
 #include <QLabel>
 #include <QHeaderView>
 #include <QTableWidgetItem>
+#include <QPainter>
+#include <QPainterPath>
+#include <QFile>
+#include <QCoreApplication>
+#include <QFont>
+#include <QIcon>
 #include <QDebug>
 
-frontdesk::frontdesk(QWidget *parent)
+frontdesk::frontdesk(int staffId, const QString &staffName, QWidget *parent)
     : ClassLogout(parent)
     , ui(new Ui::frontdesk)
+    , m_staffId(staffId)
+    , m_staffName(staffName)
 {
     ui->setupUi(this);
 
@@ -24,6 +33,12 @@ frontdesk::frontdesk(QWidget *parent)
     connect(ui->btnBilling,     &QPushButton::clicked, this, &frontdesk::openBillingWindow);
     connect(ui->btnViewProducts, &QPushButton::clicked, this, &frontdesk::openViewProductsWindow);
 
+    // Profile avatar (top-right) -> opens FrontProfile
+    connect(ui->btnProfile,
+            &QPushButton::clicked,
+            this,
+            &frontdesk::handleProfileClicked);
+
     // Logout button
     connect(ui->btnLogout,
             &QPushButton::clicked,
@@ -31,6 +46,7 @@ frontdesk::frontdesk(QWidget *parent)
             &frontdesk::handleLogout_clicked);
 
     setupProductTable();
+    loadCurrentUserInfo();
     loadDashboardStats();
 }
 
@@ -60,6 +76,135 @@ void frontdesk::openBillingWindow()
     billingWindow->setAttribute(Qt::WA_DeleteOnClose);
     billingWindow->show();
     this->close();
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Pulls this front desk user's username/first_name/last_name/picture
+//  from 'information' BY ID (m_staffId), and applies them to the
+//  topbar (welcome text + circular avatar button) — exact same logic
+//  as StaffDashboard::loadCurrentUserInfo(). Falls back to an
+//  initials avatar if no photo file can be found. m_username is
+//  cached here purely so handleProfileClicked() has something to
+//  hand to FrontProfile — FrontProfile itself still looks everything
+//  else up by username internally.
+// ─────────────────────────────────────────────────────────────────
+void frontdesk::loadCurrentUserInfo()
+{
+    if (m_staffId < 0) {
+        qWarning() << "frontdesk: no staffId supplied, cannot personalize dashboard";
+        ui->welcomeLabel->setText(m_staffName.isEmpty()
+                                       ? QStringLiteral("Welcome back, Front Desk!")
+                                       : QStringLiteral("Welcome back, %1!").arg(m_staffName));
+        return;
+    }
+
+    QSqlQuery q;
+    q.prepare("SELECT first_name, last_name, username, picture "
+              "FROM information WHERE id = :id");
+    q.bindValue(":id", m_staffId);
+
+    QString firstName;
+    QString lastName;
+    QString picture;
+
+    if (q.exec() && q.next()) {
+        firstName  = q.value(0).toString();
+        lastName   = q.value(1).toString();
+        m_username = q.value(2).toString();
+        picture    = q.value(3).toString();
+
+        // Keep m_staffName authoritative for anything shown after this —
+        // DB values are fresher than whatever Login captured at sign-in
+        // time.
+        const QString freshFullName = QStringLiteral("%1 %2").arg(firstName, lastName).trimmed();
+        if (!freshFullName.isEmpty())
+            m_staffName = freshFullName;
+    } else {
+        qWarning() << "frontdesk: could not load user info for staffId"
+                   << m_staffId << "-" << q.lastError().text();
+    }
+
+    ui->welcomeLabel->setText(
+        firstName.isEmpty() ? QStringLiteral("Welcome back, %1!").arg(
+                                   m_staffName.isEmpty() ? QStringLiteral("Front Desk") : m_staffName)
+                             : QStringLiteral("Welcome back, %1!").arg(firstName));
+
+    // ── Avatar ───────────────────────────────────────────────────
+    QPixmap avatar;
+    bool loaded = false;
+
+    if (!picture.isEmpty()) {
+        // Adjust this if staff photos live somewhere else in your project.
+        const QString diskPath =
+            QCoreApplication::applicationDirPath() + "/resources/staff_photos/" + picture;
+
+        if (QFile::exists(diskPath))
+            loaded = avatar.load(diskPath);
+
+        if (!loaded)
+            loaded = avatar.load(":/staff_photos/" + picture); // Qt resource fallback
+    }
+
+    if (!loaded) {
+        // No photo available -> draw a simple initials avatar instead.
+        QString initials;
+        if (!firstName.isEmpty()) initials += firstName.at(0).toUpper();
+        if (!lastName.isEmpty())  initials += lastName.at(0).toUpper();
+        if (initials.isEmpty())   initials = "?";
+
+        avatar = QPixmap(AVATAR_DIAMETER, AVATAR_DIAMETER);
+        avatar.fill(Qt::transparent);
+
+        QPainter p(&avatar);
+        p.setRenderHint(QPainter::Antialiasing);
+        p.setPen(Qt::NoPen);
+        p.setBrush(QColor("#660033"));
+        p.drawEllipse(0, 0, AVATAR_DIAMETER, AVATAR_DIAMETER);
+
+        QFont f = p.font();
+        f.setBold(true);
+        f.setPixelSize(AVATAR_DIAMETER / 2);
+        p.setFont(f);
+        p.setPen(Qt::white);
+        p.drawText(avatar.rect(), Qt::AlignCenter, initials);
+    }
+
+    ui->btnProfile->setIcon(QIcon(makeCircularPixmap(avatar, AVATAR_DIAMETER)));
+    ui->btnProfile->setIconSize(QSize(AVATAR_DIAMETER, AVATAR_DIAMETER));
+}
+
+QPixmap frontdesk::makeCircularPixmap(const QPixmap &source, int diameter)
+{
+    QPixmap scaled = source.scaled(diameter, diameter,
+                                    Qt::KeepAspectRatioByExpanding,
+                                    Qt::SmoothTransformation);
+
+    QPixmap circular(diameter, diameter);
+    circular.fill(Qt::transparent);
+
+    QPainter painter(&circular);
+    painter.setRenderHint(QPainter::Antialiasing);
+
+    QPainterPath clipPath;
+    clipPath.addEllipse(0, 0, diameter, diameter);
+    painter.setClipPath(clipPath);
+
+    const int x = (diameter - scaled.width())  / 2;
+    const int y = (diameter - scaled.height()) / 2;
+    painter.drawPixmap(x, y, scaled);
+
+    return circular;
+}
+
+// ─────────────────────────────────────────────────────────────────
+//  Opens FrontProfile for the currently logged-in front desk user —
+//  same pattern as StaffDashboard::handleProfileClicked().
+// ─────────────────────────────────────────────────────────────────
+void frontdesk::handleProfileClicked()
+{
+    FrontProfile *profileWindow = new FrontProfile(m_username, this);
+    profileWindow->setAttribute(Qt::WA_DeleteOnClose);
+    profileWindow->exec();
 }
 
 // ---------------------------------------------------------------------

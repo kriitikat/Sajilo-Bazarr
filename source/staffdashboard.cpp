@@ -189,8 +189,8 @@ void StaffDashboard::loadCurrentUserInfo()
     if (m_staffId < 0) {
         qWarning() << "StaffDashboard: no staffId supplied, cannot personalize dashboard";
         ui->welcomeLabel->setText(m_staffName.isEmpty()
-                                      ? QStringLiteral("Welcome back, Staff!")
-                                      : QStringLiteral("Welcome back, %1!").arg(m_staffName));
+                                       ? QStringLiteral("Welcome back, Staff!")
+                                       : QStringLiteral("Welcome back, %1!").arg(m_staffName));
         return;
     }
 
@@ -223,8 +223,8 @@ void StaffDashboard::loadCurrentUserInfo()
 
     ui->welcomeLabel->setText(
         firstName.isEmpty() ? QStringLiteral("Welcome back, %1!").arg(
-                                  m_staffName.isEmpty() ? QStringLiteral("Staff") : m_staffName)
-                            : QStringLiteral("Welcome back, %1!").arg(firstName));
+                                   m_staffName.isEmpty() ? QStringLiteral("Staff") : m_staffName)
+                             : QStringLiteral("Welcome back, %1!").arg(firstName));
 
     // ── Avatar ───────────────────────────────────────────────────
     QPixmap avatar;
@@ -273,8 +273,8 @@ void StaffDashboard::loadCurrentUserInfo()
 QPixmap StaffDashboard::makeCircularPixmap(const QPixmap &source, int diameter)
 {
     QPixmap scaled = source.scaled(diameter, diameter,
-                                   Qt::KeepAspectRatioByExpanding,
-                                   Qt::SmoothTransformation);
+                                    Qt::KeepAspectRatioByExpanding,
+                                    Qt::SmoothTransformation);
 
     QPixmap circular(diameter, diameter);
     circular.fill(Qt::transparent);
@@ -472,5 +472,5 @@ void StaffDashboard::handleViewTasksClicked()
         this->show();
     });
 
-    tasksPage->show();
+    tasksPage->showMaximized();
 }

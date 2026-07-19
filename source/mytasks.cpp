@@ -28,7 +28,6 @@ MyTasks::MyTasks(int staffId, const QString &staffName, QWidget *parent)
     , ui(new Ui::MyTasks)
 {
     ui->setupUi(this);
-    resize(800, 900);
 
     connect(ui->btnRefresh, &QPushButton::clicked, this, &MyTasks::refreshTasks);
 

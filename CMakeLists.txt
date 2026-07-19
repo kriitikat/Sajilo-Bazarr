@@ -20,6 +20,9 @@ set(PROJECT_SOURCES
        include/profile.h
        source/profile.cpp
        ui/profile.ui
+        include/frontprofile.h
+       source/frontprofile.cpp
+       ui/frontprofile.ui
        include/mytasks.h
        source/mytasks.cpp
        ui/mytasks.ui

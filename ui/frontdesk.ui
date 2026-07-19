@@ -48,9 +48,9 @@
     <widget class="QPushButton" name="staffBadge">
      <property name="geometry">
       <rect>
-       <x>880</x>
+       <x>820</x>
        <y>10</y>
-       <width>100</width>
+       <width>110</width>
        <height>30</height>
       </rect>
      </property>
@@ -59,6 +59,47 @@
      </property>
      <property name="text">
       <string>Front Desk</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="btnProfile">
+     <property name="geometry">
+      <rect>
+       <x>940</x>
+       <y>5</y>
+       <width>40</width>
+       <height>40</height>
+      </rect>
+     </property>
+     <property name="cursor">
+      <cursorShape>PointingHandCursor</cursorShape>
+     </property>
+     <property name="toolTip">
+      <string>View profile</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">
+QPushButton {
+border: 2px solid #ffffff;
+border-radius: 20px;
+background-color: #8a3b57;
+}
+
+QPushButton:hover {
+border: 2px solid #C9A227;
+}
+      </string>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="iconSize">
+      <size>
+       <width>36</width>
+       <height>36</height>
+      </size>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
      </property>
     </widget>
    </widget>
@@ -148,7 +189,7 @@
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">QPushButton { background-color: #8B0000; color: white; border: none; text-align: left; padding-left: 20px; font-size: 13px; } QPushButton:hover { background-color: #660000; }</string>
+      <string notr="true">QPushButton { background-color: #660033; color: white; border: none; text-align: left; padding-left: 20px; font-size: 13px; } QPushButton:hover { background-color: #4d0026; } QPushButton:pressed { background-color: #38001b; }</string>
      </property>
      <property name="text">
       <string>Logout</string>

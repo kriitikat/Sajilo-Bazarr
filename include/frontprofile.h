@@ -1,5 +1,5 @@
-#ifndef PROFILE_H
-#define PROFILE_H
+#ifndef FRONTPROFILE_H
+#define FRONTPROFILE_H
 
 #include <QDialog>
 #include <QString>
@@ -9,7 +9,7 @@ class QPushButton;
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
-class Profile;
+class FrontProfile;
 }
 QT_END_NAMESPACE
 
@@ -19,12 +19,12 @@ QT_END_NAMESPACE
 // person can update their email and phone number — each unlocked
 // individually via its own Edit button — and save the change back
 // to the database.
-class Profile : public QDialog
+class FrontProfile : public QDialog
 {
     Q_OBJECT
 public:
-    explicit Profile(const QString &username, QWidget *parent = nullptr);
-    ~Profile() override;
+    explicit FrontProfile(const QString &username, QWidget *parent = nullptr);
+    ~FrontProfile() override;
 
 signals:
     // Fired after a successful save, in case the caller (e.g. the
@@ -46,11 +46,12 @@ private:
 
     // Toggles a field between its locked (read-only) and unlocked
     // (editable) visual/interactive state. The actual colors for
-    // each state live in profile.ui via the "fieldEditable" dynamic
-    // property selectors — this just flips the property and re-polishes.
+    // each state live in frontprofile.ui via the "fieldEditable"
+    // dynamic property selectors — this just flips the property and
+    // re-polishes.
     void setFieldEditable(QLineEdit *field, QPushButton *editButton, bool editable);
 
-    Ui::Profile *ui;
+    Ui::FrontProfile *ui;
 
     QString m_username;
     QString m_originalEmail;
@@ -59,4 +60,4 @@ private:
     static constexpr int AVATAR_DIAMETER = 96;
 };
 
-#endif // PROFILE_H
+#endif // FRONTPROFILE_H

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Profile</class>
- <widget class="QDialog" name="Profile">
+ <class>FrontProfile</class>
+ <widget class="QDialog" name="FrontProfile">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -65,7 +65,7 @@ background-color: #F4F6FA;
      <property name="styleSheet">
       <string>
 QFrame#headerFrame {
-background-color: #660033;
+background-color: #1B2A4A;
 }
       </string>
      </property>
@@ -128,7 +128,7 @@ border: none;
         <property name="styleSheet">
          <string>
 QLabel {
-background-color: #8B0000;
+background-color: #4A9EE8;
 color: white;
 border-radius: 9px;
 padding: 3px 12px;
@@ -626,7 +626,7 @@ background-color: #D8DEE9;
         <property name="styleSheet">
          <string>
 QPushButton {
-background-color: #660033;
+background-color: #4A9EE8;
 color: white;
 border: none;
 border-radius: 6px;
@@ -635,7 +635,7 @@ font-weight: bold;
 }
 
 QPushButton:hover {
-background-color: #4A0026;
+background-color: #185FA5;
 }
          </string>
         </property>
