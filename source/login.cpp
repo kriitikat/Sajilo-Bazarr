@@ -289,8 +289,12 @@ void Login::openDashboard(int userId,
         w->show();
 
     } else if (role == "frontdesk") {
-        // frontdesk class name (lower-case) — matches frontdesk.h exactly
-        frontdesk *w = new frontdesk();
+        // frontdesk class name (lower-case) — matches frontdesk.h exactly.
+        // Constructor is frontdesk(int staffId, const QString &staffName,
+        // QWidget *parent = nullptr) — same shape as StaffDashboard, so the
+        // topbar welcome text/avatar and the FrontProfile it opens are
+        // personalized to whoever just logged in (e.g. Aayush_Thapa_Frontdesk).
+        frontdesk *w = new frontdesk(userId, fullName);
         w->setAttribute(Qt::WA_DeleteOnClose);
 
         // Same attendance hook as the staff branch above.

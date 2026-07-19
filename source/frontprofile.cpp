@@ -131,7 +131,7 @@ void FrontProfile::loadUserData()
         QPainter p(&avatar);
         p.setRenderHint(QPainter::Antialiasing);
         p.setPen(Qt::NoPen);
-        p.setBrush(QColor("#4A9EE8"));
+        p.setBrush(QColor("#660033"));
         p.drawEllipse(0, 0, AVATAR_DIAMETER, AVATAR_DIAMETER);
 
         QFont f = p.font();

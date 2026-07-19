@@ -65,7 +65,7 @@ background-color: #F4F6FA;
      <property name="styleSheet">
       <string>
 QFrame#headerFrame {
-background-color: #1B2A4A;
+background-color: #660033;
 }
       </string>
      </property>
@@ -128,7 +128,7 @@ border: none;
         <property name="styleSheet">
          <string>
 QLabel {
-background-color: #4A9EE8;
+background-color: #8a3b57;
 color: white;
 border-radius: 9px;
 padding: 3px 12px;
@@ -626,7 +626,7 @@ background-color: #D8DEE9;
         <property name="styleSheet">
          <string>
 QPushButton {
-background-color: #4A9EE8;
+background-color: #660033;
 color: white;
 border: none;
 border-radius: 6px;
@@ -635,7 +635,11 @@ font-weight: bold;
 }
 
 QPushButton:hover {
-background-color: #185FA5;
+background-color: #4d0026;
+}
+
+QPushButton:pressed {
+background-color: #38001b;
 }
          </string>
         </property>
