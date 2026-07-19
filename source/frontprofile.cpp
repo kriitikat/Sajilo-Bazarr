@@ -7,6 +7,9 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QDir>
 #include <QCoreApplication>
 #include <QRegularExpression>
 #include <QLineEdit>
@@ -26,6 +29,7 @@ FrontProfile::FrontProfile(const QString &username, QWidget *parent)
     connect(ui->btnCancel,     &QPushButton::clicked, this, &FrontProfile::handleCancelClicked);
     connect(ui->btnEditEmail,  &QPushButton::clicked, this, &FrontProfile::handleEditEmailClicked);
     connect(ui->btnEditPhone,  &QPushButton::clicked, this, &FrontProfile::handleEditPhoneClicked);
+    connect(ui->btnChangePhoto, &QPushButton::clicked, this, &FrontProfile::handleChangePhotoClicked);
 
     ui->statusMessageLabel->setVisible(false);
 
@@ -143,6 +147,11 @@ void FrontProfile::loadUserData()
     }
 
     ui->avatarLabel->setPixmap(makeCircularPixmap(avatar, AVATAR_DIAMETER));
+
+    // Baseline for Cancel to restore to, and a clean slate for a fresh
+    // Change Photo pick each time the dialog reloads.
+    m_originalAvatarPixmap = makeCircularPixmap(avatar, AVATAR_DIAMETER);
+    m_pendingPicturePath.clear();
 }
 
 QPixmap FrontProfile::makeCircularPixmap(const QPixmap &source, int diameter)
@@ -242,6 +251,61 @@ void FrontProfile::handleEditPhoneClicked()
 }
 
 // ─────────────────────────────────────────────────────────────────
+//  Lets the person pick a new photo and previews it immediately, but
+//  doesn't touch disk or the DB yet -- that only happens once they
+//  hit Save, same as email/phone. Cancel (or just closing without
+//  saving) discards the pick and reverts the preview.
+// ─────────────────────────────────────────────────────────────────
+void FrontProfile::handleChangePhotoClicked()
+{
+    const QString filePath = QFileDialog::getOpenFileName(
+        this, "Select Profile Photo", QString(),
+        "Images (*.png *.jpg *.jpeg)");
+
+    if (filePath.isEmpty())
+        return;
+
+    QFileInfo info(filePath);
+    if (info.size() > 5 * 1024 * 1024) {
+        showStatusMessage("That photo is larger than 5 MB. Please choose a smaller image.", true);
+        return;
+    }
+
+    QPixmap picked(filePath);
+    if (picked.isNull()) {
+        showStatusMessage("Could not load that image. Please choose a valid PNG or JPG file.", true);
+        return;
+    }
+
+    m_pendingPicturePath = filePath;
+    ui->avatarLabel->setPixmap(makeCircularPixmap(picked, AVATAR_DIAMETER));
+    showStatusMessage("Photo selected — click Save Changes to apply it.", false);
+}
+
+QString FrontProfile::copyPictureToStorage(const QString &sourceFilePath) const
+{
+    // Same folder/naming convention as register.cpp's
+    // copyPictureToStorage(): a bare "<username>.<ext>" filename, stored
+    // in information.picture the same way the seed data already does
+    // (e.g. "anushka.jpg", not a full path).
+    QDir dir(QStringLiteral("C:/Users/ASUS/Desktop/Sajilo-Bazarr/resources/staff_photos"));
+    if (!dir.exists() && !QDir().mkpath(dir.path()))
+        return QString();
+
+    const QString ext = QFileInfo(sourceFilePath).suffix().toLower();
+    const QString destFileName = m_username + (ext.isEmpty() ? QString() : "." + ext);
+    const QString destPath = dir.filePath(destFileName);
+
+    // Overwrite any previous photo for this username.
+    QFile::remove(destPath);
+
+    if (!QFile::copy(sourceFilePath, destPath))
+        return QString();
+
+    return destFileName;
+}
+
+// ─────────────────────────────────────────────────────────────────
 //  Validates + saves email/phone only. Username, name, role and
 //  status are never written back from this dialog.
 // ─────────────────────────────────────────────────────────────────
@@ -265,13 +329,28 @@ void FrontProfile::handleSaveClicked()
         return;
     }
 
-    if (newEmail == m_originalEmail && newPhone == m_originalPhone) {
+    if (newEmail == m_originalEmail && newPhone == m_originalPhone && m_pendingPicturePath.isEmpty()) {
         showStatusMessage("No changes to save.", false);
         return;
     }
 
+    QString newPictureFileName;
+    const bool photoChanged = !m_pendingPicturePath.isEmpty();
+    if (photoChanged) {
+        newPictureFileName = copyPictureToStorage(m_pendingPicturePath);
+        if (newPictureFileName.isEmpty()) {
+            showStatusMessage("Failed to save the selected photo. Please try again.", true);
+            return;
+        }
+    }
+
     QSqlQuery q;
-    q.prepare("UPDATE information SET email = :e, phone = :p WHERE username = :u");
+    if (photoChanged) {
+        q.prepare("UPDATE information SET email = :e, phone = :p, picture = :pic WHERE username = :u");
+        q.bindValue(":pic", newPictureFileName);
+    } else {
+        q.prepare("UPDATE information SET email = :e, phone = :p WHERE username = :u");
+    }
     q.bindValue(":e", newEmail);
     q.bindValue(":p", newPhone);
     q.bindValue(":u", m_username);
@@ -284,6 +363,13 @@ void FrontProfile::handleSaveClicked()
 
     m_originalEmail = newEmail;
     m_originalPhone = newPhone;
+
+    if (photoChanged) {
+        // The preview already shows the new photo (set on pick) -- just
+        // make it the new baseline and clear the pending state.
+        m_originalAvatarPixmap = ui->avatarLabel->pixmap();
+        m_pendingPicturePath.clear();
+    }
 
     // Relock both fields back to their default read-only state now
     // that the change is committed.
@@ -301,5 +387,11 @@ void FrontProfile::handleCancelClicked()
     ui->lePhone->setText(m_originalPhone);
     setFieldEditable(ui->leEmail, ui->btnEditEmail, false);
     setFieldEditable(ui->lePhone, ui->btnEditPhone, false);
+
+    if (!m_pendingPicturePath.isEmpty()) {
+        m_pendingPicturePath.clear();
+        ui->avatarLabel->setPixmap(m_originalAvatarPixmap);
+    }
+
     reject();
 }

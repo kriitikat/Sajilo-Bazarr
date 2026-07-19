@@ -95,6 +95,33 @@
     QPushButton#regenerateUsernameButton:hover { background-color: #F3E6EC; }
     QPushButton#regenerateUsernameButton:disabled { color: #C9A9BA; }
 
+    /* ── Profile photo picker ────────────────────────────────────────────
+       Circular preview matches the 96x96 avatar treatment used in
+       profile.ui/frontprofile.ui's headerFrame, recolored into this
+       screen's Burgundy/Garnet family instead of leaving it flat white. */
+    QLabel#avatarPreviewLabel {
+        background-color: #F3E6EC;
+        border: 2px solid #E6DEE1;
+        border-radius: 44px;
+        color: #A69AA0;
+        font-size: 10px;
+        qproperty-alignment: AlignCenter;
+    }
+    QPushButton#uploadPhotoButton {
+        background-color: #FFFFFF;
+        color: #660033;
+        border: 1px solid #E6DEE1;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    QPushButton#uploadPhotoButton:hover { background-color: #F3E6EC; }
+    QLabel#photoHintLabel {
+        font-size: 11px;
+        color: #A69AA0;
+        background: transparent;
+    }
+
     QLineEdit, QComboBox {
         border: 1px solid #E6DEE1;
         border-radius: 8px;
@@ -245,6 +272,46 @@
          <widget class="QLabel" name="subtitleLabel">
           <property name="text"><string>Sign up to join the Sajilo Bazar team</string></property>
           <property name="alignment"><set>Qt::AlignCenter</set></property>
+         </widget>
+        </item>
+
+        <!-- Section: Profile photo (optional) -->
+        <item>
+         <widget class="QGroupBox" name="photoGroup">
+          <property name="title"><string>Profile Photo (optional)</string></property>
+          <layout class="QHBoxLayout" name="photoGroupLayout">
+           <property name="spacing"><number>16</number></property>
+
+           <item>
+            <widget class="QLabel" name="avatarPreviewLabel">
+             <property name="minimumSize"><size><width>88</width><height>88</height></size></property>
+             <property name="maximumSize"><size><width>88</width><height>88</height></size></property>
+             <property name="text"><string>No Photo</string></property>
+             <property name="alignment"><set>Qt::AlignCenter</set></property>
+            </widget>
+           </item>
+
+           <item>
+            <layout class="QVBoxLayout" name="photoButtonsLayout">
+             <property name="spacing"><number>6</number></property>
+             <item>
+              <widget class="QPushButton" name="uploadPhotoButton">
+               <property name="minimumSize"><size><width>0</width><height>34</height></size></property>
+               <property name="maximumSize"><size><width>140</width><height>34</height></size></property>
+               <property name="cursor"><cursorShape>PointingHandCursor</cursorShape></property>
+               <property name="text"><string>Upload Photo</string></property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="photoHintLabel">
+               <property name="text"><string>JPG or PNG, up to 5&#160;MB</string></property>
+               <property name="wordWrap"><bool>true</bool></property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+
+          </layout>
          </widget>
         </item>
 

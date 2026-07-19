@@ -9,10 +9,17 @@
 #include <QComboBox>
 #include <QLabel>
 #include <QDateTime>
+#include <QMetaType>
 #include <QAction>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPixmap>
 #include <QStyle>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QFile>
+#include <QDir>
+#include <QVariant>
 
 namespace {
 // A text-only QAction on a QLineEdit renders nothing at runtime — only an
@@ -28,12 +35,12 @@ QIcon eyeIcon(bool passwordVisible)
     pixmap.fill(Qt::transparent);
     QPainter p(&pixmap);
     p.setRenderHint(QPainter::Antialiasing);
-    QPen pen(QColor("#8A7580"));
+    QPen pen(QColor(0x8A, 0x75, 0x80));
     pen.setWidthF(1.6);
     p.setPen(pen);
     p.setBrush(Qt::NoBrush);
     p.drawEllipse(QRectF(2, 6, 16, 8));
-    p.setBrush(QColor("#8A7580"));
+    p.setBrush(QColor(0x8A, 0x75, 0x80));
     p.drawEllipse(QRectF(8, 8, 4, 4));
     if (passwordVisible)
         p.drawLine(QPointF(3, 17), QPointF(17, 3));
@@ -64,6 +71,11 @@ Register::Register(QWidget *loginWindow)
 
     ui->usernameEdit->setReadOnly(true);
     ui->passwordStrengthBar->setValue(0);
+
+    // No photo chosen yet -- avatarPreviewLabel just shows its "No Photo"
+    // placeholder text/border from register.ui until updateAvatarPreview()
+    // is called with a real image.
+    ui->avatarPreviewLabel->setText("No Photo");
 
     // Password show/hide toggles.
     m_togglePasswordAction = ui->passwordEdit->addAction(eyeIcon(false), QLineEdit::TrailingPosition);
@@ -337,6 +349,84 @@ void Register::on_regenerateUsernameButton_clicked()
     setLabelState(ui->usernameHintLabel, "New ID generated: " + candidate, "success");
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+//  Profile photo
+// ─────────────────────────────────────────────────────────────────────────────
+
+void Register::on_uploadPhotoButton_clicked()
+{
+    const QString filePath = QFileDialog::getOpenFileName(
+        this, "Select Profile Photo", QString(),
+        "Images (*.png *.jpg *.jpeg)");
+
+    if (filePath.isEmpty())
+        return;
+
+    QFileInfo info(filePath);
+    if (info.size() > 5 * 1024 * 1024) {
+        setStatus("That photo is larger than 5 MB. Please choose a smaller image.", true);
+        return;
+    }
+
+    QPixmap pixmap(filePath);
+    if (pixmap.isNull()) {
+        setStatus("Could not load that image. Please choose a valid PNG or JPG file.", true);
+        return;
+    }
+
+    m_selectedPicturePath = filePath;
+    ui->photoHintLabel->setText(info.fileName());
+    updateAvatarPreview(pixmap);
+}
+
+void Register::updateAvatarPreview(const QPixmap &source)
+{
+    const int size = 88;
+
+    const QPixmap scaled = source.scaled(
+        size, size, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation);
+
+    QPixmap circular(size, size);
+    circular.fill(Qt::transparent);
+
+    QPainter p(&circular);
+    p.setRenderHint(QPainter::Antialiasing);
+    QPainterPath clip;
+    clip.addEllipse(0, 0, size, size);
+    p.setClipPath(clip);
+    // Center-crop in case the source isn't square.
+    p.drawPixmap(-(scaled.width() - size) / 2, -(scaled.height() - size) / 2, scaled);
+    p.end();
+
+    ui->avatarPreviewLabel->setText(QString());
+    ui->avatarPreviewLabel->setPixmap(circular);
+}
+
+QString Register::copyPictureToStorage(const QString &sourceFilePath,
+                                       const QString &username) const
+{
+    // Stored as a bare filename in the DB, the same convention
+    // information.picture already uses (e.g. "anushka.jpg", not a full
+    // path) -- whatever code displays a picture elsewhere in the app
+    // resolves it against this same folder.
+    QDir dir(QStringLiteral("C:/Users/ASUS/Desktop/Sajilo-Bazarr/resources/staff_photos"));
+    if (!dir.exists() && !QDir().mkpath(dir.path()))
+        return QString();
+
+    const QString ext = QFileInfo(sourceFilePath).suffix().toLower();
+    const QString destFileName = username + (ext.isEmpty() ? QString() : "." + ext);
+    const QString destPath = dir.filePath(destFileName);
+
+    // Overwrite any stale file left over from an earlier attempt with the
+    // same username (QFile::copy refuses to overwrite on its own).
+    QFile::remove(destPath);
+
+    if (!QFile::copy(sourceFilePath, destPath))
+        return QString();
+
+    return destFileName;
+}
+
 void Register::validateEmailLive()
 {
     const QString email = ui->emailEdit->text().trimmed();
@@ -482,6 +572,20 @@ void Register::on_submitButton_clicked()
         ui->usernameEdit->setText(username);
     }
 
+    // ── Save the chosen photo (if any) under its final username-based name ──
+    //    Done after the username is finalized above so the stored filename
+    //    can't end up mismatched with whatever username actually got saved.
+    QString pictureFileName;
+    if (!m_selectedPicturePath.isEmpty()) {
+        pictureFileName = copyPictureToStorage(m_selectedPicturePath, username);
+        if (pictureFileName.isEmpty()) {
+            setStatus("Could not save the selected photo. Please try again.", true);
+            ui->submitButton->setEnabled(true);
+            ui->submitButton->setText("Submit for Approval");
+            return;
+        }
+    }
+
     // ── Timestamp (local time, ISO-8601 format) ────────────────────────────
     const QString requestedAt =
         QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
@@ -492,8 +596,8 @@ void Register::on_submitButton_clicked()
     QSqlQuery insertQuery(db);
     insertQuery.prepare(
         "INSERT INTO pending_requests "
-        "(first_name, last_name, username, role, email, phone, password, requested_at) "
-        "VALUES (:first_name, :last_name, :username, :role, :email, :phone, :password, :requested_at)"
+        "(first_name, last_name, username, role, email, phone, picture, password, requested_at) "
+        "VALUES (:first_name, :last_name, :username, :role, :email, :phone, :picture, :password, :requested_at)"
         );
     insertQuery.bindValue(":first_name",   firstName);
     insertQuery.bindValue(":last_name",    lastName);
@@ -501,6 +605,7 @@ void Register::on_submitButton_clicked()
     insertQuery.bindValue(":role",         role);
     insertQuery.bindValue(":email",        email);
     insertQuery.bindValue(":phone",        phone);
+    insertQuery.bindValue(":picture",      pictureFileName.isEmpty() ? QVariant(QMetaType(QMetaType::QString)) : QVariant(pictureFileName));
     insertQuery.bindValue(":password",     hashPassword(password));
     insertQuery.bindValue(":requested_at", requestedAt);
 

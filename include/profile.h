@@ -2,6 +2,7 @@
 #define PROFILE_H
 
 #include <QDialog>
+#include <QPixmap>
 #include <QString>
 
 class QLineEdit;
@@ -36,6 +37,7 @@ private slots:
     void handleCancelClicked();
     void handleEditEmailClicked();
     void handleEditPhoneClicked();
+    void handleChangePhotoClicked();
 
 private:
     void loadUserData();
@@ -50,11 +52,27 @@ private:
     // property selectors — this just flips the property and re-polishes.
     void setFieldEditable(QLineEdit *field, QPushButton *editButton, bool editable);
 
+    // Copies a newly-picked photo (still just sitting wherever the user
+    // selected it from) into the shared staff photo folder as
+    // "<username>.<ext>" -- same convention/location register.cpp's
+    // copyPictureToStorage() already uses -- and returns that bare
+    // filename for storing in information.picture. Empty on failure.
+    QString copyPictureToStorage(const QString &sourceFilePath) const;
+
     Ui::Profile *ui;
 
     QString m_username;
     QString m_originalEmail;
     QString m_originalPhone;
+
+    // Path (on disk) of a photo picked via Change Photo but not yet
+    // saved. The preview updates immediately on pick; the actual file
+    // copy + DB write only happens on Save. Cleared on Save or Cancel.
+    QString m_pendingPicturePath;
+
+    // The circular avatar as it looked before any pending photo pick,
+    // so Cancel can restore it without re-hitting the DB.
+    QPixmap m_originalAvatarPixmap;
 
     static constexpr int AVATAR_DIAMETER = 96;
 };

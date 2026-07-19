@@ -2,6 +2,7 @@
 #define REGISTER_H
 
 #include <QMainWindow>
+#include <QPixmap>
 #include <QSet>
 #include <QString>
 
@@ -38,6 +39,7 @@ private slots:
     void updatePasswordStrength(const QString &text);
     void togglePasswordVisibility();
     void toggleConfirmPasswordVisibility();
+    void on_uploadPhotoButton_clicked();
 
 private:
     Ui::Register *ui;
@@ -51,6 +53,12 @@ private:
     // never shows the same suggestion twice in a row).
     QString      m_lastBaseUsername;
     QSet<QString> m_rejectedUsernames;
+
+    // Full path (on disk, wherever the user picked it from) of the photo
+    // they selected via the Upload Photo button, if any. Empty means no
+    // photo was chosen -- pending_requests.picture is left NULL, same as
+    // the existing seed rows that have no picture.
+    QString m_selectedPicturePath;
 
     QString hashPassword(const QString &plainText) const;
     QString sanitizeNamePart(const QString &part) const;
@@ -67,6 +75,20 @@ private:
     int  passwordStrength(const QString &password) const;
 
     void setStatus(const QString &message, bool isError);
+
+    // Renders `source` into avatarPreviewLabel as a circular 88x88 crop,
+    // matching the avatar treatment already used in profile.ui /
+    // frontprofile.ui's header.
+    void updateAvatarPreview(const QPixmap &source);
+
+    // Copies the picked photo into
+    // C:\Users\ASUS\Desktop\Sajilo-Bazarr\resources\staff_photos as
+    // "<username>.<ext>" and returns that filename -- stored in
+    // the DB the same way information.picture already stores bare
+    // filenames like "anushka.jpg" (not a full path). Returns an empty
+    // string on failure.
+    QString copyPictureToStorage(const QString &sourceFilePath,
+                                 const QString &username) const;
 
     // ── State-only helpers (no colors/fonts touched here) ─────────────────
     // These just set text + a "state" dynamic property (e.g. "success",

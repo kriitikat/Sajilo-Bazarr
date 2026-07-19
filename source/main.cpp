@@ -214,10 +214,20 @@ const QVector<QString> kStatements = {
         role         TEXT NOT NULL CHECK(role IN ('staff','frontdesk')),
         email        TEXT NOT NULL,
         phone        TEXT NOT NULL,
+        picture      TEXT,
         password     TEXT NOT NULL,
         requested_at TEXT NOT NULL
     );
     )sql"),
+
+    // Same bare-filename convention as information.picture (e.g.
+    // "anushka.jpg"), resolved against the profile_pictures/ folder that
+    // Register::copyPictureToStorage() writes into. Kept as its own ALTER
+    // TABLE (like tasks.category/created_at/staff_id above) so it's added
+    // for anyone with an existing bazar1.db from before this column
+    // existed -- the "duplicate column name" case is already handled as
+    // non-fatal below.
+    QStringLiteral(R"sql(ALTER TABLE pending_requests ADD COLUMN picture TEXT;)sql"),
 
     QStringLiteral(R"sql(
     INSERT OR IGNORE INTO sqlite_sequence (name, seq) VALUES

@@ -76,7 +76,7 @@ background-color: #660033;
       <property name="topMargin">
        <number>20</number>
       </property>
-      <item>
+      <item alignment="Qt::AlignmentFlag::AlignHCenter">
        <widget class="QLabel" name="avatarLabel">
         <property name="minimumSize">
          <size>
@@ -100,6 +100,32 @@ background-color: transparent;
         </property>
         <property name="alignment">
          <set>Qt::AlignmentFlag::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
+      <item alignment="Qt::AlignmentFlag::AlignHCenter">
+       <widget class="QPushButton" name="btnChangePhoto">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="styleSheet">
+         <string>
+QPushButton {
+background-color: transparent;
+color: #F3D9E4;
+border: none;
+font-size: 11px;
+font-weight: 600;
+text-decoration: underline;
+padding: 0px;
+}
+QPushButton:hover {
+color: white;
+}
+         </string>
+        </property>
+        <property name="text">
+         <string>Change Photo</string>
         </property>
        </widget>
       </item>
