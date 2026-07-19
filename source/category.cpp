@@ -44,7 +44,7 @@ category::category(QWidget *parent)
     header->resizeSection(COL_ID,      60);
     header->resizeSection(COL_ACTIONS, 170);
 
-    connect(ui->addCategoryBtn, &QPushButton::clicked, this, &category::on_addCategoryBtn_clicked);
+
     connect(ui->backToDashboardBtn, &QPushButton::clicked, this, &category::backToDashboardRequested);
 
     loadCategoriesTable();
