@@ -35,7 +35,7 @@ public:
     ~StaffDashboard() override;
 
 private slots:
-    void handleProductsClicked();   // renamed to avoid Qt auto-connect double-firing
+    void handleProductsClicked();   // opens ProductStaff as its own top-level window
     void refreshDashboardStats();   // re-pulls counts + low stock rows from DB
     void handleProfileClicked();    // opens Profile for the currently logged-in staff
     void on_btnViewTasks_clicked(); // opens MyTasks, filtered by this staff member's id

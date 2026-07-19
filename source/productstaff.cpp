@@ -3,9 +3,10 @@
 //  productstaff.cpp
 //  Reads/writes bazar.db → products table.
 //  Shared fetch/table/search/filter/pagination/delete logic lives in
-//  ProductBase. This file adds what is unique to staff: "Add Product"
-//  and the full expiry-warning system (checkbox filter + colour-coded
-//  ⚠ / ⛔ labels), which now lives here instead of on the admin page.
+//  ProductBase. This file adds what is unique to staff: "Add Product",
+//  "Back to Dashboard", and the full expiry-warning system (checkbox
+//  filter + colour-coded ⚠ / ⛔ labels), which now lives here instead
+//  of on the admin page.
 // ═══════════════════════════════════════════════════════════════════
 
 #include "../include/productstaff.h"
@@ -38,6 +39,21 @@
 #include <climits>
 
 constexpr int ProductStaff::EXPIRY_WARNING_DAYS;   // out-of-class definition (C++17 odr-use safety)
+
+// ═══════════════════════════════════════════════════════════════════
+//  Luxury theme palette (Burgundy / Garnet) — used for the bits of UI
+//  that are built in C++ rather than styled purely from the .ui file
+//  (the dialog, row action buttons, expiry-cell decoration).
+// ═══════════════════════════════════════════════════════════════════
+namespace Theme {
+constexpr const char *Burgundy    = "#660033";
+constexpr const char *BurgundyDk  = "#4D0026";
+constexpr const char *BurgundyBg  = "#F3E6EC"; // light tint for hover/edit states
+constexpr const char *Garnet      = "#8B0000";
+constexpr const char *GarnetBg    = "#FBEAE8";
+constexpr const char *WarningTxt  = "#856404"; // kept semantic: amber = "expiring soon"
+constexpr const char *WarningBg   = "#FFF3CD";
+}
 
 // ── Static data ───────────────────────────────────────────────────
 QStringList ProductStaff::s_units = {
@@ -74,11 +90,12 @@ void ProductStaffDialog::setupUi()
     auto *lblTitle = new QLabel(
         m_editMode ? "✏  Edit Product" : "➕  Add New Product", this);
     lblTitle->setStyleSheet(
-        "font-size:16px; font-weight:bold; color:#1B5E3C; padding:6px 0;");
+        QString("font-size:16px; font-weight:bold; color:%1; padding:6px 0;")
+            .arg(Theme::Burgundy));
 
     auto *separator = new QFrame(this);
     separator->setFrameShape(QFrame::HLine);
-    separator->setStyleSheet("color:#DDE3EC;");
+    separator->setStyleSheet("color:#E6DEE1;");
 
     // ── Fields ──────────────────────────────────────────────────
     txtName = new QLineEdit(this);
@@ -122,9 +139,10 @@ void ProductStaffDialog::setupUi()
     btnGenSku = new QPushButton("⟳ Generate", this);
     btnGenSku->setFixedWidth(100);
     btnGenSku->setStyleSheet(
-        "QPushButton{background:#E6F4EA;color:#1B5E3C;border:1px solid #1B5E3C;"
-        "border-radius:4px;padding:5px;}"
-        "QPushButton:hover{background:#C8E6D0;}");
+        QString("QPushButton{background:%1;color:%2;border:1px solid %2;"
+                "border-radius:4px;padding:5px;}"
+                "QPushButton:hover{background:#E6CCDA;}")
+            .arg(Theme::BurgundyBg, Theme::Burgundy));
     connect(btnGenSku, &QPushButton::clicked, this, &ProductStaffDialog::onGenerateSku);
 
     auto *skuRow = new QHBoxLayout;
@@ -138,7 +156,7 @@ void ProductStaffDialog::setupUi()
 
     auto makeLabel = [](const QString &txt) {
         auto *l = new QLabel(txt);
-        l->setStyleSheet("font-weight:600; color:#2C3E50;");
+        l->setStyleSheet("font-weight:600; color:#2C2C2C;");
         return l;
     };
 
@@ -157,13 +175,14 @@ void ProductStaffDialog::setupUi()
     btnCancel = new QPushButton("✕  Cancel", this);
 
     btnSave->setStyleSheet(
-        "QPushButton{background:#1B8A44;color:white;border:none;border-radius:6px;"
-        "padding:8px 22px;font-weight:bold;}"
-        "QPushButton:hover{background:#146C36;}");
+        QString("QPushButton{background:%1;color:white;border:none;border-radius:6px;"
+                "padding:8px 22px;font-weight:bold;}"
+                "QPushButton:hover{background:%2;}")
+            .arg(Theme::Burgundy, Theme::BurgundyDk));
     btnCancel->setStyleSheet(
-        "QPushButton{background:#E8EAED;color:#444;border:none;border-radius:6px;"
+        "QPushButton{background:#EFE9EB;color:#444;border:none;border-radius:6px;"
         "padding:8px 22px;}"
-        "QPushButton:hover{background:#D2D5DB;}");
+        "QPushButton:hover{background:#DDD1D6;}");
 
     connect(btnSave,   &QPushButton::clicked, this, &ProductStaffDialog::onAccept);
     connect(btnCancel, &QPushButton::clicked, this, &QDialog::reject);
@@ -183,19 +202,19 @@ void ProductStaffDialog::setupUi()
     master->addLayout(btnRow);
     master->addSpacing(4);
 
-    setStyleSheet(R"(
+    setStyleSheet(QString(R"(
         QDialog { background:#FFFFFF; }
         QLineEdit, QComboBox, QSpinBox, QDateEdit {
-            background:#FFFFFF; border:1px solid #C8D0DC;
+            background:#FFFFFF; border:1px solid #D8CBD0;
             border-radius:5px; padding:5px 8px; min-height:28px;
         }
         QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDateEdit:focus {
-            border:1px solid #1B8A44;
+            border:1px solid %1;
         }
         QLineEdit:read-only {
-            background:#F0F2F5; color:#7F8C8D;
+            background:#F2EDEF; color:#8A7E82;
         }
-    )");
+    )").arg(Theme::Burgundy));
 }
 
 void ProductStaffDialog::populateFields(const ProductRecord &p)
@@ -312,6 +331,14 @@ ProductStaff::ProductStaff(QWidget *parent)
     connect(ui->tblProducts,   &QTableWidget::cellDoubleClicked,
             this,              &ProductStaff::onTableDoubleClicked);
 
+    // "Back to Dashboard" simply closes this window. Because
+    // StaffDashboard constructs this page with no parent and
+    // WA_DeleteOnClose, and listens for its destroyed() signal,
+    // closing here is all it takes for the dashboard to reappear
+    // (refreshed) on its own — no direct coupling needed.
+    connect(ui->btnBackDashboard, &QPushButton::clicked,
+            this,                 &QWidget::close);
+
     // Common wiring (columns, search/filter/pagination, initial load)
     // + setupExtraUi()/connectExtraSignals() below (expiry checkbox).
     initializeCommonUi();
@@ -389,13 +416,13 @@ void ProductStaff::decorateExpiryCell(QTableWidgetItem *item, int daysLeft) cons
         return;
 
     if (daysLeft <= 1) {
-        item->setForeground(QColor("#C0392B"));
-        item->setBackground(QColor("#FDEDEC"));
+        item->setForeground(QColor(Theme::Garnet));
+        item->setBackground(QColor(Theme::GarnetBg));
         QFont f; f.setBold(true);
         item->setFont(f);
     } else if (daysLeft <= EXPIRY_WARNING_DAYS) {
-        item->setForeground(QColor("#856404"));
-        item->setBackground(QColor("#FFF3CD"));
+        item->setForeground(QColor(Theme::WarningTxt));
+        item->setBackground(QColor(Theme::WarningBg));
     }
 }
 
@@ -414,13 +441,15 @@ void ProductStaff::addActionButtons(int row, const ProductRecord &p)
     btnDel ->setProperty("productId", p.id());
 
     btnEdit->setStyleSheet(
-        "QPushButton{background:#E6F4EA;color:#1B5E3C;border:1px solid #1B5E3C;"
-        "border-radius:4px;padding:3px 10px;font-size:12px;}"
-        "QPushButton:hover{background:#C8E6D0;}");
+        QString("QPushButton{background:%1;color:%2;border:1px solid %2;"
+                "border-radius:4px;padding:3px 10px;font-size:12px;}"
+                "QPushButton:hover{background:#E6CCDA;}")
+            .arg(Theme::BurgundyBg, Theme::Burgundy));
     btnDel->setStyleSheet(
-        "QPushButton{background:#FDEDEC;color:#C0392B;border:1px solid #F5B7B1;"
-        "border-radius:4px;padding:3px 10px;font-size:12px;}"
-        "QPushButton:hover{background:#FADBD8;}");
+        QString("QPushButton{background:%1;color:%2;border:1px solid #E8B4AE;"
+                "border-radius:4px;padding:3px 10px;font-size:12px;}"
+                "QPushButton:hover{background:#F5D2CD;}")
+            .arg(Theme::GarnetBg, Theme::Garnet));
 
     connect(btnEdit, &QPushButton::clicked, this, &ProductStaff::onEditProduct);
     connect(btnDel,  &QPushButton::clicked, this, &ProductStaff::onDeleteProduct);

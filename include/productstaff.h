@@ -56,6 +56,11 @@ private:
 //  Inherits shared fetch/table/search/filter/pagination/delete
 //  logic from ProductBase, and additionally owns:
 //    • "Add Product" (staff-only capability)
+//    • "Back to Dashboard" — closes this page; StaffDashboard is
+//      listening for this window's destroyed() signal and re-shows
+//      itself (refreshed) the moment that happens. This is what
+//      makes ProductStaff behave like a proper "page" instead of an
+//      overlapping child widget.
 //    • The full expiry-warning system (checkbox filter +
 //      colour-coded ⚠ / ⛔ labels on the Expiry column), which
 //      used to live on the admin Product page and has moved here.

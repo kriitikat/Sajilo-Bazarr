@@ -16,14 +16,14 @@
   <property name="styleSheet">
    <string notr="true">
 QWidget {
-    background-color: #F4F6F9;
+    background-color: #F7F4F5;
     font-family: &quot;Segoe UI&quot;, sans-serif;
     font-size: 13px;
-    color: #2C3E50;
+    color: #2C2C2C;
 }
 QGroupBox {
     background-color: #FFFFFF;
-    border: 1px solid #DDE3EC;
+    border: 1px solid #E6DEE1;
     border-radius: 8px;
     margin-top: 10px;
     padding: 10px;
@@ -32,21 +32,33 @@ QGroupBox::title {
     subcontrol-origin: margin;
     left: 12px;
     padding: 0 6px;
-    color: #1B8A44;
+    color: #660033;
     font-weight: bold;
 }
 QLineEdit, QComboBox {
     background-color: #FFFFFF;
-    border: 1px solid #C8D0DC;
+    border: 1px solid #D8CBD0;
     border-radius: 5px;
     padding: 5px 8px;
     min-height: 28px;
 }
 QLineEdit:focus, QComboBox:focus {
-    border: 1px solid #1B8A44;
+    border: 1px solid #660033;
+}
+QPushButton#btnBackDashboard {
+    background-color: transparent;
+    color: #660033;
+    border: 1px solid #660033;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: bold;
+    font-size: 13px;
+}
+QPushButton#btnBackDashboard:hover {
+    background-color: #F3E6EC;
 }
 QPushButton#btnAddProduct {
-    background-color: #1B8A44;
+    background-color: #660033;
     color: white;
     border: none;
     border-radius: 6px;
@@ -55,20 +67,20 @@ QPushButton#btnAddProduct {
     font-size: 13px;
 }
 QPushButton#btnAddProduct:hover {
-    background-color: #146C36;
+    background-color: #4D0026;
 }
 QPushButton#btnClearSearch {
-    background-color: #E8EAED;
+    background-color: #EFE9EB;
     color: #444;
     border: none;
     border-radius: 6px;
     padding: 6px 14px;
 }
 QPushButton#btnClearSearch:hover {
-    background-color: #D2D5DB;
+    background-color: #DDD1D6;
 }
 QPushButton#btnPrevPage, QPushButton#btnNextPage {
-    background-color: #1B8A44;
+    background-color: #660033;
     color: white;
     border: none;
     border-radius: 6px;
@@ -77,26 +89,26 @@ QPushButton#btnPrevPage, QPushButton#btnNextPage {
     font-size: 12px;
 }
 QPushButton#btnPrevPage:hover, QPushButton#btnNextPage:hover {
-    background-color: #146C36;
+    background-color: #4D0026;
 }
 QPushButton#btnPrevPage:disabled, QPushButton#btnNextPage:disabled {
-    background-color: #C8CDD4;
-    color: #F4F6F9;
+    background-color: #CDBFC4;
+    color: #F7F4F5;
 }
 QTableWidget {
     background-color: #FFFFFF;
-    border: 1px solid #DDE3EC;
+    border: 1px solid #E6DEE1;
     border-radius: 8px;
-    gridline-color: #EEF1F6;
-    selection-background-color: #E6F4EA;
-    selection-color: #1B8A44;
-    alternate-background-color: #F5FBF7;
+    gridline-color: #EEE3E7;
+    selection-background-color: #F3E6EC;
+    selection-color: #660033;
+    alternate-background-color: #FBF6F8;
 }
 QTableWidget::item {
     padding: 6px 10px;
 }
 QHeaderView::section {
-    background-color: #1B8A44;
+    background-color: #660033;
     color: white;
     font-weight: bold;
     padding: 8px 10px;
@@ -105,16 +117,24 @@ QHeaderView::section {
 QLabel#lblTitle {
     font-size: 22px;
     font-weight: bold;
-    color: #1B8A44;
+    color: #660033;
 }
 QLabel#lblSubtitle {
     font-size: 12px;
-    color: #7F8C8D;
+    color: #8A7E82;
 }
 QLabel#lblPageInfo {
-    color: #1B8A44;
+    color: #660033;
     font-weight: bold;
     font-size: 13px;
+}
+QCheckBox {
+    color: #660033;
+    font-weight: 600;
+}
+QCheckBox::indicator:checked {
+    background-color: #C9A227;
+    border: 1px solid #C9A227;
 }
    </string>
   </property>
@@ -124,6 +144,16 @@ QLabel#lblPageInfo {
    </property>
    <item>
     <layout class="QHBoxLayout" name="headerLayout">
+     <item>
+      <widget class="QPushButton" name="btnBackDashboard">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>←  Dashboard</string>
+       </property>
+      </widget>
+     </item>
      <item>
       <layout class="QVBoxLayout">
        <item>
@@ -232,7 +262,7 @@ QLabel#lblPageInfo {
       <item>
        <widget class="QLabel" name="lblTotalProducts">
         <property name="styleSheet">
-         <string>color:#1B8A44; font-weight:bold;</string>
+         <string>color:#660033; font-weight:bold;</string>
         </property>
         <property name="text">
          <string>Total: 0</string>
@@ -397,7 +427,7 @@ QLabel#lblPageInfo {
    <item>
     <widget class="QLabel" name="lblStatusBar">
      <property name="styleSheet">
-      <string>color: #7F8C8D; font-size: 11px; padding: 2px 4px;</string>
+      <string>color: #8A7E82; font-size: 11px; padding: 2px 4px;</string>
      </property>
      <property name="text">
       <string>Ready</string>

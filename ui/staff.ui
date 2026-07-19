@@ -210,7 +210,7 @@ QPushButton:hover {
 }</string>
        </property>
        <property name="text">
-        <string>Supplier</string>
+        <string>Staff Performance</string>
        </property>
       </widget>
      </item>

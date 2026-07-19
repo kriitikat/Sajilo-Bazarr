@@ -23,6 +23,23 @@
 #include <QFont>
 #include <QIcon>
 
+// ═══════════════════════════════════════════════════════════════════
+//  Luxury theme palette (Burgundy / Garnet)
+//  Kept as named constants here so every hard-coded colour used from
+//  C++ (avatar, stat cards, table rows) stays in lock-step with the
+//  palette baked into staffdashboard.ui's stylesheet.
+// ═══════════════════════════════════════════════════════════════════
+namespace Theme {
+constexpr const char *Burgundy      = "#660033"; // primary brand colour
+constexpr const char *BurgundyDark  = "#4D0026"; // hover / pressed
+constexpr const char *Garnet        = "#8B0000"; // secondary / danger accent
+constexpr const char *Gold          = "#C9A227"; // luxury highlight accent
+constexpr const char *Plum          = "#5B2C4D"; // 4th stat-card accent
+constexpr const char *DangerBg      = "#FBEAE8";
+constexpr const char *WarningText   = "#856404"; // kept semantic (amber = low stock)
+constexpr const char *WarningBg     = "#FFF3CD";
+}
+
 StaffDashboard::StaffDashboard(int staffId, const QString &staffName, QWidget *parent)
     : ClassLogout(parent)
     , ui(new Ui::StaffDashboard)
@@ -103,21 +120,22 @@ void StaffDashboard::setupDashboardContent()
         cardLayout->setContentsMargins(16, 12, 16, 12);
 
         auto *titleLbl = new QLabel(title);
-        titleLbl->setStyleSheet("color: #6B7280; font-size: 12px; border: none;");
+        titleLbl->setStyleSheet("color: #8A7E82; font-size: 12px; border: none;");
 
         valueLabelOut = new QLabel("0");
         valueLabelOut->setStyleSheet(
-            "color: #1B2A4A; font-size: 24px; font-weight: bold; border: none;");
+            QString("color: %1; font-size: 24px; font-weight: bold; border: none;")
+                .arg(Theme::Burgundy));
 
         cardLayout->addWidget(titleLbl);
         cardLayout->addWidget(valueLabelOut);
         return card;
     };
 
-    QFrame *cardTotal   = makeCard("Total Products",  lblTotalProducts,   "#4A9EE8");
-    QFrame *cardLow     = makeCard("Low Stock",        lblLowStockCount,   "#E8A94A");
-    QFrame *cardOut     = makeCard("Out of Stock",     lblOutOfStockCount, "#E85D4A");
-    QFrame *cardTasks   = makeCard("Pending Tasks",    lblPendingTasks,    "#8A4AE8");
+    QFrame *cardTotal   = makeCard("Total Products",  lblTotalProducts,   Theme::Burgundy);
+    QFrame *cardLow     = makeCard("Low Stock",        lblLowStockCount,   Theme::Gold);
+    QFrame *cardOut     = makeCard("Out of Stock",     lblOutOfStockCount, Theme::Garnet);
+    QFrame *cardTasks   = makeCard("Pending Tasks",    lblPendingTasks,    Theme::Plum);
 
     cardsRow->addWidget(cardTotal, 0, 0);
     cardsRow->addWidget(cardLow,   0, 1);
@@ -129,7 +147,8 @@ void StaffDashboard::setupDashboardContent()
     // ── Low stock table heading ─────────────────────────────────
     auto *lowStockHeading = new QLabel("Low Stock Items");
     lowStockHeading->setStyleSheet(
-        "color: #1B2A4A; font-size: 14px; font-weight: bold; margin-top: 10px;");
+        QString("color: %1; font-size: 14px; font-weight: bold; margin-top: 10px;")
+            .arg(Theme::Burgundy));
     contentLayout->addWidget(lowStockHeading);
 
     // ── Low stock table ──────────────────────────────────────────
@@ -146,7 +165,11 @@ void StaffDashboard::setupDashboardContent()
     tblLowStock->setColumnWidth(3, 70);
     tblLowStock->setColumnWidth(4, 110);
     tblLowStock->setStyleSheet(
-        "QTableWidget { background-color: white; border-radius: 6px; }");
+        "QTableWidget { background-color: white; border-radius: 6px; "
+        "  gridline-color: #EEE3E7; selection-background-color: #F3E6EC; "
+        "  selection-color: #660033; }"
+        "QHeaderView::section { background-color: #660033; color: white; "
+        "  font-weight: bold; padding: 6px 8px; border: none; }");
 
     contentLayout->addWidget(tblLowStock);
     contentLayout->addStretch();
@@ -232,7 +255,7 @@ void StaffDashboard::loadCurrentUserInfo()
         QPainter p(&avatar);
         p.setRenderHint(QPainter::Antialiasing);
         p.setPen(Qt::NoPen);
-        p.setBrush(QColor("#4A9EE8"));
+        p.setBrush(QColor(Theme::Burgundy));
         p.drawEllipse(0, 0, AVATAR_DIAMETER, AVATAR_DIAMETER);
 
         QFont f = p.font();
@@ -338,9 +361,9 @@ void StaffDashboard::refreshDashboardStats()
         auto *itemStock = new QTableWidgetItem(QString::number(stock));
         itemStock->setTextAlignment(Qt::AlignCenter);
         if (stock <= 0) {
-            itemStock->setForeground(QColor("#C0392B"));
+            itemStock->setForeground(QColor(Theme::Garnet));
         } else {
-            itemStock->setForeground(QColor("#E8A94A"));
+            itemStock->setForeground(QColor("#B8860B")); // warm amber-gold, low (not out) stock
         }
 
         auto *itemUnit = new QTableWidgetItem(q.value(3).toString());
@@ -349,11 +372,11 @@ void StaffDashboard::refreshDashboardStats()
         auto *itemStatus = new QTableWidgetItem(q.value(4).toString());
         itemStatus->setTextAlignment(Qt::AlignCenter);
         if (stock <= 0) {
-            itemStatus->setForeground(QColor("#C0392B"));
-            itemStatus->setBackground(QColor("#FDEDEC"));
+            itemStatus->setForeground(QColor(Theme::Garnet));
+            itemStatus->setBackground(QColor(Theme::DangerBg));
         } else {
-            itemStatus->setForeground(QColor("#856404"));
-            itemStatus->setBackground(QColor("#FFF3CD"));
+            itemStatus->setForeground(QColor(Theme::WarningText));
+            itemStatus->setBackground(QColor(Theme::WarningBg));
         }
 
         tblLowStock->setItem(row, 0, itemName);
@@ -365,10 +388,35 @@ void StaffDashboard::refreshDashboardStats()
     }
 }
 
+// ─────────────────────────────────────────────────────────────────
+//  Opens the Products page.
+//
+//  BUG THIS FIXES: the old code did `new ProductStaff(this)` and then
+//  ->show(). Handing a *parent* to a plain QWidget (not a QDialog,
+//  and without the Qt::Window flag) makes Qt treat it as a CHILD
+//  widget of StaffDashboard rather than its own top-level window —
+//  so it was literally being drawn on top of / inside the dashboard
+//  at position (0,0), which is exactly the "overlapping" you saw.
+//
+//  Fix: construct ProductStaff with NO parent so Qt always treats it
+//  as an independent top-level window, hide the dashboard while it's
+//  open (so only one screen is visible at a time, like a real page
+//  switch), and bring the dashboard back — refreshed — the instant
+//  the product page is closed, whether that happens via the new
+//  "Back to Dashboard" button or the window's own [X].
+// ─────────────────────────────────────────────────────────────────
 void StaffDashboard::handleProductsClicked()
 {
-    ProductStaff *productPage = new ProductStaff(this); // Passing 'this' handles memory automatically
+    this->hide();
+
+    ProductStaff *productPage = new ProductStaff(); // no parent -> real top-level window
     productPage->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(productPage, &QObject::destroyed, this, [this]() {
+        refreshDashboardStats(); // stock may have changed while we were away
+        this->show();
+    });
+
     productPage->show();
 }
 
