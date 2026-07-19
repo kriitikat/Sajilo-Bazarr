@@ -19,7 +19,6 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QFile>
-#include <QCoreApplication>
 #include <QFont>
 #include <QIcon>
 
@@ -231,9 +230,14 @@ void StaffDashboard::loadCurrentUserInfo()
     bool loaded = false;
 
     if (!picture.isEmpty()) {
-        // Adjust this if staff photos live somewhere else in your project.
+        // Must match Profile/FrontProfile/Register's copyPictureToStorage()
+        // save location exactly -- this used to read from
+        // applicationDirPath()-relative resources/staff_photos/, which is
+        // wherever the .exe happens to run from and doesn't match the
+        // fixed save path below, so newly saved/approved photos never
+        // showed up in the topbar icon even though the file was on disk.
         const QString diskPath =
-            QCoreApplication::applicationDirPath() + "/resources/staff_photos/" + picture;
+            QStringLiteral("C:/Users/ASUS/Desktop/Sajilo-Bazarr/resources/staff_photos/") + picture;
 
         if (QFile::exists(diskPath))
             loaded = avatar.load(diskPath);

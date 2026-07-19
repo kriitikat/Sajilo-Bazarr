@@ -10,7 +10,6 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QDir>
-#include <QCoreApplication>
 #include <QRegularExpression>
 #include <QLineEdit>
 #include <QPushButton>
@@ -113,8 +112,14 @@ void Profile::loadUserData()
     bool loaded = false;
 
     if (!picture.isEmpty()) {
+        // Must match copyPictureToStorage()'s save location exactly --
+        // previously this read from applicationDirPath()-relative
+        // resources/staff_photos/, which is wherever the .exe happens to
+        // run from and doesn't match the fixed save path below, so newly
+        // saved/approved photos never showed up here even though the
+        // file really was on disk.
         const QString diskPath =
-            QCoreApplication::applicationDirPath() + "/resources/staff_photos/" + picture;
+            QStringLiteral("C:/Users/ASUS/Desktop/Sajilo-Bazarr/resources/staff_photos/") + picture;
 
         if (QFile::exists(diskPath))
             loaded = avatar.load(diskPath);
