@@ -19,19 +19,21 @@ namespace {
 // icon is shown by Qt's built-in line-edit action widget. Drawn here
 // instead of shipping a separate icon asset. This is functional icon
 // drawing, not a design/coloring choice, so it stays in code the same way
-// any other procedurally-generated graphic would.
+// any other procedurally-generated graphic would. Stroke color (#8A7580)
+// matches the muted tone used by Login::makeEyeIcon() in login.cpp, kept
+// in sync with register.ui's new Burgundy/Garnet palette.
 QIcon eyeIcon(bool passwordVisible)
 {
     QPixmap pixmap(20, 20);
     pixmap.fill(Qt::transparent);
     QPainter p(&pixmap);
     p.setRenderHint(QPainter::Antialiasing);
-    QPen pen(QColor("#7a8aaa"));
+    QPen pen(QColor("#8A7580"));
     pen.setWidthF(1.6);
     p.setPen(pen);
     p.setBrush(Qt::NoBrush);
     p.drawEllipse(QRectF(2, 6, 16, 8));
-    p.setBrush(QColor("#7a8aaa"));
+    p.setBrush(QColor("#8A7580"));
     p.drawEllipse(QRectF(8, 8, 4, 4));
     if (passwordVisible)
         p.drawLine(QPointF(3, 17), QPointF(17, 3));

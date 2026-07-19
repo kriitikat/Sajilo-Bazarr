@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Sql PrintSupport Charts)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Sql PrintSupport Charts)
 set(PROJECT_SOURCES
+
        include/staffperform.h
        source/staffperform.cpp
        ui/staffperform.ui
@@ -23,6 +24,8 @@ set(PROJECT_SOURCES
        source/mytasks.cpp
        ui/mytasks.ui
        resources.qrc
+       resources/images/login_bg.jpg
+       resources/images/sajilobazar_logo.png
        app.rc
        source/main.cpp
        source/login.cpp

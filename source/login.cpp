@@ -21,6 +21,11 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPixmap>
+#include <QFile>
+#include <QDir>
+#include <QUrl>
+#include <QCoreApplication>
+#include <QGraphicsDropShadowEffect>
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Local helpers
@@ -42,7 +47,7 @@ QIcon makeEyeIcon(bool crossed)
 
     // Matches the muted label/placeholder tone already used in login.ui
     // (QLabel#subtitleLabel), so the glyph blends with the existing look.
-    const QColor strokeColor(QStringLiteral("#7a8aaa"));
+    const QColor strokeColor(QStringLiteral("#8A7580"));
 
     QPen pen(strokeColor);
     pen.setWidthF(1.6);
@@ -86,12 +91,15 @@ Login::Login(QWidget *parent)
     , ui(new Ui::Login)
 {
     ui->setupUi(this);
-    // All visual styling (colors, fonts, borders, hover/pressed states, etc.)
+    // Most visual styling (colors, fonts, borders, hover/pressed states, etc.)
     // lives entirely in login.ui as the top-level widget's styleSheet
-    // property. Nothing is set programmatically here — including the
-    // status label's color, which is driven by a "status" dynamic
-    // property toggled in setStatus() and matched via [status="..."]
-    // selectors in the .ui stylesheet.
+    // property, including the status label's color, which is driven by a
+    // "status" dynamic property toggled in setStatus() and matched via
+    // [status="..."] selectors in the .ui stylesheet.
+    //
+    // The two things login.ui genuinely can't express on its own — the
+    // blurred cart-photo backdrop and the logo image — are wired up here.
+    applyBrandingAssets();
 
     // Password show/hide toggle (trailing action inside the field).
     // Starts hidden (echoMode is Password by default in login.ui), so the
@@ -121,6 +129,83 @@ Login::~Login()
 // ─────────────────────────────────────────────────────────────────────────────
 //  Helpers
 // ─────────────────────────────────────────────────────────────────────────────
+
+void Login::applyBrandingAssets()
+{
+    // Same lookup convention as StaffDashboard::loadCurrentUserInfo() uses
+    // for staff photos: a "resources/..." folder next to the executable,
+    // with a Qt-resource (":/...") fallback for builds that embed assets
+    // via a .qrc instead. If neither is found, nothing crashes — the
+    // widgets just keep the plain fallback look already defined in
+    // login.ui (solid burgundy panel, plain-text logo label).
+    //
+    // A single "next to the exe" guess breaks on multi-config generators
+    // (Visual Studio, Xcode) where the actual binary lands one folder
+    // deeper than the build root — e.g. build/Debug/App.exe or
+    // build/Release/App.exe — while a naive CMake copy step often puts
+    // resources/ at build/ instead. So instead of one hardcoded path,
+    // every plausible "resources/images/" location relative to the exe is
+    // tried, in order, and the first one that actually contains the file
+    // wins. This changes nothing for a project where the original single
+    // path already worked — it's strictly additive.
+    const QString exeDir = QCoreApplication::applicationDirPath();
+    const QStringList candidateDirs = {
+        exeDir + "/resources/images/",                 // exe/resources/images/
+        exeDir + "/../resources/images/",               // build/Debug/../resources/images/
+        exeDir + "/../../resources/images/",             // one level deeper still
+        QDir::currentPath() + "/resources/images/",     // working directory fallback
+    };
+
+    auto findAsset = [&candidateDirs](const QString &fileName) -> QString {
+        for (const QString &dir : candidateDirs) {
+            const QString candidate = QDir::cleanPath(dir + fileName);
+            if (QFile::exists(candidate))
+                return candidate;
+        }
+        return QString();
+    };
+
+    // ── Blurred, burgundy-tinted cart-photo backdrop on the brand panel ──
+    const QString bgPath = findAsset("login_bg.jpg");
+    QString bgUrl;
+    if (!bgPath.isEmpty())
+        bgUrl = QUrl::fromLocalFile(bgPath).toString();
+    else if (QFile::exists(":/images/login_bg.jpg"))
+        bgUrl = "qrc:/images/login_bg.jpg";
+
+    if (!bgUrl.isEmpty()) {
+        ui->brandPanel->setStyleSheet(
+            QString("QFrame#brandPanel { border-image: url(%1) 0 0 0 0 stretch stretch; }")
+                .arg(bgUrl));
+    } else {
+        qWarning() << "Login::applyBrandingAssets(): login_bg.jpg not found. "
+                      "Tried:" << candidateDirs << "and qrc:/images/login_bg.jpg. "
+                      "Falling back to plain burgundy panel.";
+    }
+
+    // ── Sajilo Bazar logo — replaces the old plain "SB" circle ──────────
+    const QString logoPath = findAsset("sajilobazar_logo.png");
+    QPixmap logo;
+    bool logoLoaded = !logoPath.isEmpty() && logo.load(logoPath);
+    if (!logoLoaded)
+        logoLoaded = logo.load(":/images/sajilobazar_logo.png");
+
+    if (logoLoaded) {
+        ui->brandLogo->setPixmap(
+            logo.scaledToHeight(170, Qt::SmoothTransformation));
+    } else {
+        qWarning() << "Login::applyBrandingAssets(): sajilobazar_logo.png not found. "
+                      "Tried:" << candidateDirs << "and qrc:/images/sajilobazar_logo.png. "
+                      "Falling back to plain-text logo label.";
+    }
+
+    // ── Soft shadow under the frosted logo card for a touch of depth ────
+    auto *shadow = new QGraphicsDropShadowEffect(ui->logoCard);
+    shadow->setBlurRadius(28);
+    shadow->setOffset(0, 8);
+    shadow->setColor(QColor(0, 0, 0, 90));
+    ui->logoCard->setGraphicsEffect(shadow);
+}
 
 QString Login::hashPassword(const QString &plainText) const
 {
@@ -382,7 +467,11 @@ void Login::on_registerButton_clicked()
     // class under a different name (this project's headers are inconsistent —
     // e.g. AdminDashboard/StaffDashboard use PascalCase, frontdesk uses
     // lower-case). "Register" is assumed here to match the register.h include.
-    Register *w = new Register();
+    //
+    // `this` is passed as loginWindow so Register::on_backToLoginButton_clicked()
+    // has a window to re-show. Passing nothing here left m_loginWindow null,
+    // which is why "Back to Login" silently did nothing.
+    Register *w = new Register(this);
     w->setAttribute(Qt::WA_DeleteOnClose);
     w->show();
 

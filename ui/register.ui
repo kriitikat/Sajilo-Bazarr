@@ -25,45 +25,50 @@
 
   <property name="styleSheet">
    <string notr="true">
-    /* ── Base / layout ─────────────────────────────────────────────── */
+    /* ── Base / layout — same Burgundy/Garnet palette as login.ui ────── */
     QMainWindow, QWidget#centralwidget, QWidget#scrollAreaContents {
-        background-color: #F4F6FA;
+        background-color: #F7F4F5;
     }
     QFrame#topBar {
         background-color: #FFFFFF;
-        border-bottom: 1px solid #E0E4EE;
+        border-bottom: 1px solid #E6DEE1;
     }
     QPushButton#backToLoginButton {
         background-color: transparent;
-        color: #185FA5;
+        color: #660033;
         border: none;
         font-size: 13px;
         font-weight: 600;
         text-align: left;
     }
-    QPushButton#backToLoginButton:hover { color: #1B2A4A; }
+    QPushButton#backToLoginButton:hover { color: #4D0026; }
 
     QLabel#titleLabel {
-        color: #1B2A4A;
+        color: #4A0F2B;
         font-size: 22px;
         font-weight: 700;
         padding-top: 6px;
+        background: transparent;
     }
     QLabel#subtitleLabel {
-        color: #7a8aaa;
+        color: #8A7580;
         font-size: 12px;
         padding-bottom: 4px;
+        background: transparent;
     }
 
+    /* Cards read as distinct, elevated surfaces — same hairline-border
+       treatment as QFrame#card in login.ui — rather than the old flat
+       drop-shadow-less blue-bordered boxes. */
     QGroupBox {
         background-color: #FFFFFF;
-        border: 1px solid #E0E4EE;
-        border-radius: 10px;
+        border: 1px solid #F0E4E9;
+        border-radius: 12px;
         margin-top: 12px;
         padding: 14px 12px 12px 12px;
         font-size: 12px;
         font-weight: 700;
-        color: #1B2A4A;
+        color: #4A0F2B;
     }
     QGroupBox::title {
         subcontrol-origin: margin;
@@ -72,38 +77,39 @@
     }
 
     QLabel#roleLabel, QLabel#usernameLabel {
-        color: #1B2A4A;
+        color: #4A0F2B;
         font-size: 12px;
         font-weight: 600;
         padding-top: 4px;
+        background: transparent;
     }
 
     QPushButton#regenerateUsernameButton {
         background-color: #FFFFFF;
-        color: #185FA5;
-        border: 1px solid #E0E4EE;
+        color: #660033;
+        border: 1px solid #E6DEE1;
         border-radius: 8px;
         font-size: 12px;
         font-weight: 600;
     }
-    QPushButton#regenerateUsernameButton:hover { background-color: #E8F1FB; }
-    QPushButton#regenerateUsernameButton:disabled { color: #A9BCD8; }
+    QPushButton#regenerateUsernameButton:hover { background-color: #F3E6EC; }
+    QPushButton#regenerateUsernameButton:disabled { color: #C9A9BA; }
 
     QLineEdit, QComboBox {
-        border: 1px solid #E0E4EE;
+        border: 1px solid #E6DEE1;
         border-radius: 8px;
         padding: 8px 12px;
         font-size: 14px;
         background-color: #FFFFFF;
-        color: #1B2A4A;
+        color: #2C2C2C;
     }
     QLineEdit:focus, QComboBox:focus {
-        border: 1px solid #185FA5;
-        background-color: #E8F1FB;
+        border: 1px solid #660033;
+        background-color: #F3E6EC;
     }
     QLineEdit:read-only {
-        background-color: #F4F6FA;
-        color: #5a6a8a;
+        background-color: #F2EDEF;
+        color: #A69AA0;
     }
     QComboBox::drop-down {
         border: none;
@@ -111,69 +117,73 @@
     }
 
     QPushButton#submitButton {
-        background-color: #185FA5;
+        background-color: #660033;
         color: white;
         border: none;
         border-radius: 8px;
         font-size: 14px;
         font-weight: 600;
     }
-    QPushButton#submitButton:hover   { background-color: #2D4A7A; }
-    QPushButton#submitButton:pressed { background-color: #1B2A4A; }
-    QPushButton#submitButton:disabled { background-color: #A9BCD8; }
+    QPushButton#submitButton:hover    { background-color: #4D0026; }
+    QPushButton#submitButton:pressed  { background-color: #3A001C; }
+    QPushButton#submitButton:disabled { background-color: #C9A9BA; }
 
     /* ── Hint labels (email/phone/username/password) ────────────────────
-       Default = neutral grey. Runtime-only change is the "state" dynamic
-       property, flipped from C++ via setLabelState(); every color for
-       every state lives right here. ─────────────────────────────────── */
+       Default = neutral mauve-grey (matches login's muted tone). Runtime-
+       only change is the "state" dynamic property, flipped from C++ via
+       setLabelState(); every color for every state lives right here. ── */
     QLabel#emailHintLabel, QLabel#phoneHintLabel,
     QLabel#usernameHintLabel, QLabel#passwordHintLabel {
         font-size: 11px;
-        color: #8a97b3;
+        color: #A69AA0;
         padding-left: 2px;
+        background: transparent;
     }
     QLabel#emailHintLabel[state="success"],
     QLabel#phoneHintLabel[state="success"],
     QLabel#usernameHintLabel[state="success"],
     QLabel#passwordHintLabel[state="success"] {
-        color: #1E8449;
+        color: #1E7A47;
     }
     QLabel#emailHintLabel[state="error"],
     QLabel#phoneHintLabel[state="error"],
     QLabel#usernameHintLabel[state="error"],
     QLabel#passwordHintLabel[state="error"] {
-        color: #C0392B;
+        color: #8B0000;
     }
     /* Password strength has two extra in-between states the other hints
-       don't use. */
-    QLabel#passwordHintLabel[state="warning"] { color: #E1A100; }
-    QLabel#passwordHintLabel[state="info"]    { color: #2E86C1; }
+       don't use. Kept out of blue entirely to stay inside the burgundy/
+       garnet/gold family. */
+    QLabel#passwordHintLabel[state="warning"] { color: #B8790F; }
+    QLabel#passwordHintLabel[state="info"]    { color: #7A4A5E; }
 
     /* ── Status label (bottom banner) ────────────────────────────────── */
     QLabel#statusLabel {
         font-size: 12px;
         padding-top: 4px;
+        background: transparent;
     }
-    QLabel#statusLabel[state="error"]   { color: #C0392B; }
-    QLabel#statusLabel[state="success"] { color: #1E8449; }
+    QLabel#statusLabel[state="error"]   { color: #8B0000; }
+    QLabel#statusLabel[state="success"] { color: #1E7A47; }
 
     /* ── Password strength bar ───────────────────────────────────────────
        Default (empty "strength" property) = neutral track, no fill color
        override needed since value is 0. Each state below recolors the
-       chunk only. ─────────────────────────────────────────────────────── */
+       chunk only. A warm gradient — garnet → gold → rose → green — reads
+       as "weak to strong" without reaching for blue. ───────────────────── */
     QProgressBar#passwordStrengthBar {
         border: none;
         border-radius: 3px;
-        background-color: #E0E4EE;
+        background-color: #F2EDEF;
     }
     QProgressBar#passwordStrengthBar::chunk {
         border-radius: 3px;
-        background-color: #E0E4EE;
+        background-color: #F2EDEF;
     }
-    QProgressBar#passwordStrengthBar[strength="weak"]::chunk   { background-color: #C0392B; }
-    QProgressBar#passwordStrengthBar[strength="fair"]::chunk   { background-color: #E1A100; }
-    QProgressBar#passwordStrengthBar[strength="good"]::chunk   { background-color: #2E86C1; }
-    QProgressBar#passwordStrengthBar[strength="strong"]::chunk { background-color: #1E8449; }
+    QProgressBar#passwordStrengthBar[strength="weak"]::chunk   { background-color: #8B0000; }
+    QProgressBar#passwordStrengthBar[strength="fair"]::chunk   { background-color: #B8790F; }
+    QProgressBar#passwordStrengthBar[strength="good"]::chunk   { background-color: #A64D6E; }
+    QProgressBar#passwordStrengthBar[strength="strong"]::chunk { background-color: #1E7A47; }
    </string>
   </property>
 

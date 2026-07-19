@@ -49,6 +49,16 @@ private:
     // unexpected failures (DB errors, unknown role).
     void setStatus(const QString &message, bool isError);
     void setBusy(bool busy);
+
+    // Loads the blurred cart-photo backdrop onto the brand panel and the
+    // Sajilo Bazar logo onto the frosted logo card. Done in C++ (same
+    // convention as StaffDashboard::loadCurrentUserInfo()'s avatar
+    // loading) rather than baked into login.ui, because these are real
+    // image files on disk (resources/images/...) rather than something
+    // Designer/qrc can reliably ship. Falls back to the plain burgundy
+    // color already set in login.ui's stylesheet if a file is missing,
+    // so a missing asset never breaks the window.
+    void applyBrandingAssets();
 };
 
 #endif // LOGIN_H
