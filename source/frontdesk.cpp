@@ -1,6 +1,7 @@
 #include "../include/frontdesk.h"
 #include "../ui/ui_frontdesk.h"
 #include "../include/billing.h"
+#include "../include/frontproduct.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -21,6 +22,7 @@ frontdesk::frontdesk(QWidget *parent)
     // Both the sidebar "Billing" button and the dashboard shortcut button
     // open the same standalone Billing window.
     connect(ui->btnBilling,     &QPushButton::clicked, this, &frontdesk::openBillingWindow);
+    connect(ui->btnViewProducts, &QPushButton::clicked, this, &frontdesk::openViewProductsWindow);
 
     // Logout button
     connect(ui->btnLogout,
@@ -35,6 +37,16 @@ frontdesk::frontdesk(QWidget *parent)
 frontdesk::~frontdesk()
 {
     delete ui;
+}
+
+void frontdesk::openViewProductsWindow()
+{
+    // View-only product catalog for front desk staff: same page pattern
+    // as Product (admin) / ProductStaff, but no add/edit/delete/stock
+    // actions and no Action column at all.
+    FrontProduct *viewProductsPage = new FrontProduct();
+    viewProductsPage->setAttribute(Qt::WA_DeleteOnClose);
+    viewProductsPage->show();
 }
 
 void frontdesk::openBillingWindow()

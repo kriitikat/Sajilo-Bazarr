@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FrontProduct</class>
+ <widget class="QWidget" name="FrontProduct">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1100</width>
+    <height>700</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Sajilo Bazar – View Products</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">
+QWidget {
+    background-color: #F4F6F9;
+    font-family: &quot;Segoe UI&quot;, sans-serif;
+    font-size: 13px;
+    color: #2C3E50;
+}
+QGroupBox {
+    background-color: #FFFFFF;
+    border: 1px solid #DDE3EC;
+    border-radius: 8px;
+    margin-top: 10px;
+    padding: 10px;
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    left: 12px;
+    padding: 0 6px;
+    color: #2E4A7A;
+    font-weight: bold;
+}
+QLineEdit, QComboBox {
+    background-color: #FFFFFF;
+    border: 1px solid #C8D0DC;
+    border-radius: 5px;
+    padding: 5px 8px;
+    min-height: 28px;
+}
+QLineEdit:focus, QComboBox:focus {
+    border: 1px solid #2E4A7A;
+}
+QPushButton#btnClearSearch {
+    background-color: #E8EAED;
+    color: #444;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 14px;
+}
+QPushButton#btnClearSearch:hover {
+    background-color: #D2D5DB;
+}
+QPushButton#btnPrevPage, QPushButton#btnNextPage {
+    background-color: #2E4A7A;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-weight: bold;
+}
+QPushButton#btnPrevPage:hover, QPushButton#btnNextPage:hover {
+    background-color: #263f68;
+}
+QPushButton#btnPrevPage:disabled, QPushButton#btnNextPage:disabled {
+    background-color: #B7C0CC;
+    color: #EEEEEE;
+}
+QLabel#lblPageInfo {
+    font-weight: bold;
+    color: #2E4A7A;
+}
+QTableWidget {
+    background-color: #FFFFFF;
+    border: 1px solid #DDE3EC;
+    border-radius: 8px;
+    gridline-color: #EEF1F6;
+    selection-background-color: #E7ECF6;
+    selection-color: #2E4A7A;
+    alternate-background-color: #F8FAFF;
+}
+QTableWidget::item {
+    padding: 6px 10px;
+}
+QHeaderView::section {
+    background-color: #2E4A7A;
+    color: white;
+    font-weight: bold;
+    padding: 8px 10px;
+    border: none;
+}
+QLabel#lblTitle {
+    font-size: 22px;
+    font-weight: bold;
+    color: #2E4A7A;
+}
+QLabel#lblSubtitle {
+    font-size: 12px;
+    color: #7F8C8D;
+}
+   </string>
+  </property>
+  <layout class="QVBoxLayout" name="mainLayout">
+   <property name="spacing">
+    <number>12</number>
+   </property>
+   <item>
+    <layout class="QVBoxLayout" name="titleLayout">
+     <item>
+      <widget class="QLabel" name="lblTitle">
+       <property name="text">
+        <string>👁  View Products</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblSubtitle">
+       <property name="text">
+        <string>Sajilo Bazar Front Desk – Product Catalog (View Only)</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="grpSearch">
+     <property name="title">
+      <string>Search &amp;&amp; Filter</string>
+     </property>
+     <layout class="QHBoxLayout" name="searchLayout">
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>🔍  Search:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="txtSearch">
+        <property name="placeholderText">
+         <string>Search by Product Name or SKU…</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Category:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QComboBox" name="cmbFilterCategory">
+        <item>
+         <property name="text">
+          <string>All Categories</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnClearSearch">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="text">
+         <string>✕  Clear</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer>
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QLabel" name="lblTotalProducts">
+        <property name="styleSheet">
+         <string>color:#2E4A7A; font-weight:bold;</string>
+        </property>
+        <property name="text">
+         <string>Total: 0</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="tblProducts">
+     <property name="editTriggers">
+      <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+     </property>
+     <property name="alternatingRowColors">
+      <bool>true</bool>
+     </property>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+     </property>
+     <property name="showGrid">
+      <bool>true</bool>
+     </property>
+     <property name="sortingEnabled">
+      <bool>true</bool>
+     </property>
+     <property name="columnCount">
+      <number>10</number>
+     </property>
+     <attribute name="horizontalHeaderStretchLastSection">
+      <bool>true</bool>
+     </attribute>
+     <column>
+      <property name="text">
+       <string>Id</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Name</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Category</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Unit</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Price (Rs.)</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Stock</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Expiry</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Status</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Supplier</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>SKU</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="pagerLayout">
+     <property name="spacing">
+      <number>10</number>
+     </property>
+     <item>
+      <spacer>
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnPrevPage">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>◀  Previous</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="lblPageInfo">
+       <property name="minimumSize">
+        <size>
+         <width>110</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Page 1 of 1</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnNextPage">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>Next  ▶</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer>
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="lblStatusBar">
+     <property name="styleSheet">
+      <string>color: #7F8C8D; font-size: 11px; padding: 2px 4px;</string>
+     </property>
+     <property name="text">
+      <string>Ready</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
