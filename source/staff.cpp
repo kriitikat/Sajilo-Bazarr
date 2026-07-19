@@ -113,9 +113,6 @@ staff::staff(QWidget *parent)
     // Only 3 buttons now (Edit / Disable-Enable / Expire-Unexpire) since
     // Task moved to the top nav bar, so ACTIONS needs less width than before.
     header->resizeSection(COL_ACTIONS,  220);
-    connect(ui->navTasksBtn_3, &QPushButton::clicked, this, &staff::on_navTasksBtn_3_clicked);
-    connect(ui->navSupplierBtn_3, &QPushButton::clicked, this, &staff::on_navSupplierBtn_3_clicked);
-
     loadStaffTable();
 }
 

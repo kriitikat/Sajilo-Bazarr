@@ -248,7 +248,7 @@ void TaskManagement::attachRowActionButtons(int row, int staffId)
     btnView->setDefault(false);
     btnView->setProperty("staffId", staffId);
 
-    connect(btnAdd, &QPushButton::clicked, this, &TaskManagement::onRowAddTaskClicked);
+
     connect(btnView, &QPushButton::clicked, this, &TaskManagement::onRowViewTaskClicked);
 
     layout->addWidget(btnAdd);
