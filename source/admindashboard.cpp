@@ -274,9 +274,11 @@ void AdminDashboard::setupMonthlySalesChart()
 void AdminDashboard::handleCategories_clicked()
 {
     category *categoryPage = new category();
+    categoryPage->setAttribute(Qt::WA_DeleteOnClose);   // memory leak nahos
+    connect(categoryPage, &category::backToDashboardRequested,
+            categoryPage, &category::close);
     categoryPage->show();
 }
-
 void AdminDashboard::handleProducts_clicked()
 {
     Product *productPage = new Product();
