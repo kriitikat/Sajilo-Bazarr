@@ -192,15 +192,15 @@
        <item>
         <widget class="QFrame" name="logoCard">
          <layout class="QVBoxLayout" name="logoCardLayout">
-          <property name="leftMargin"><number>24</number></property>
-          <property name="topMargin"><number>28</number></property>
-          <property name="rightMargin"><number>24</number></property>
-          <property name="bottomMargin"><number>28</number></property>
+          <property name="leftMargin"><number>16</number></property>
+          <property name="topMargin"><number>20</number></property>
+          <property name="rightMargin"><number>16</number></property>
+          <property name="bottomMargin"><number>20</number></property>
           <property name="spacing"><number>10</number></property>
 
           <item>
            <widget class="QLabel" name="brandLogo">
-            <property name="minimumSize"><size><width>0</width><height>170</height></size></property>
+            <property name="minimumSize"><size><width>0</width><height>212</height></size></property>
             <property name="alignment"><set>Qt::AlignCenter</set></property>
             <property name="text"><string>Sajilo Bazar</string></property>
             <property name="scaledContents"><bool>false</bool></property>

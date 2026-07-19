@@ -37,7 +37,7 @@
         </rect>
        </property>
        <property name="styleSheet">
-        <string>background-color:#F8FAFC;</string>
+        <string>background-color:#F7F4F5;</string>
        </property>
        <layout class="QVBoxLayout" name="mainLayout">
         <property name="spacing"><number>24</number></property>
@@ -50,7 +50,7 @@
         <item>
          <widget class="QFrame" name="summaryPanel">
           <property name="styleSheet">
-           <string>QFrame { background-color:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; }</string>
+           <string>QFrame { background-color:#FFFFFF; border:1px solid #E6DEE1; border-radius:10px; }</string>
           </property>
           <layout class="QVBoxLayout" name="summaryPanelLayout">
            <property name="spacing"><number>12</number></property>
@@ -61,7 +61,7 @@
            <item>
             <widget class="QLabel" name="lblOverviewTitle">
              <property name="styleSheet">
-              <string>font-size:14px; font-weight:bold; color:#2D4A7A; letter-spacing:0.5px; border:none;</string>
+              <string>font-size:14px; font-weight:bold; color:#660033; letter-spacing:0.5px; border:none;</string>
              </property>
              <property name="text">
               <string>TASK OVERVIEW</string>
@@ -74,8 +74,8 @@
            <item>
             <widget class="QLineEdit" name="searchBox">
              <property name="styleSheet">
-              <string>QLineEdit { background-color:#FFFFFF; border:1px solid #CBD5E0; color:#000000; border-radius:6px; padding:6px; font-size:13px; }
-QLineEdit:focus { border:1px solid #2D4A7A; }</string>
+              <string>QLineEdit { background-color:#FFFFFF; border:1px solid #E6DEE1; color:#2C2C2C; border-radius:6px; padding:6px; font-size:13px; }
+QLineEdit:focus { border:1px solid #660033; }</string>
              </property>
              <property name="placeholderText">
               <string>Search staff name...</string>
@@ -88,7 +88,7 @@ QLineEdit:focus { border:1px solid #2D4A7A; }</string>
              <item>
               <widget class="QLabel" name="totalTasksLabel">
                <property name="styleSheet">
-                <string>font-size:13px; font-weight:bold; color:#2D4A7A; border:none;</string>
+                <string>font-size:13px; font-weight:bold; color:#660033; border:none;</string>
                </property>
                <property name="text">
                 <string>Total Tasks: 0</string>
@@ -98,7 +98,7 @@ QLineEdit:focus { border:1px solid #2D4A7A; }</string>
              <item>
               <widget class="QLabel" name="pendingLabel">
                <property name="styleSheet">
-                <string>font-size:13px; font-weight:bold; color:#DD6B20; border:none;</string>
+                <string>font-size:13px; font-weight:bold; color:#B8790F; border:none;</string>
                </property>
                <property name="text">
                 <string>Pending: 0</string>
@@ -108,7 +108,7 @@ QLineEdit:focus { border:1px solid #2D4A7A; }</string>
              <item>
               <widget class="QLabel" name="inProgressLabel">
                <property name="styleSheet">
-                <string>font-size:13px; font-weight:bold; color:#3182CE; border:none;</string>
+                <string>font-size:13px; font-weight:bold; color:#A64D6E; border:none;</string>
                </property>
                <property name="text">
                 <string>In Progress: 0</string>
@@ -118,7 +118,7 @@ QLineEdit:focus { border:1px solid #2D4A7A; }</string>
              <item>
               <widget class="QLabel" name="completedLabel">
                <property name="styleSheet">
-                <string>font-size:13px; font-weight:bold; color:#38A169; border:none;</string>
+                <string>font-size:13px; font-weight:bold; color:#7A4A5E; border:none;</string>
                </property>
                <property name="text">
                 <string>Completed: 0</string>
@@ -145,7 +145,7 @@ QLineEdit:focus { border:1px solid #2D4A7A; }</string>
         <item>
          <widget class="QFrame" name="tablePanel">
           <property name="styleSheet">
-           <string>QFrame { background-color:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; }</string>
+           <string>QFrame { background-color:#FFFFFF; border:1px solid #E6DEE1; border-radius:10px; }</string>
           </property>
           <layout class="QVBoxLayout" name="tablePanelLayout">
            <property name="spacing"><number>12</number></property>
@@ -156,7 +156,7 @@ QLineEdit:focus { border:1px solid #2D4A7A; }</string>
            <item>
             <widget class="QLabel" name="lblTableTitle">
              <property name="styleSheet">
-              <string>font-size:14px; font-weight:bold; color:#2D4A7A; letter-spacing:0.5px; border:none;</string>
+              <string>font-size:14px; font-weight:bold; color:#660033; letter-spacing:0.5px; border:none;</string>
              </property>
              <property name="text">
               <string>ASSIGNED TASKS DATABASE RECORD</string>
@@ -169,11 +169,11 @@ QLineEdit:focus { border:1px solid #2D4A7A; }</string>
            <item>
             <widget class="QTableWidget" name="assignedTasksTable">
              <property name="styleSheet">
-              <string>QTableWidget { background-color:#FFFFFF; border:none; gridline-color:#EDF2F7; outline:none; }
-QTableWidget::item { padding:6px; color:#000000; }
-QTableWidget::item:selected { background-color:#EBF2FF; color:#000000; }
-QTableWidget::item:hover { background-color:#F7FAFC; }
-QHeaderView::section { background-color:#2D4A7A; color:#FFFFFF; font-weight:bold; border:none; padding:6px; }</string>
+              <string>QTableWidget { background-color:#FFFFFF; border:none; gridline-color:#F5EEF0; outline:none; }
+QTableWidget::item { padding:6px; color:#2C2C2C; }
+QTableWidget::item:selected { background-color:#F3E6EC; color:#2C2C2C; }
+QTableWidget::item:hover { background-color:#FBF7F8; }
+QHeaderView::section { background-color:#660033; color:#FFFFFF; font-weight:bold; border:none; padding:6px; }</string>
              </property>
              <property name="alternatingRowColors">
               <bool>true</bool>

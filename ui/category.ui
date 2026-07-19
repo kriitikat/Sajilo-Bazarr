@@ -26,19 +26,90 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <property name="layoutDirection">
-   <enum>Qt::LayoutDirection::RightToLeft</enum>
-  </property>
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget {
-    background-color: #f8fafc;
+    background-color: #fbf3f5;
     font-family: 'Segoe UI';
+}
+
+/* ── Back to Dashboard (shared convention with staffperform.ui) ────────── */
+QPushButton#backToDashboardBtn {
+    background-color: transparent;
+    border: 1.5px solid #660033;
+    border-radius: 10px;
+    padding: 7px 16px;
+    color: #660033;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton#backToDashboardBtn:hover {
+    background-color: #660033;
+    color: white;
+}
+
+/* ── Add Category (unique top-level action button) ──────────────────────
+   Styled the same way staffperform.ui styles its unique refreshBtn: solid
+   maroon pill, by object name rather than a dynamic property, since there
+   is only ever one of these on the page. */
+QPushButton#addCategoryBtn {
+    background-color: #660033;
+    border: none;
+    padding: 8px 16px;
+    color: white;
+    font-weight: bold;
+    border-radius: 10px;
+    font-size: 11px;
+}
+QPushButton#addCategoryBtn:hover {
+    background-color: #4d0026;
+}
+QPushButton#addCategoryBtn:pressed {
+    background-color: #38001b;
+}
+
+/* ── Per-row ACTIONS button styling ───────────────────────────────────────
+   category.cpp's buildActionsWidget-equivalent code (inside
+   loadCategoriesTable) only sets each QPushButton's "actionRole" dynamic
+   property (edit / delete); all color/hover/radius styling lives here -
+   same convention as staffperform.ui's disable/enable/expire/unexpire
+   buttons, so category.cpp never touches presentation directly.
+   "edit" reuses the same teal used for staffperform's "unexpire" (a
+   neutral, non-destructive action); "delete" reuses the same dark red
+   used for staffperform's "expire" (a destructive/permanent action). */
+QPushButton[actionRole="edit"] {
+    background-color: #0891b2;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole="edit"]:hover {
+    background-color: #0e7490;
+}
+
+QPushButton[actionRole="delete"] {
+    background-color: #8B0000;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole="delete"]:hover {
+    background-color: #660000;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin"><number>24</number></property>
+   <property name="topMargin"><number>20</number></property>
+   <property name="rightMargin"><number>24</number></property>
+   <property name="bottomMargin"><number>20</number></property>
    <item alignment="Qt::AlignmentFlag::AlignHCenter">
     <widget class="QLabel" name="ManagementModuletitle">
      <property name="minimumSize">
@@ -61,7 +132,7 @@
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: black;</string>
+      <string notr="true">color: #660033;</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::Shape::NoFrame</enum>
@@ -92,7 +163,7 @@
      <property name="styleSheet">
       <string notr="true">QLabel {
     font-size: 12px;
-    color: #94a3b8;
+    color: #9c7480;
     border: none;
 }</string>
      </property>
@@ -102,19 +173,30 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <property name="spacing">
-      <number>10</number>
-     </property>
-     <property name="sizeConstraint">
-      <enum>QLayout::SizeConstraint::SetFixedSize</enum>
-     </property>
-     <property name="topMargin">
-      <number>2</number>
-     </property>
-     <property name="bottomMargin">
-      <number>2</number>
-     </property>
+    <layout class="QHBoxLayout" name="topBarLayout">
+     <item>
+      <widget class="QPushButton" name="backToDashboardBtn">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>&lt;  Back to Dashboard</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="topBarSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
     </layout>
    </item>
    <item>
@@ -122,7 +204,7 @@
      <property name="styleSheet">
       <string notr="true">QFrame {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #f0dde1;
     border-radius: 12px;
 }</string>
      </property>
@@ -166,7 +248,7 @@
               <string notr="true">QLabel {
     font-size: 18px;
     font-weight: bold;
-    color: #1e293b;
+    color: #4a1626;
     border: none;
 }</string>
              </property>
@@ -180,7 +262,7 @@
              <property name="styleSheet">
               <string notr="true">QLabel {
     font-size: 12px;
-    color: #94a3b8;
+    color: #9c7480;
     border: none;
 }</string>
              </property>
@@ -199,9 +281,12 @@
              </property>
              <property name="maximumSize">
               <size>
-               <width>94</width>
+               <width>110</width>
                <height>16777215</height>
               </size>
+             </property>
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
              </property>
              <property name="font">
               <font>
@@ -210,22 +295,6 @@
                <bold>true</bold>
               </font>
              </property>
-             <property name="styleSheet">
-              <string notr="true">QPushButton {
-    background-color:#2E8B57;
-    border: none;
-    padding: 8px 16px;
-    color: white;
-    font-weight: bold;
-    border-radius: 12px !important;        /* Smooth, modern rounded corners */
-    font-family: &quot;Segoe UI&quot;, Arial;
-    font-size: 9px;
-}
-QPushButton:hover {
-    color:white;
-    background-color:#0B6623;
-}</string>
-             </property>
              <property name="text">
               <string>Add Category</string>
              </property>
@@ -233,59 +302,73 @@ QPushButton:hover {
            </item>
            <item>
             <widget class="QTableWidget" name="categoryTableWidget">
-             <property name="layoutDirection">
-              <enum>Qt::LayoutDirection::RightToLeft</enum>
-             </property>
              <property name="styleSheet">
               <string notr="true">QTableWidget {
-    border: 1px solid #e2e8f0;
+    border: 1px solid #f0dde1;
     border-radius: 8px;
     background-color: #ffffff;
-    gridline-color: #f1f5f9;
+    gridline-color: #f6ebee;
     font-size: 13px;
 }
 
 /* FIX: Target text items specifically so it doesn't break custom cell widgets */
 QTableWidget::item {
-    padding: 6px 8px; /* Slightly reduced vertical padding for a sleek look */
-    border-bottom: 1px solid #f1f5f9;
-    color: #475569;
+    padding: 6px 8px;
+    border-bottom: 1px solid #f6ebee;
+    color: #4a1626;
 }
 
 QTableWidget::item:selected {
-    background-color: #f0fdf4;
-    color: #1e293b;
+    background-color: #fbe7ec;
+    color: #4a1626;
 }
 
 QHeaderView::section {
-    background-color: #f8fafc;
-    color: #64748b;
+    background-color: #fdf2f4;
+    color: #660033;
     font-weight: bold;
     font-size: 11px;
     padding: 10px 8px;
     border: none;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid #f0dde1;
     text-transform: uppercase;
 }</string>
+             </property>
+             <property name="editTriggers">
+              <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
              </property>
              <property name="sortingEnabled">
               <bool>true</bool>
              </property>
+             <property name="columnCount">
+              <number>4</number>
+             </property>
              <attribute name="horizontalHeaderMinimumSectionSize">
-              <number>108</number>
+              <number>60</number>
              </attribute>
              <attribute name="horizontalHeaderHighlightSections">
               <bool>false</bool>
              </attribute>
              <attribute name="horizontalHeaderStretchLastSection">
-              <bool>true</bool>
+              <bool>false</bool>
              </attribute>
-             <attribute name="verticalHeaderStretchLastSection">
-              <bool>true</bool>
+             <attribute name="verticalHeaderVisible">
+              <bool>false</bool>
+             </attribute>
+             <attribute name="verticalHeaderDefaultSectionSize">
+              <number>38</number>
              </attribute>
              <column>
               <property name="text">
-               <string>ACTIONS</string>
+               <string>ID</string>
+              </property>
+             </column>
+             <column>
+              <property name="text">
+               <string>CATEGORY NAME</string>
               </property>
              </column>
              <column>
@@ -295,7 +378,7 @@ QHeaderView::section {
              </column>
              <column>
               <property name="text">
-               <string>CATEGORY NAME</string>
+               <string>ACTIONS</string>
               </property>
              </column>
             </widget>

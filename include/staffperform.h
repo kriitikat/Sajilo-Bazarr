@@ -5,9 +5,16 @@
 //  Sajilo Bazar – Staff Performance Module (Admin side)
 //  staffperform.h
 //
-//  Opened from staff.ui's top-nav "Staff Performance" button (see
-//  staff.cpp's on_navSupplierBtn_3_clicked). One row per staff/frontdesk
-//  account, combining:
+//  Previously opened as its own top-level QMainWindow (via show()),
+//  which is what caused two separate windows to appear alongside the
+//  Admin Dashboard. This page is now a plain QWidget - the same base
+//  class category.h uses - so it can be embedded directly as a page
+//  inside AdminDashboard's stacked widget instead of popping up a
+//  second window. Whatever creates this widget should add it as a page
+//  and connect backToDashboardRequested() to switch back, rather than
+//  calling show() on it directly.
+//
+//  One row per staff/frontdesk account, combining:
 //
 //    - Task completion, read from `tasks` (joined by staff_id, same as
 //      taskmanagement.cpp) — split into Incomplete (Pending/In Progress)
@@ -22,19 +29,26 @@
 //  This class only contains logic: DB access and row population.
 // ═══════════════════════════════════════════════════════════════════
 
-#include <QMainWindow>
+#include <QWidget>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class StaffPerform; }
 QT_END_NAMESPACE
 
-class StaffPerform : public QMainWindow
+class StaffPerform : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit StaffPerform(QWidget *parent = nullptr);
     ~StaffPerform();
+
+signals:
+    // Emitted when the "Back to Dashboard" button is clicked. Whatever
+    // owns this page (e.g. AdminDashboard's QStackedWidget) should connect
+    // to this and switch back to the dashboard page - this class does not
+    // know about AdminDashboard directly, keeping it reusable/decoupled.
+    void backToDashboardRequested();
 
 private slots:
     // Reloads every row from `information` + `tasks` + `attendance`.

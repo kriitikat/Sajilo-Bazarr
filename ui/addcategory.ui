@@ -35,12 +35,12 @@
          <string notr="true">QLabel {
     font-size: 18px;
     font-weight: bold;
-    color: #1e293b;
+    color: #4a1626;
     border: none;
 }</string>
         </property>
         <property name="text">
-         <string>Add Categorie</string>
+         <string>Add Category</string>
         </property>
        </widget>
       </item>
@@ -49,7 +49,7 @@
         <property name="styleSheet">
          <string notr="true">QFrame {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #f0dde1;
     border-radius: 12px;
 }</string>
         </property>
@@ -75,7 +75,7 @@
               </property>
               <property name="styleSheet">
                <string notr="true">QLabel{
-    color:#2D4A7A;
+    color:#660033;
     font-weight: bold;
     border: none;
     background: transparent;
@@ -97,21 +97,24 @@
               </property>
               <property name="styleSheet">
                <string notr="true">QTextEdit {
-    background-color: #f7fafc;
-    border: 1px solid #e2e8f0;
+    background-color: #fdf2f4;
+    border: 1px solid #f0dde1;
     border-radius: 8px;
     font-size: 14px;
-    color: #4a5568;
+    color: #4a1626;
     
     /* Force a comfortable height for a 14px font */
     height: 35px; 
     padding-left: 10px;
     padding-right: 10px;
 }
+QTextEdit:focus {
+    border: 1px solid #660033;
+}
 /* Style the vertical scrollbar area */
 QScrollBar:vertical {
     border: none;
-    background: #f7fafc; /* Matches your text edit background */
+    background: #fdf2f4; /* Matches your text edit background */
     width: 8px;          /* Sleek, thin width */
     margin: 0px 0px 0px 0px;
     border-radius: 4px;
@@ -163,7 +166,7 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
               </property>
               <property name="styleSheet">
                <string notr="true">QLabel{
-    color:#2D4A7A;
+    color:#660033;
     font-weight: bold;
     border: none;
     background: transparent;
@@ -185,16 +188,19 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
               </property>
               <property name="styleSheet">
                <string notr="true">QLineEdit {
-    background-color: #f7fafc;
-    border: 1px solid #e2e8f0;
+    background-color: #fdf2f4;
+    border: 1px solid #f0dde1;
     border-radius: 8px;
     font-size: 14px;
-    color: #4a5568;
+    color: #4a1626;
     
     /* Force a comfortable height for a 14px font */
     height: 35px; 
     padding-left: 10px;
     padding-right: 10px;
+}
+QLineEdit:focus {
+    border: 1px solid #660033;
 }</string>
               </property>
              </widget>
@@ -209,17 +215,17 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
               </property>
               <property name="styleSheet">
                <string notr="true">QPushButton {
-    background-color: #2D4A7A;
-    border: none;
+    background-color: #ffffff;
+    border: 1px solid #f0dde1;
     /* Changed from 8px to 4px on the top and bottom */
     padding: 4px 16px; 
-    color: white;
+    color: #660033;
     font-weight: bold;
     border-radius: 12px;
 }
 QPushButton:hover {
-    color: white;
-    background-color: #1B2A4A;
+    color: #660033;
+    background-color: #fbe7ec;
 }</string>
               </property>
               <property name="text">
@@ -237,7 +243,7 @@ QPushButton:hover {
               </property>
               <property name="styleSheet">
                <string notr="true">QPushButton {
-    background-color: #2D4A7A;
+    background-color: #660033;
     border: none;
     /* Changed from 8px to 4px on the top and bottom */
     padding: 4px 16px; 
@@ -247,7 +253,7 @@ QPushButton:hover {
 }
 QPushButton:hover {
     color: white;
-    background-color: #1B2A4A;
+    background-color: #4d0026;
 }</string>
               </property>
               <property name="text">

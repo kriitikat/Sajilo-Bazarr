@@ -29,26 +29,16 @@ static constexpr int COL_ACTIONS    = 7;
 static constexpr int COL_COUNT      = 8;
 
 StaffPerform::StaffPerform(QWidget *parent)
-    : QMainWindow(parent)
+    : QWidget(parent)
     , ui(new Ui::StaffPerform)
 {
     ui->setupUi(this);
 
     // ── Table setup ────────────────────────────────────────────────────
-    const QStringList headers = {
-        QStringLiteral("ID"),
-        QStringLiteral("NAME"),
-        QStringLiteral("INCOMPLETE TASKS"),
-        QStringLiteral("COMPLETED TASKS"),
-        QStringLiteral("PRESENT DAYS"),
-        QStringLiteral("IRREGULAR DAYS"),
-        QStringLiteral("ABSENT DAYS"),
-        QStringLiteral("ACTIONS")
-    };
-    ui->performanceTable->setColumnCount(COL_COUNT);
-    ui->performanceTable->setHorizontalHeaderLabels(headers);
-    ui->performanceTable->verticalHeader()->setVisible(false);
-
+    // Header text, column count, row height, colors etc. all live in
+    // staffperform.ui now. Only the per-column resize MODE stays here,
+    // since Qt Designer has no property for QHeaderView::ResizeMode on a
+    // plain QTableWidget column (see the identical note in category.cpp).
     auto *header = ui->performanceTable->horizontalHeader();
     header->setSectionResizeMode(QHeaderView::Interactive);
     header->setSectionResizeMode(COL_ID,         QHeaderView::Fixed);
@@ -80,6 +70,7 @@ StaffPerform::StaffPerform(QWidget *parent)
     }
 
     connect(ui->refreshBtn, &QPushButton::clicked, this, &StaffPerform::loadPerformanceTable);
+    connect(ui->backToDashboardBtn, &QPushButton::clicked, this, &StaffPerform::backToDashboardRequested);
 
     // ── Period label: current calendar month, to date ─────────────────
     const QDate today      = QDate::currentDate();

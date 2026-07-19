@@ -16,32 +16,36 @@
 #include <QLineEdit>
 #include <QDialogButtonBox>
 
+// ── Column indices ─────────────────────────────────────────────────────────
+// 0: ID  1: CATEGORY NAME  2: DESCRIPTION  3: ACTIONS
+// (matches the <column> order declared in category.ui)
+static constexpr int COL_ID      = 0;
+static constexpr int COL_NAME    = 1;
+static constexpr int COL_DESC    = 2;
+static constexpr int COL_ACTIONS = 3;
+
 category::category(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::category)
 {
     ui->setupUi(this);
 
-    // 1. Force layout to use Left-to-Right text direction
-    ui->categoryTableWidget->setLayoutDirection(Qt::LeftToRight);
-
-    // 2. Set exactly 4 columns to fit ID, Name, Description, and Actions
-    ui->categoryTableWidget->setColumnCount(4);
-
-    // 3. Establish the header names from left to right explicitly
-    QStringList headers;
-    headers << "ID" << "Category Name" << "Description" << "Actions";
-    ui->categoryTableWidget->setHorizontalHeaderLabels(headers);
-
-    // 4. Force columns to stretch out smoothly across the screen width
-    ui->categoryTableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
-    // 5. SLIM ROWS FIX: Enforce a strict, clean default height for all rows
-    ui->categoryTableWidget->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->categoryTableWidget->verticalHeader()->setDefaultSectionSize(38); // Compact 38px row height
-    ui->categoryTableWidget->verticalHeader()->setVisible(false); // Hides default line index numbers
+    // NOTE: Column count, header labels, row height, sorting, colors and
+    // all other static appearance now live entirely in category.ui. The
+    // one exception Qt Designer genuinely cannot express for a QTableWidget
+    // is per-column resize MODE (Stretch/Fixed/Interactive) - that is why
+    // this one block remains here, mirroring the identical pattern already
+    // used in staffperform.cpp for the same reason.
+    auto *header = ui->categoryTableWidget->horizontalHeader();
+    header->setSectionResizeMode(COL_ID,      QHeaderView::Fixed);
+    header->setSectionResizeMode(COL_NAME,    QHeaderView::Stretch);
+    header->setSectionResizeMode(COL_DESC,    QHeaderView::Stretch);
+    header->setSectionResizeMode(COL_ACTIONS, QHeaderView::Fixed);
+    header->resizeSection(COL_ID,      60);
+    header->resizeSection(COL_ACTIONS, 170);
 
     connect(ui->addCategoryBtn, &QPushButton::clicked, this, &category::on_addCategoryBtn_clicked);
+    connect(ui->backToDashboardBtn, &QPushButton::clicked, this, &category::backToDashboardRequested);
 
     loadCategoriesTable();
 }
@@ -85,15 +89,19 @@ void category::loadCategoriesTable()
         QTableWidgetItem *idItem = new QTableWidgetItem(QString::number(id));
         idItem->setTextAlignment(Qt::AlignCenter);
         idItem->setData(Qt::UserRole, id);
-        ui->categoryTableWidget->setItem(row, 0, idItem);
+        ui->categoryTableWidget->setItem(row, COL_ID, idItem);
 
         // Column 1: Category Name
-        ui->categoryTableWidget->setItem(row, 1, new QTableWidgetItem(name));
+        ui->categoryTableWidget->setItem(row, COL_NAME, new QTableWidgetItem(name));
 
         // Column 2: Description
-        ui->categoryTableWidget->setItem(row, 2, new QTableWidgetItem(desc));
+        ui->categoryTableWidget->setItem(row, COL_DESC, new QTableWidgetItem(desc));
 
         // Column 3: Actions Container (Edit + Delete Buttons)
+        // Colors/hover/radius for these buttons come entirely from
+        // category.ui's QPushButton[actionRole="edit"/"delete"] rules -
+        // this code only assigns WHAT each button is, same convention as
+        // staffperform.cpp's buildActionsWidget.
         QWidget *actionContainer = new QWidget();
         QHBoxLayout *layout = new QHBoxLayout(actionContainer);
         layout->setContentsMargins(6, 2, 6, 2);
@@ -103,25 +111,13 @@ void category::loadCategoriesTable()
         // IMPORTANT: the category id is attached directly to the button via
         // setProperty(), and the click handler reads it back via sender().
         // This is what makes the row resolution correct regardless of
-        // sorting, scrolling, or row position — the previous version used
-        // indexAt(editBtn->pos()), but pos() is relative to the button's
-        // OWN parent (the small action-container widget), not the table
-        // viewport, so it never pointed at the right row reliably (e.g.
-        // clicking Edit on Stationery could open Groceries instead).
+        // sorting, scrolling, or row position — pos()-based lookups are
+        // unreliable because pos() is relative to the button's own parent
+        // (the small action-container widget), not the table viewport.
         QPushButton *editBtn = new QPushButton("Edit");
         editBtn->setProperty("categoryId", id);
-        editBtn->setStyleSheet(
-            "QPushButton {"
-            "   background-color: #3b82f6;"
-            "   color: white;"
-            "   border-radius: 6px;"
-            "   font-weight: bold;"
-            "   height: 26px;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: #2563eb;"
-            "}"
-            );
+        editBtn->setProperty("actionRole", "edit");
+        editBtn->setCursor(Qt::PointingHandCursor);
         connect(editBtn, &QPushButton::clicked, this, &category::editCategory);
         layout->addWidget(editBtn);
 
@@ -130,23 +126,13 @@ void category::loadCategoriesTable()
         // sender() inside deleteCategory().
         QPushButton *deleteBtn = new QPushButton("Delete");
         deleteBtn->setProperty("categoryId", id);
-        deleteBtn->setStyleSheet(
-            "QPushButton {"
-            "   background-color: #e53e3e;"
-            "   color: white;"
-            "   border-radius: 6px;"
-            "   font-weight: bold;"
-            "   height: 26px;"
-            "}"
-            "QPushButton:hover {"
-            "   background-color: #c53030;"
-            "}"
-            );
+        deleteBtn->setProperty("actionRole", "delete");
+        deleteBtn->setCursor(Qt::PointingHandCursor);
         connect(deleteBtn, &QPushButton::clicked, this, &category::deleteCategory);
         layout->addWidget(deleteBtn);
 
         actionContainer->setLayout(layout);
-        ui->categoryTableWidget->setCellWidget(row, 3, actionContainer);
+        ui->categoryTableWidget->setCellWidget(row, COL_ACTIONS, actionContainer);
 
         ++row;
     }
@@ -209,7 +195,7 @@ void category::editCategory()
         "   background-color: #f8fafc;"
         "}"
         "QLineEdit:focus {"
-        "   border: 1px solid #3b82f6;"
+        "   border: 1px solid #660033;"
         "   background-color: #ffffff;"
         "}"
         "QPushButton {"
@@ -224,14 +210,14 @@ void category::editCategory()
         "QPushButton:hover {"
         "   background-color: #e2e8f0;"
         "}"
-        /* Style the Save/OK button in blue */
+        /* Style the Save/OK button in the shared maroon accent */
         "QPushButton[text=\"Save\"] {"
-        "   background-color: #3b82f6;"
+        "   background-color: #660033;"
         "   color: white;"
         "   border: none;"
         "}"
         "QPushButton[text=\"Save\"]:hover {"
-        "   background-color: #2563eb;"
+        "   background-color: #4d0026;"
         "}"
         );
 
@@ -317,7 +303,7 @@ void category::deleteCategory()
     msgBox.setStyleSheet(
         "QMessageBox {"
         "   background-color: #ffffff;"
-        "   border: 1px solid #cbd5e1;"
+        "   border: 1px solid #f0dde1;"
         "   border-radius: 8px;"
         "}"
         "QLabel {"
@@ -339,12 +325,12 @@ void category::deleteCategory()
         "   background-color: #e2e8f0;"
         "}"
         "QPushButton[text=\"&Yes\"], QPushButton[text=\"Yes\"] {"
-        "   background-color: #e53e3e;"
+        "   background-color: #8B0000;"
         "   color: white;"
         "   border: none;"
         "}"
         "QPushButton[text=\"&Yes\"]:hover, QPushButton[text=\"Yes\"]:hover {"
-        "   background-color: #c53030;"
+        "   background-color: #660000;"
         "}"
         );
 

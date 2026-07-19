@@ -117,15 +117,19 @@ QWidget *MyTasks::createTaskCard(const QString &title, const QString &descriptio
 {
     auto *card = new QFrame();
     card->setStyleSheet(
-        "QFrame { background-color:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; }");
+        "QFrame { background-color:#FFFFFF; border:1px solid #f0dde1; border-radius:10px; }");
 
     auto *cardLayout = new QVBoxLayout(card);
     cardLayout->setContentsMargins(16, 16, 16, 16);
     cardLayout->setSpacing(10);
 
-    QString priorityBg = "#F0FDF4", priorityFg = "#38A169"; // Low (default)
-    if (priority == "Medium") { priorityBg = "#FFFAF0"; priorityFg = "#DD6B20"; }
-    else if (priority == "High") { priorityBg = "#FFF5F5"; priorityFg = "#C53030"; }
+    // Colors intentionally match the same enable/disable/expire palette used
+    // in staffperform.ui, so priority severity reads consistently across
+    // the whole theme: Low = green ("enable"), Medium = amber ("disable"),
+    // High = garnet ("expire").
+    QString priorityBg = "#F0FDF4", priorityFg = "#16a34a"; // Low (default)
+    if (priority == "Medium") { priorityBg = "#FFFAF0"; priorityFg = "#d97706"; }
+    else if (priority == "High") { priorityBg = "#FFF5F5"; priorityFg = "#8B0000"; }
 
     auto *topRow = new QHBoxLayout();
 
@@ -135,22 +139,22 @@ QWidget *MyTasks::createTaskCard(const QString &title, const QString &descriptio
                                      " padding:4px 10px; font-size:11px; font-weight:bold;").arg(priorityBg, priorityFg));
 
     auto *dueLabel = new QLabel("Due: " + (dueText.isEmpty() ? "N/A" : dueText));
-    dueLabel->setStyleSheet("color:#718096; font-size:12px; font-weight:500; border:none;");
+    dueLabel->setStyleSheet("color:#9c7480; font-size:12px; font-weight:500; border:none;");
 
     topRow->addWidget(priorityBadge);
     topRow->addStretch();
     topRow->addWidget(dueLabel);
 
     auto *titleLabel = new QLabel(title.isEmpty() ? "Untitled Task" : title);
-    titleLabel->setStyleSheet("font-size:16px; font-weight:bold; color:#1A202C; border:none;");
+    titleLabel->setStyleSheet("font-size:16px; font-weight:bold; color:#4a1626; border:none;");
     titleLabel->setWordWrap(true);
 
     auto *descLabel = new QLabel(description.isEmpty() ? "No description provided." : description);
-    descLabel->setStyleSheet("color:#4A5568; font-size:13px; border:none;");
+    descLabel->setStyleSheet("color:#4a1626; font-size:13px; border:none;");
     descLabel->setWordWrap(true);
 
     auto *statusLabel = new QLabel("Status: " + statusText);
-    statusLabel->setStyleSheet("color:#4A5568; font-size:12px; font-weight:bold; border:none;");
+    statusLabel->setStyleSheet("color:#4a1626; font-size:12px; font-weight:bold; border:none;");
 
     cardLayout->addLayout(topRow);
     cardLayout->addWidget(titleLabel);

@@ -31,7 +31,7 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QWidget {
-    background-color: #f8fafc;
+    background-color: #F7F4F5;
     font-family: 'Segoe UI';
 }
 
@@ -41,7 +41,7 @@
    unexpire); all color/hover/font/radius styling lives here so staff.cpp
    never touches presentation. */
 QPushButton[actionRole=&quot;edit&quot;] {
-    background-color: #2563eb;
+    background-color: #7A4A5E;
     border: none;
     border-radius: 6px;
     padding: 4px 10px;
@@ -50,11 +50,11 @@ QPushButton[actionRole=&quot;edit&quot;] {
     font-size: 11px;
 }
 QPushButton[actionRole=&quot;edit&quot;]:hover {
-    background-color: #1d4ed8;
+    background-color: #5C3648;
 }
 
 QPushButton[actionRole=&quot;disable&quot;] {
-    background-color: #d97706;
+    background-color: #B8790F;
     border: none;
     border-radius: 6px;
     padding: 4px 10px;
@@ -63,11 +63,11 @@ QPushButton[actionRole=&quot;disable&quot;] {
     font-size: 11px;
 }
 QPushButton[actionRole=&quot;disable&quot;]:hover {
-    background-color: #b45309;
+    background-color: #96620C;
 }
 
 QPushButton[actionRole=&quot;enable&quot;] {
-    background-color: #16a34a;
+    background-color: #1E7A47;
     border: none;
     border-radius: 6px;
     padding: 4px 10px;
@@ -76,11 +76,11 @@ QPushButton[actionRole=&quot;enable&quot;] {
     font-size: 11px;
 }
 QPushButton[actionRole=&quot;enable&quot;]:hover {
-    background-color: #15803d;
+    background-color: #175C36;
 }
 
 QPushButton[actionRole=&quot;expire&quot;] {
-    background-color: #dc2626;
+    background-color: #8B0000;
     border: none;
     border-radius: 6px;
     padding: 4px 10px;
@@ -89,11 +89,11 @@ QPushButton[actionRole=&quot;expire&quot;] {
     font-size: 11px;
 }
 QPushButton[actionRole=&quot;expire&quot;]:hover {
-    background-color: #991b1b;
+    background-color: #6B0000;
 }
 
 QPushButton[actionRole=&quot;unexpire&quot;] {
-    background-color: #0891b2;
+    background-color: #A64D6E;
     border: none;
     border-radius: 6px;
     padding: 4px 10px;
@@ -102,7 +102,7 @@ QPushButton[actionRole=&quot;unexpire&quot;] {
     font-size: 11px;
 }
 QPushButton[actionRole=&quot;unexpire&quot;]:hover {
-    background-color: #0e7490;
+    background-color: #7D3A54;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -128,7 +128,7 @@ QPushButton[actionRole=&quot;unexpire&quot;]:hover {
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">color: black;</string>
+      <string notr="true">color: #4A0F2B;</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::Shape::NoFrame</enum>
@@ -159,7 +159,7 @@ QPushButton[actionRole=&quot;unexpire&quot;]:hover {
      <property name="styleSheet">
       <string notr="true">QLabel {
     font-size: 12px;
-    color: #94a3b8;
+    color: #8A7580;
     border: none;
 }</string>
      </property>
@@ -174,7 +174,7 @@ QPushButton[actionRole=&quot;unexpire&quot;]:hover {
       <widget class="QPushButton" name="navStaffBtn_3">
        <property name="styleSheet">
         <string notr="true">QPushButton {
-    background-color: #2D4A7A;
+    background-color: #660033;
     border: none;
     padding: 8px 16px;
     color: white;
@@ -183,7 +183,7 @@ QPushButton[actionRole=&quot;unexpire&quot;]:hover {
 }
 QPushButton:hover {
     color: white;
-    background-color: #1B2A4A;
+    background-color: #4A0F2B;
     border-radius: 12px;
 }</string>
        </property>
@@ -196,7 +196,7 @@ QPushButton:hover {
       <widget class="QPushButton" name="navSupplierBtn_3">
        <property name="styleSheet">
         <string notr="true">QPushButton {
-    background-color: #2D4A7A;
+    background-color: #660033;
     border: none;
     padding: 8px 16px;
     color: white;
@@ -205,7 +205,7 @@ QPushButton:hover {
 }
 QPushButton:hover {
     color: white;
-    background-color: #1B2A4A;
+    background-color: #4A0F2B;
     border-radius: 12px;
 }</string>
        </property>
@@ -218,7 +218,7 @@ QPushButton:hover {
       <widget class="QPushButton" name="navTasksBtn_3">
        <property name="styleSheet">
         <string notr="true">QPushButton {
-    background-color: #2D4A7A;
+    background-color: #660033;
     border: none;
     padding: 8px 16px;
     color: white;
@@ -227,7 +227,7 @@ QPushButton:hover {
 }
 QPushButton:hover {
     color: white;
-    background-color: #1B2A4A;
+    background-color: #4A0F2B;
     border-radius: 12px;
 }</string>
        </property>
@@ -243,7 +243,7 @@ QPushButton:hover {
      <property name="styleSheet">
       <string notr="true">QFrame {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #E6DEE1;
     border-radius: 12px;
 }</string>
      </property>
@@ -270,7 +270,7 @@ QPushButton:hover {
             <string notr="true">QLabel {
     font-size: 18px;
     font-weight: bold;
-    color: #1e293b;
+    color: #4A0F2B;
     border: none;
 }</string>
            </property>
@@ -284,7 +284,7 @@ QPushButton:hover {
            <property name="styleSheet">
             <string notr="true">QLabel {
     font-size: 12px;
-    color: #94a3b8;
+    color: #8A7580;
     border: none;
 }</string>
            </property>
@@ -297,32 +297,32 @@ QPushButton:hover {
           <widget class="QTableWidget" name="staffTable_3">
            <property name="styleSheet">
             <string notr="true">QTableWidget {
-    border: 1px solid #e2e8f0;
+    border: 1px solid #E6DEE1;
     border-radius: 8px;
     background-color: #ffffff;
-    gridline-color: #f1f5f9;
+    gridline-color: #F5EEF0;
     font-size: 13px;
 }
 
 QTableWidget::item {
     padding: 12px 8px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #475569;
+    border-bottom: 1px solid #F5EEF0;
+    color: #6B5A63;
 }
 
 QTableWidget::item:selected {
-    background-color: #eff6ff;
-    color: #1e293b;
+    background-color: #F3E6EC;
+    color: #4A0F2B;
 }
 
 QHeaderView::section {
-    background-color: #f8fafc;
-    color: #64748b;
+    background-color: #F7F4F5;
+    color: #8A7580;
     font-weight: bold;
     font-size: 11px;
     padding: 10px 8px;
     border: none;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid #E6DEE1;
     text-transform: uppercase;
 }</string>
            </property>

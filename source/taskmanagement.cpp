@@ -78,18 +78,23 @@ const QString kSecondaryButtonStyle =
     "QPushButton:pressed { background-color:#EDF2F7; }"
     "QPushButton:focus   { outline:none; }";
 
+// Colors below are intentionally identical to staffperform.ui's
+// QPushButton[actionRole="expire"] / QPushButton[actionRole="disable"]
+// rules, so the two pages read consistently to an admin - "Add Task"
+// picks up the garnet "expire" color, "View Task" picks up the amber
+// "disable" color.
 const QString kAddTaskButtonStyle =
-    "QPushButton { background-color:#38A169; color:white; border:none;"
-    "  border-radius:4px; padding:5px 12px; font-size:12px; font-weight:bold; outline:none; }"
-    "QPushButton:hover   { background-color:#2F855A; }"
-    "QPushButton:pressed { background-color:#276749; }"
+    "QPushButton { background-color:#8B0000; color:white; border:none;"
+    "  border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold; outline:none; }"
+    "QPushButton:hover   { background-color:#660000; }"
+    "QPushButton:pressed { background-color:#4d0000; }"
     "QPushButton:focus   { outline:none; }";
 
 const QString kViewTaskButtonStyle =
-    "QPushButton { background-color:#2D4A7A; color:white; border:none;"
-    "  border-radius:4px; padding:5px 12px; font-size:12px; font-weight:bold; outline:none; }"
-    "QPushButton:hover   { background-color:#223A61; }"
-    "QPushButton:pressed { background-color:#1B2E4D; }"
+    "QPushButton { background-color:#d97706; color:white; border:none;"
+    "  border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold; outline:none; }"
+    "QPushButton:hover   { background-color:#b45309; }"
+    "QPushButton:pressed { background-color:#92400e; }"
     "QPushButton:focus   { outline:none; }";
 }
 

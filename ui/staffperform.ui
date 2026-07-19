@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>StaffPerform</class>
- <widget class="QMainWindow" name="StaffPerform">
+ <widget class="QWidget" name="StaffPerform">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -27,9 +27,24 @@
    <string>Staff Performance</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QMainWindow, QWidget#centralwidget {
+   <string notr="true">QWidget#StaffPerform {
     background-color: #fbf3f5;
     font-family: 'Segoe UI';
+}
+
+/* ── Back to Dashboard (shared convention with category.ui) ─────────────── */
+QPushButton#backToDashboardBtn {
+    background-color: transparent;
+    border: 1.5px solid #660033;
+    border-radius: 10px;
+    padding: 7px 16px;
+    color: #660033;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton#backToDashboardBtn:hover {
+    background-color: #660033;
+    color: white;
 }
 
 /* ── Per-row ACTIONS button styling ───────────────────────────────────────
@@ -90,105 +105,114 @@ QPushButton[actionRole=&quot;unexpire&quot;]:hover {
     background-color: #0e7490;
 }</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <property name="leftMargin"><number>24</number></property>
-    <property name="topMargin"><number>20</number></property>
-    <property name="rightMargin"><number>24</number></property>
-    <property name="bottomMargin"><number>20</number></property>
-    <item alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLabel" name="titleLabel">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>50</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Segoe UI</family>
-        <pointsize>14</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">color: #660033;</string>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Shape::NoFrame</enum>
-      </property>
-      <property name="text">
-       <string>Staff Performance</string>
-      </property>
-      <property name="textFormat">
-       <enum>Qt::TextFormat::PlainText</enum>
-      </property>
-     </widget>
-    </item>
-    <item alignment="Qt::AlignmentFlag::AlignHCenter">
-     <widget class="QLabel" name="subtitleLabel">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>20</height>
-       </size>
-      </property>
-      <property name="font">
-       <font>
-        <family>Segoe UI</family>
-        <pointsize>-1</pointsize>
-        <bold>false</bold>
-       </font>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">QLabel {
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin"><number>24</number></property>
+   <property name="topMargin"><number>20</number></property>
+   <property name="rightMargin"><number>24</number></property>
+   <property name="bottomMargin"><number>20</number></property>
+   <item alignment="Qt::AlignmentFlag::AlignHCenter">
+    <widget class="QLabel" name="titleLabel">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>50</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Segoe UI</family>
+       <pointsize>14</pointsize>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">color: #660033;</string>
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::NoFrame</enum>
+     </property>
+     <property name="text">
+      <string>Staff Performance</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::TextFormat::PlainText</enum>
+     </property>
+    </widget>
+   </item>
+   <item alignment="Qt::AlignmentFlag::AlignHCenter">
+    <widget class="QLabel" name="subtitleLabel">
+     <property name="maximumSize">
+      <size>
+       <width>16777215</width>
+       <height>20</height>
+      </size>
+     </property>
+     <property name="font">
+      <font>
+       <family>Segoe UI</family>
+       <pointsize>-1</pointsize>
+       <bold>false</bold>
+      </font>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QLabel {
     font-size: 12px;
     color: #9c7480;
     border: none;
 }</string>
-      </property>
-      <property name="text">
-       <string>Attendance and task completion overview - Admin Dashboard</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <layout class="QHBoxLayout" name="topBarLayout">
-      <item>
-       <widget class="QLabel" name="periodLabel">
-        <property name="styleSheet">
-         <string notr="true">QLabel {
+     </property>
+     <property name="text">
+      <string>Attendance and task completion overview - Admin Dashboard</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="topBarLayout">
+     <item>
+      <widget class="QPushButton" name="backToDashboardBtn">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>&lt;  Back to Dashboard</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="periodLabel">
+       <property name="styleSheet">
+        <string notr="true">QLabel {
     font-size: 12px;
     font-weight: 600;
     color: #660033;
     border: none;
 }</string>
-        </property>
-        <property name="text">
-         <string>Attendance period: —</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <spacer name="topBarSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QPushButton" name="refreshBtn">
-        <property name="cursor">
-         <cursorShape>PointingHandCursor</cursorShape>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QPushButton {
+       </property>
+       <property name="text">
+        <string>Attendance period: —</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="topBarSpacer">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="refreshBtn">
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
     background-color: #660033;
     border: none;
     padding: 8px 18px;
@@ -202,73 +226,73 @@ QPushButton:hover {
 QPushButton:pressed {
     background-color: #38001b;
 }</string>
-        </property>
-        <property name="text">
-         <string>Refresh</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QFrame" name="mainCardFrame">
-      <property name="styleSheet">
-       <string notr="true">QFrame {
+       </property>
+       <property name="text">
+        <string>Refresh</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QFrame" name="mainCardFrame">
+     <property name="styleSheet">
+      <string notr="true">QFrame {
     background-color: #ffffff;
     border: 1px solid #f0dde1;
     border-radius: 12px;
 }</string>
-      </property>
-      <property name="frameShape">
-       <enum>QFrame::Shape::StyledPanel</enum>
-      </property>
-      <property name="frameShadow">
-       <enum>QFrame::Shadow::Raised</enum>
-      </property>
-      <layout class="QVBoxLayout" name="cardLayout">
-       <item>
-        <widget class="QWidget" name="cardInner" native="true">
-         <layout class="QVBoxLayout" name="cardInnerLayout">
-          <item>
-           <widget class="QLabel" name="cardTitleLabel">
-            <property name="font">
-             <font>
-              <family>Segoe UI</family>
-              <pointsize>-1</pointsize>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QLabel {
+     </property>
+     <property name="frameShape">
+      <enum>QFrame::Shape::StyledPanel</enum>
+     </property>
+     <property name="frameShadow">
+      <enum>QFrame::Shadow::Raised</enum>
+     </property>
+     <layout class="QVBoxLayout" name="cardLayout">
+      <item>
+       <widget class="QWidget" name="cardInner" native="true">
+        <layout class="QVBoxLayout" name="cardInnerLayout">
+         <item>
+          <widget class="QLabel" name="cardTitleLabel">
+           <property name="font">
+            <font>
+             <family>Segoe UI</family>
+             <pointsize>-1</pointsize>
+             <bold>true</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QLabel {
     font-size: 18px;
     font-weight: bold;
     color: #4a1626;
     border: none;
 }</string>
-            </property>
-            <property name="text">
-             <string>Monthly Performance</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="cardSubtitleLabel">
-            <property name="styleSheet">
-             <string notr="true">QLabel {
+           </property>
+           <property name="text">
+            <string>Monthly Performance</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="cardSubtitleLabel">
+           <property name="styleSheet">
+            <string notr="true">QLabel {
     font-size: 12px;
     color: #9c7480;
     border: none;
 }</string>
-            </property>
-            <property name="text">
-             <string>Task completion and attendance for every staff/front desk account</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QTableWidget" name="performanceTable">
-            <property name="styleSheet">
-             <string notr="true">QTableWidget {
+           </property>
+           <property name="text">
+            <string>Task completion and attendance for every staff/front desk account</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QTableWidget" name="performanceTable">
+           <property name="styleSheet">
+            <string notr="true">QTableWidget {
     border: 1px solid #f0dde1;
     border-radius: 8px;
     background-color: #ffffff;
@@ -297,78 +321,77 @@ QHeaderView::section {
     border-bottom: 2px solid #f0dde1;
     text-transform: uppercase;
 }</string>
+           </property>
+           <property name="editTriggers">
+            <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+           </property>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+           </property>
+           <property name="columnCount">
+            <number>8</number>
+           </property>
+           <attribute name="horizontalHeaderMinimumSectionSize">
+            <number>80</number>
+           </attribute>
+           <attribute name="horizontalHeaderHighlightSections">
+            <bool>false</bool>
+           </attribute>
+           <attribute name="horizontalHeaderStretchLastSection">
+            <bool>true</bool>
+           </attribute>
+           <attribute name="verticalHeaderVisible">
+            <bool>false</bool>
+           </attribute>
+           <column>
+            <property name="text">
+             <string>ID</string>
             </property>
-            <property name="editTriggers">
-             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+           </column>
+           <column>
+            <property name="text">
+             <string>NAME</string>
             </property>
-            <property name="selectionBehavior">
-             <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+           </column>
+           <column>
+            <property name="text">
+             <string>INCOMPLETE TASKS</string>
             </property>
-            <property name="columnCount">
-             <number>8</number>
+           </column>
+           <column>
+            <property name="text">
+             <string>COMPLETED TASKS</string>
             </property>
-            <attribute name="horizontalHeaderMinimumSectionSize">
-             <number>80</number>
-            </attribute>
-            <attribute name="horizontalHeaderHighlightSections">
-             <bool>false</bool>
-            </attribute>
-            <attribute name="horizontalHeaderStretchLastSection">
-             <bool>true</bool>
-            </attribute>
-            <attribute name="verticalHeaderVisible">
-             <bool>false</bool>
-            </attribute>
-            <column>
-             <property name="text">
-              <string>ID</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>NAME</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>INCOMPLETE TASKS</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>COMPLETED TASKS</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>PRESENT DAYS</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>IRREGULAR DAYS</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>ABSENT DAYS</string>
-             </property>
-            </column>
-            <column>
-             <property name="text">
-              <string>ACTIONS</string>
-             </property>
-            </column>
-           </widget>
-          </item>
-         </layout>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </item>
-   </layout>
-  </widget>
+           </column>
+           <column>
+            <property name="text">
+             <string>PRESENT DAYS</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>IRREGULAR DAYS</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>ABSENT DAYS</string>
+            </property>
+           </column>
+           <column>
+            <property name="text">
+             <string>ACTIONS</string>
+            </property>
+           </column>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections/>
