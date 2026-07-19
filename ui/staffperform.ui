@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>StaffPerform</class>
+ <widget class="QMainWindow" name="StaffPerform">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1080</width>
+    <height>640</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>820</width>
+    <height>480</height>
+   </size>
+  </property>
+  <property name="font">
+   <font>
+    <family>Segoe UI</family>
+    <pointsize>12</pointsize>
+    <bold>true</bold>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Staff Performance</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow, QWidget#centralwidget {
+    background-color: #fbf3f5;
+    font-family: 'Segoe UI';
+}
+
+/* ── Per-row ACTIONS button styling ───────────────────────────────────────
+   Buttons in staffperform.cpp's buildActionsWidget() only set a
+   QPushButton's &quot;actionRole&quot; dynamic property (disable / enable /
+   expire / unexpire); all color/hover/font/radius styling lives here,
+   same convention as staff.ui, so staffperform.cpp never touches
+   presentation directly. */
+QPushButton[actionRole=&quot;disable&quot;] {
+    background-color: #d97706;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole=&quot;disable&quot;]:hover {
+    background-color: #b45309;
+}
+
+QPushButton[actionRole=&quot;enable&quot;] {
+    background-color: #16a34a;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole=&quot;enable&quot;]:hover {
+    background-color: #15803d;
+}
+
+QPushButton[actionRole=&quot;expire&quot;] {
+    background-color: #8B0000;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole=&quot;expire&quot;]:hover {
+    background-color: #660000;
+}
+
+QPushButton[actionRole=&quot;unexpire&quot;] {
+    background-color: #0891b2;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: white;
+    font-weight: bold;
+    font-size: 11px;
+}
+QPushButton[actionRole=&quot;unexpire&quot;]:hover {
+    background-color: #0e7490;
+}</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin"><number>24</number></property>
+    <property name="topMargin"><number>20</number></property>
+    <property name="rightMargin"><number>24</number></property>
+    <property name="bottomMargin"><number>20</number></property>
+    <item alignment="Qt::AlignmentFlag::AlignHCenter">
+     <widget class="QLabel" name="titleLabel">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>50</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>14</pointsize>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">color: #660033;</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Shape::NoFrame</enum>
+      </property>
+      <property name="text">
+       <string>Staff Performance</string>
+      </property>
+      <property name="textFormat">
+       <enum>Qt::TextFormat::PlainText</enum>
+      </property>
+     </widget>
+    </item>
+    <item alignment="Qt::AlignmentFlag::AlignHCenter">
+     <widget class="QLabel" name="subtitleLabel">
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>20</height>
+       </size>
+      </property>
+      <property name="font">
+       <font>
+        <family>Segoe UI</family>
+        <pointsize>-1</pointsize>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QLabel {
+    font-size: 12px;
+    color: #9c7480;
+    border: none;
+}</string>
+      </property>
+      <property name="text">
+       <string>Attendance and task completion overview - Admin Dashboard</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="topBarLayout">
+      <item>
+       <widget class="QLabel" name="periodLabel">
+        <property name="styleSheet">
+         <string notr="true">QLabel {
+    font-size: 12px;
+    font-weight: 600;
+    color: #660033;
+    border: none;
+}</string>
+        </property>
+        <property name="text">
+         <string>Attendance period: —</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="topBarSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="refreshBtn">
+        <property name="cursor">
+         <cursorShape>PointingHandCursor</cursorShape>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    background-color: #660033;
+    border: none;
+    padding: 8px 18px;
+    color: white;
+    font-weight: bold;
+    border-radius: 10px;
+}
+QPushButton:hover {
+    background-color: #4d0026;
+}
+QPushButton:pressed {
+    background-color: #38001b;
+}</string>
+        </property>
+        <property name="text">
+         <string>Refresh</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QFrame" name="mainCardFrame">
+      <property name="styleSheet">
+       <string notr="true">QFrame {
+    background-color: #ffffff;
+    border: 1px solid #f0dde1;
+    border-radius: 12px;
+}</string>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Shape::StyledPanel</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Shadow::Raised</enum>
+      </property>
+      <layout class="QVBoxLayout" name="cardLayout">
+       <item>
+        <widget class="QWidget" name="cardInner" native="true">
+         <layout class="QVBoxLayout" name="cardInnerLayout">
+          <item>
+           <widget class="QLabel" name="cardTitleLabel">
+            <property name="font">
+             <font>
+              <family>Segoe UI</family>
+              <pointsize>-1</pointsize>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+    font-size: 18px;
+    font-weight: bold;
+    color: #4a1626;
+    border: none;
+}</string>
+            </property>
+            <property name="text">
+             <string>Monthly Performance</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="cardSubtitleLabel">
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+    font-size: 12px;
+    color: #9c7480;
+    border: none;
+}</string>
+            </property>
+            <property name="text">
+             <string>Task completion and attendance for every staff/front desk account</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTableWidget" name="performanceTable">
+            <property name="styleSheet">
+             <string notr="true">QTableWidget {
+    border: 1px solid #f0dde1;
+    border-radius: 8px;
+    background-color: #ffffff;
+    gridline-color: #f6ebee;
+    font-size: 13px;
+}
+
+QTableWidget::item {
+    padding: 12px 8px;
+    border-bottom: 1px solid #f6ebee;
+    color: #4a1626;
+}
+
+QTableWidget::item:selected {
+    background-color: #fbe7ec;
+    color: #4a1626;
+}
+
+QHeaderView::section {
+    background-color: #fdf2f4;
+    color: #660033;
+    font-weight: bold;
+    font-size: 11px;
+    padding: 10px 8px;
+    border: none;
+    border-bottom: 2px solid #f0dde1;
+    text-transform: uppercase;
+}</string>
+            </property>
+            <property name="editTriggers">
+             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+            </property>
+            <property name="columnCount">
+             <number>8</number>
+            </property>
+            <attribute name="horizontalHeaderMinimumSectionSize">
+             <number>80</number>
+            </attribute>
+            <attribute name="horizontalHeaderHighlightSections">
+             <bool>false</bool>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+            <column>
+             <property name="text">
+              <string>ID</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>NAME</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>INCOMPLETE TASKS</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>COMPLETED TASKS</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>PRESENT DAYS</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>IRREGULAR DAYS</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>ABSENT DAYS</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>ACTIONS</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -14,6 +14,8 @@ set(PROJECT_SOURCES
        include/frontproduct.h
        source/frontproduct.cpp
        ui/frontproduct.ui
+       include/attendancemanager.h
+       source/attendancemanager.cpp
        include/profile.h
        source/profile.cpp
        ui/profile.ui

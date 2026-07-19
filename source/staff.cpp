@@ -1,6 +1,7 @@
 #include "../include/staff.h"
 #include "../ui/ui_staff.h"
 #include "../include/taskmanagement.h" // TODO: confirm this path/filename matches your project layout
+#include "../include/staffperform.h"
 
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -113,6 +114,7 @@ staff::staff(QWidget *parent)
     // Task moved to the top nav bar, so ACTIONS needs less width than before.
     header->resizeSection(COL_ACTIONS,  220);
     connect(ui->navTasksBtn_3, &QPushButton::clicked, this, &staff::on_navTasksBtn_3_clicked);
+    connect(ui->navSupplierBtn_3, &QPushButton::clicked, this, &staff::on_navSupplierBtn_3_clicked);
 
     loadStaffTable();
 }
@@ -459,4 +461,16 @@ void staff::on_navTasksBtn_3_clicked()
     auto *taskWin = new TaskManagement(); // no parent -> opens as its own top-level window
     taskWin->setAttribute(Qt::WA_DeleteOnClose); // auto-cleans up when the user closes it
     taskWin->show();
+}
+
+// ─── Staff Performance (top nav) ────────────────────────────────────────────
+// "navSupplierBtn_3" is a leftover object name from before this button was
+// re-labelled "Staff Performance" in staff.ui — kept as-is here since
+// renaming it would mean regenerating ui_staff.h too.
+
+void staff::on_navSupplierBtn_3_clicked()
+{
+    auto *perfWin = new StaffPerform(); // no parent -> opens as its own top-level window
+    perfWin->setAttribute(Qt::WA_DeleteOnClose);
+    perfWin->show();
 }

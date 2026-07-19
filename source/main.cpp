@@ -187,6 +187,23 @@ const QVector<QString> kStatements = {
     QStringLiteral(R"sql(ALTER TABLE tasks ADD COLUMN created_at TEXT;)sql"),
     QStringLiteral(R"sql(ALTER TABLE tasks ADD COLUMN staff_id INTEGER;)sql"),
 
+    // ── attendance (check-in / check-out log, Staff Performance page) ─
+    // One row per staff/frontdesk member per calendar day. Written by
+    // AttendanceManager::recordCheckIn/recordCheckOut (see login.cpp,
+    // which calls these around the dashboard window's lifetime) and read
+    // back by AttendanceManager::computeStats (used in staffperform.cpp)
+    // to derive Present / Irregular / Absent day counts.
+    QStringLiteral(R"sql(
+    CREATE TABLE IF NOT EXISTS attendance (
+        id             INTEGER PRIMARY KEY AUTOINCREMENT,
+        staff_id       INTEGER NOT NULL,   -- FK -> information.id
+        date           TEXT NOT NULL,      -- 'yyyy-MM-dd'
+        check_in_time  TEXT,               -- 'HH:mm:ss'
+        check_out_time TEXT,               -- 'HH:mm:ss', NULL until the dashboard window closes
+        UNIQUE(staff_id, date)
+    );
+    )sql"),
+
     // ── pending_requests (self-registration queue) ───────────────
     QStringLiteral(R"sql(
     CREATE TABLE IF NOT EXISTS pending_requests (
@@ -209,7 +226,8 @@ const QVector<QString> kStatements = {
         ('products',         51),
         ('suppliers',         5),
         ('tasks',             0),
-        ('pending_requests',  0);
+        ('pending_requests',  0),
+        ('attendance',        0);
     )sql"),
 };
 

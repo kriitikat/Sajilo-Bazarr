@@ -23,6 +23,11 @@ private slots:
     // a page-level entry point now (no longer tied to a specific staff row).
     void on_navTasksBtn_3_clicked();
 
+    // Top-nav "Staff Performance" button — opens StaffPerform as its own
+    // window (attendance + task-completion overview for every staff/
+    // frontdesk account).
+    void on_navSupplierBtn_3_clicked();
+
     // Per-row action buttons, dispatched with the staff id baked into the slot via lambda.
     void editStaff(int staffId);
     void disableStaff(int staffId); // toggles status between 'enabled' and 'disabled'

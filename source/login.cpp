@@ -9,6 +9,7 @@
 #include "../include/staffdashboard.h"
 #include "../include/frontdesk.h"
 #include "../include/register.h"
+#include "../include/attendancemanager.h"
 
 #include <QSqlDatabase>
 #include <QSqlQuery>
@@ -189,12 +190,30 @@ void Login::openDashboard(int userId,
         // which filters the `tasks` table by staff_id.
         StaffDashboard *w = new StaffDashboard(userId, fullName);
         w->setAttribute(Qt::WA_DeleteOnClose);
+
+        // Attendance: this login IS the check-in. The check-out is
+        // recorded when this window is destroyed (i.e. the user closes
+        // their dashboard) — hooked via QObject::destroyed so nothing
+        // inside StaffDashboard itself needs to change. See
+        // attendancemanager.h for the on-time / late / early rules.
+        AttendanceManager::recordCheckIn(userId);
+        connect(w, &QObject::destroyed, this, [userId]() {
+            AttendanceManager::recordCheckOut(userId);
+        });
+
         w->show();
 
     } else if (role == "frontdesk") {
         // frontdesk class name (lower-case) — matches frontdesk.h exactly
         frontdesk *w = new frontdesk();
         w->setAttribute(Qt::WA_DeleteOnClose);
+
+        // Same attendance hook as the staff branch above.
+        AttendanceManager::recordCheckIn(userId);
+        connect(w, &QObject::destroyed, this, [userId]() {
+            AttendanceManager::recordCheckOut(userId);
+        });
+
         w->show();
 
     } else {
