@@ -2,4 +2,14 @@
     <qresource prefix="/icons">
         <file>resources/logo.png</file>
     </qresource>
+    <qresource prefix="/staff_photos">
+        <file alias="anushka.jpg">resources/staff_photos/anushka.jpg</file>
+        <file alias="suyeshna.jpg">resources/staff_photos/suyeshna.jpg</file>
+        <file alias="kritika.jpg">resources/staff_photos/kritika.jpg</file>
+        <file alias="milan.jpg">resources/staff_photos/milan.jpg</file>
+        <file alias="ritika.jpg">resources/staff_photos/ritika.jpg</file>
+        <file alias="roshan.jpg">resources/staff_photos/roshan.jpg</file>
+        <file alias="prisha.jpg">resources/staff_photos/prisha.jpg</file>
+        <file alias="aayush.jpg">resources/staff_photos/aayush.jpg</file>
+    </qresource>
 </RCC>
