@@ -2,12 +2,17 @@
 #define SUPPLIER_H
 
 #include <QWidget>
+#include "../include/backbase.h"
 
 namespace Ui {
 class supplier;
 }
 
-class supplier : public QWidget
+// Inherits BackBase<QWidget> instead of QWidget directly — this is the
+// only change needed to pick up wireBackButton()/goBackToDashboard()
+// (see backbase.h for why it's a template). Everything else about this
+// class is exactly as before.
+class supplier : public BackBase<QWidget>
 {
     Q_OBJECT
 

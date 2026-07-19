@@ -14,10 +14,15 @@
 #include <QHeaderView>
 
 supplier::supplier(QWidget *parent)
-    : QWidget(parent)
+    : BackBase<QWidget>(parent)
     , ui(new Ui::supplier)
 {
     ui->setupUi(this);
+
+    // Back to Dashboard — inherited from BackBase<QWidget>. Closing this
+    // window is enough: AdminDashboard is already open underneath it
+    // (see admindashboard.cpp's handleSuppliers_clicked()).
+    wireBackButton(ui->btnBackToDashboard);
 
     // Connect toolbar buttons
     connect(ui->addSupplierBtn, &QPushButton::clicked,

@@ -10,7 +10,7 @@
 #include <QShowEvent>
 
 inventory::inventory(QWidget *parent)
-    : QMainWindow(parent)
+    : BackBase<QMainWindow>(parent)
     , ui(new Ui::inventory)
 {
     ui->setupUi(this);
@@ -34,6 +34,11 @@ inventory::inventory(QWidget *parent)
     // Prev / Next buttons
     connect(ui->btnPrev, &QPushButton::clicked, this, &inventory::goToPreviousPage);
     connect(ui->btnNext, &QPushButton::clicked, this, &inventory::goToNextPage);
+
+    // Back to Dashboard — inherited from BackBase<QMainWindow>. Closing
+    // this window is enough: AdminDashboard is already open underneath it
+    // (see admindashboard.cpp's handleInventory_clicked()).
+    wireBackButton(ui->btnBackToDashboard);
 
     // Make stat boxes clickable for filtering
     ui->cardTotal->installEventFilter(this);

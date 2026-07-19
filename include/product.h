@@ -11,6 +11,11 @@ namespace Ui { class Product; }
 //  pagination, delete) from ProductBase. Does NOT provide the
 //  expiry-warning system or "Add Product" — those live on the
 //  ProductStaff page.
+//
+//  Back-to-Dashboard: no inheritance change needed here — ProductBase
+//  itself now extends BackBase<QWidget> (see backbase.h), so
+//  wireBackButton()/goBackToDashboard() are already available to
+//  Product via that chain. See product.cpp's constructor.
 // ─────────────────────────────────────────────
 class Product : public ProductBase
 {

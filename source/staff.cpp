@@ -68,10 +68,15 @@ static constexpr int COL_ACTIONS  = 7;
 static constexpr int COL_COUNT    = 8;
 
 staff::staff(QWidget *parent)
-    : QWidget(parent)
+    : BackBase<QWidget>(parent)
     , ui(new Ui::staff)
 {
     ui->setupUi(this);
+
+    // Back to Dashboard — inherited from BackBase<QWidget>. Closing this
+    // window is enough: AdminDashboard is already open underneath it
+    // (see admindashboard.cpp's handleStaff_clicked()).
+    wireBackButton(ui->btnBackToDashboard);
 
     // ── Table setup (mirrors inventory.cpp's approach) ───────────────────
     const QStringList headers = {

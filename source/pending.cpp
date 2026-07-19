@@ -27,12 +27,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 pending::pending(QWidget *parent)
-    : QWidget(parent)
+    : BackBase<QWidget>(parent)
     , ui(new Ui::pending)
     , rowCount(0)
 {
     ui->setupUi(this);
     setWindowTitle("Pending Registration Requests");
+
+    // Back to Dashboard — inherited from BackBase<QWidget>. Closing this
+    // window is enough: AdminDashboard is already open underneath it
+    // (see admindashboard.cpp's handlePending_Request_clicked()).
+    wireBackButton(ui->btnBackToDashboard);
 
     // ── Column resize modes (behavioral, not visual — kept in code) ─────────
     ui->pendingTable->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents); // ID

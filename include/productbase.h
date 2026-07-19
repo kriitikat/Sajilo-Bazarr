@@ -5,6 +5,7 @@
 #include <QString>
 #include <QStringList>
 #include <QList>
+#include "../include/backbase.h"
 
 class QTableWidget;
 class QTableWidgetItem;
@@ -71,6 +72,12 @@ private:
 //  and the ProductStaff page have in common: reading from the DB,
 //  drawing the table, search box, category filter and pagination.
 //
+//  Now extends BackBase<QWidget> rather than QWidget directly, so both
+//  Product and ProductStaff automatically pick up wireBackButton() /
+//  goBackToDashboard() through this one shared base — see backbase.h
+//  for why that's a template. This is the only inheritance change; the
+//  rest of the class is unchanged from before.
+//
 //  A concrete subclass must:
 //    1. "plug in" its own Designer widgets by implementing the
 //       protected pure-virtual accessors below (tableWidget(),
@@ -78,7 +85,9 @@ private:
 //    2. implement addActionButtons(), since Product offers
 //       "Update Stock" while ProductStaff offers "Edit".
 //    3. call initializeCommonUi() at the END of its own constructor
-//       (i.e. after ui->setupUi(this) has created its widgets).
+//       (i.e. after ui->setupUi(this) has created its widgets), and
+//       separately call wireBackButton(ui->btnBackToDashboard) once
+//       that button exists, to enable Back to Dashboard.
 //       This two-step construction is required because virtual
 //       functions cannot be safely dispatched to a derived class
 //       from inside the base class's own constructor.
@@ -89,7 +98,7 @@ private:
 //  and is overridden ONLY by ProductStaff — Product simply never
 //  turns it on.
 // ═══════════════════════════════════════════════════════════════════
-class ProductBase : public QWidget
+class ProductBase : public BackBase<QWidget>
 {
     Q_OBJECT
 public:

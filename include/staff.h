@@ -2,12 +2,17 @@
 #define STAFF_H
 
 #include <QWidget>
+#include "../include/backbase.h"
 
 namespace Ui {
 class staff;
 }
 
-class staff : public QWidget
+// Inherits BackBase<QWidget> instead of QWidget directly — this is the
+// only change needed to pick up wireBackButton()/goBackToDashboard()
+// (see backbase.h for why it's a template). Everything else about this
+// class is exactly as before.
+class staff : public BackBase<QWidget>
 {
     Q_OBJECT
 

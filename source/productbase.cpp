@@ -46,10 +46,12 @@ int ProductRecord::daysUntilExpiry() const
 //  ProductBase
 // ═══════════════════════════════════════════════════════════════════
 ProductBase::ProductBase(QWidget *parent)
-    : QWidget(parent)
+    : BackBase<QWidget>(parent)
 {
     // Intentionally empty: subclasses build their own ui->setupUi(this)
     // first, then call initializeCommonUi() explicitly. See header.
+    // (BackBase<QWidget> adds no constructor-time behavior of its own —
+    // see backbase.h — so this stays exactly as simple as before.)
 }
 
 QStringList ProductBase::loadCategoriesFromDb()

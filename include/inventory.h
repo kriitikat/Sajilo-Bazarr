@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QEvent>
+#include "../include/backbase.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -10,7 +11,11 @@ class inventory;
 }
 QT_END_NAMESPACE
 
-class inventory : public QMainWindow
+// Inherits BackBase<QMainWindow> instead of QMainWindow directly — this
+// is the only change needed to pick up wireBackButton()/goBackToDashboard()
+// (see backbase.h for why it's a template). Everything else about this
+// class is exactly as before.
+class inventory : public BackBase<QMainWindow>
 {
     Q_OBJECT
 

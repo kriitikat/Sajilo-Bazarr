@@ -2,6 +2,7 @@
 #define PENDING_H
 
 #include <QWidget>
+#include "../include/backbase.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class pending; }
@@ -27,7 +28,11 @@ struct PendingRow
     char phone[32];
 };
 
-class pending : public QWidget
+// Inherits BackBase<QWidget> instead of QWidget directly — this is the
+// only change needed to pick up wireBackButton()/goBackToDashboard()
+// (see backbase.h for why it's a template). Everything else about this
+// class is exactly as before.
+class pending : public BackBase<QWidget>
 {
     Q_OBJECT
 

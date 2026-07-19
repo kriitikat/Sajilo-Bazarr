@@ -27,6 +27,12 @@ Product::Product(QWidget *parent)
     // Common wiring (table columns, search/filter/pagination signals,
     // initial load) happens here, once this object's own widgets exist.
     initializeCommonUi();
+
+    // Back to Dashboard — wireBackButton()/goBackToDashboard() come from
+    // BackBase<QWidget>, via ProductBase (see productbase.h). Closing
+    // this window is enough: AdminDashboard is already open underneath
+    // it (see admindashboard.cpp's handleProducts_clicked()).
+    wireBackButton(ui->btnBackToDashboard);
 }
 
 Product::~Product()
