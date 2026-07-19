@@ -23,6 +23,7 @@ public:
 
 private slots:
     void openBillingWindow();
+    void openViewProductsWindow();
 
 private:
     Ui::frontdesk *ui;
