@@ -19,6 +19,14 @@ FrontProduct::FrontProduct(QWidget *parent)
 {
     ui->setupUi(this);
 
+    // FrontProduct is opened by frontdesk::openViewProductsWindow() as a
+    // standalone top-level window (WA_DeleteOnClose) WITHOUT closing
+    // frontdesk behind it - unlike openBillingWindow(), which does close
+    // frontdesk. So "Back to Dashboard" here simply needs to close this
+    // window; the Front Desk dashboard is already sitting there behind it,
+    // and WA_DeleteOnClose (set by the caller) takes care of cleanup.
+    connect(ui->btnBackToDashboard, &QPushButton::clicked, this, &QWidget::close);
+
     // Common wiring (table columns, search/filter/pagination signals,
     // initial load) happens here, once this object's own widgets exist.
     initializeCommonUi();

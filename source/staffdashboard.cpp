@@ -76,7 +76,7 @@ StaffDashboard::StaffDashboard(int staffId, const QString &staffName, QWidget *p
     connect(ui->btnViewTasks,
             &QPushButton::clicked,
             this,
-            &StaffDashboard::on_btnViewTasks_clicked);
+            &StaffDashboard::handleViewTasksClicked);
 
     setupDashboardContent();
     loadCurrentUserInfo();
@@ -189,8 +189,8 @@ void StaffDashboard::loadCurrentUserInfo()
     if (m_staffId < 0) {
         qWarning() << "StaffDashboard: no staffId supplied, cannot personalize dashboard";
         ui->welcomeLabel->setText(m_staffName.isEmpty()
-                                       ? QStringLiteral("Welcome back, Staff!")
-                                       : QStringLiteral("Welcome back, %1!").arg(m_staffName));
+                                      ? QStringLiteral("Welcome back, Staff!")
+                                      : QStringLiteral("Welcome back, %1!").arg(m_staffName));
         return;
     }
 
@@ -223,8 +223,8 @@ void StaffDashboard::loadCurrentUserInfo()
 
     ui->welcomeLabel->setText(
         firstName.isEmpty() ? QStringLiteral("Welcome back, %1!").arg(
-                                   m_staffName.isEmpty() ? QStringLiteral("Staff") : m_staffName)
-                             : QStringLiteral("Welcome back, %1!").arg(firstName));
+                                  m_staffName.isEmpty() ? QStringLiteral("Staff") : m_staffName)
+                            : QStringLiteral("Welcome back, %1!").arg(firstName));
 
     // ── Avatar ───────────────────────────────────────────────────
     QPixmap avatar;
@@ -273,8 +273,8 @@ void StaffDashboard::loadCurrentUserInfo()
 QPixmap StaffDashboard::makeCircularPixmap(const QPixmap &source, int diameter)
 {
     QPixmap scaled = source.scaled(diameter, diameter,
-                                    Qt::KeepAspectRatioByExpanding,
-                                    Qt::SmoothTransformation);
+                                   Qt::KeepAspectRatioByExpanding,
+                                   Qt::SmoothTransformation);
 
     QPixmap circular(diameter, diameter);
     circular.fill(Qt::transparent);
@@ -427,12 +427,50 @@ void StaffDashboard::handleProfileClicked()
     profileWindow->exec();
 }
 
-void StaffDashboard::on_btnViewTasks_clicked()
+// ─────────────────────────────────────────────────────────────────
+//  Opens the My Tasks page.
+//
+//  REAL BUG THIS FIXES (the actual double-window cause): this slot
+//  used to be named `on_btnViewTasks_clicked`. Qt's uic-generated
+//  setupUi() calls QMetaObject::connectSlotsByName(this), which
+//  auto-connects any slot matching the pattern on_<objectName>_
+//  <signalName> to that widget's signal - with NO connect() needed.
+//  Since this slot's name matched btnViewTasks's clicked() signal
+//  exactly, it was being invoked TWICE per click: once from the
+//  auto-connection, and once from the explicit connect() in the
+//  constructor. That's why new MyTasks(...) ran twice and produced
+//  two windows - and why Products/Logout/Profile never had this
+//  problem, since none of their slot names match that convention.
+//  Renaming the slot away from on_btnViewTasks_clicked removes the
+//  auto-connect entirely, leaving only the one explicit connect().
+//
+//  SEPARATE BUG ALSO FIXED HERE: this used to do
+//  `new MyTasks(m_staffId, m_staffName, this)` and ->show(). Handing
+//  a *parent* to a QMainWindow (without Qt::Window) makes Qt treat it
+//  as a CHILD widget of StaffDashboard instead of its own top-level
+//  window, so even a single instance would've been drawn overlapping
+//  the dashboard rather than opening as a separate screen.
+//
+//  Fix: construct MyTasks with NO parent so Qt always treats it as an
+//  independent top-level window, hide the dashboard while it's open,
+//  and bring it back - refreshed, since Pending Tasks may have changed
+//  while we were away - the instant MyTasks closes, whether that
+//  happens via its own "Back to Dashboard" button or the window's [X].
+// ─────────────────────────────────────────────────────────────────
+void StaffDashboard::handleViewTasksClicked()
 {
+    this->hide();
+
     // Pass BOTH id and name straight into the constructor - MyTasks loads
     // its own data as soon as it's built, so there's no separate
     // loadTasksForStaff() call needed here.
-    MyTasks *tasksPage = new MyTasks(m_staffId, m_staffName, this);
+    MyTasks *tasksPage = new MyTasks(m_staffId, m_staffName); // no parent -> real top-level window
     tasksPage->setAttribute(Qt::WA_DeleteOnClose);
+
+    connect(tasksPage, &QObject::destroyed, this, [this]() {
+        refreshDashboardStats(); // pending task count may have changed while we were away
+        this->show();
+    });
+
     tasksPage->show();
 }

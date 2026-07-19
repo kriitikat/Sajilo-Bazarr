@@ -38,7 +38,7 @@ private slots:
     void handleProductsClicked();   // opens ProductStaff as its own top-level window
     void refreshDashboardStats();   // re-pulls counts + low stock rows from DB
     void handleProfileClicked();    // opens Profile for the currently logged-in staff
-    void on_btnViewTasks_clicked(); // opens MyTasks, filtered by this staff member's id
+    void handleViewTasksClicked(); // opens MyTasks, filtered by this staff member's id
 
 private:
     void setupDashboardContent();   // builds the cards + table once, in the ctor
@@ -53,7 +53,7 @@ private:
     int     m_staffId = -1;  // information.id — source of truth for task filtering
     QString m_staffName;     // display name (welcome banner, MyTasks header)
     QString m_username;      // login username — only needed to open Profile;
-                              // re-fetched from 'information' by id, not passed in
+    // re-fetched from 'information' by id, not passed in
 
     // Stat cards
     QLabel *lblTotalProducts   = nullptr;

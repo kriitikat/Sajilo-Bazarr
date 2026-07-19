@@ -15,7 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="styleSheet">
-    <string notr="true">QWidget { background-color: #f0f0f0; }</string>
+    <string notr="true">QWidget { background-color: #fbf3f5; }</string>
    </property>
    <widget class="QFrame" name="topbarFrame">
     <property name="geometry">
@@ -27,7 +27,7 @@
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QFrame { background-color: #1a2a4a; }</string>
+     <string notr="true">QFrame { background-color: #660033; }</string>
     </property>
     <widget class="QLabel" name="welcomeLabel">
      <property name="geometry">
@@ -55,7 +55,7 @@
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">QPushButton { background-color: #2e4a7a; color: white; border-radius: 4px; font-size: 12px; }</string>
+      <string notr="true">QPushButton { background-color: #8a3b57; color: white; border-radius: 4px; font-size: 12px; }</string>
      </property>
      <property name="text">
       <string>Front Desk</string>
@@ -72,7 +72,7 @@
      </rect>
     </property>
     <property name="styleSheet">
-     <string notr="true">QFrame { background-color: #1a2a4a; }</string>
+     <string notr="true">QFrame { background-color: #660033; }</string>
     </property>
     <widget class="QLabel" name="appNameLabel">
      <property name="geometry">
@@ -100,7 +100,7 @@
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">QPushButton { background-color: #2e4a7a; color: white; border: none; text-align: left; padding-left: 20px; font-size: 13px; } QPushButton:hover { background-color: #3a5a9a; }</string>
+      <string notr="true">QPushButton { background-color: #8a3b57; color: white; border: none; text-align: left; padding-left: 20px; font-size: 13px; } QPushButton:hover { background-color: #6d2e45; }</string>
      </property>
      <property name="text">
       <string>Dashboard</string>
@@ -116,7 +116,7 @@
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">QPushButton { background-color: transparent; color: white; border: none; text-align: left; padding-left: 20px; font-size: 13px; } QPushButton:hover { background-color: #2e4a7a; }</string>
+      <string notr="true">QPushButton { background-color: transparent; color: white; border: none; text-align: left; padding-left: 20px; font-size: 13px; } QPushButton:hover { background-color: #8a3b57; }</string>
      </property>
      <property name="text">
       <string>View Products</string>
@@ -132,7 +132,7 @@
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">QPushButton { background-color: transparent; color: white; border: none; text-align: left; padding-left: 20px; font-size: 13px; } QPushButton:hover { background-color: #2e4a7a; }</string>
+      <string notr="true">QPushButton { background-color: transparent; color: white; border: none; text-align: left; padding-left: 20px; font-size: 13px; } QPushButton:hover { background-color: #8a3b57; }</string>
      </property>
      <property name="text">
       <string>Billing</string>
@@ -148,7 +148,7 @@
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">QPushButton { background-color: #c0392b; color: white; border: none; text-align: left; padding-left: 20px; font-size: 13px; } QPushButton:hover { background-color: #e74c3c; }</string>
+      <string notr="true">QPushButton { background-color: #8B0000; color: white; border: none; text-align: left; padding-left: 20px; font-size: 13px; } QPushButton:hover { background-color: #660000; }</string>
      </property>
      <property name="text">
       <string>Logout</string>
@@ -177,7 +177,7 @@
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">QLabel { color: #1a2a4a; font-size: 20px; font-weight: bold; background: transparent; }</string>
+      <string notr="true">QLabel { color: #660033; font-size: 20px; font-weight: bold; background: transparent; }</string>
      </property>
      <property name="text">
       <string>Front Desk Dashboard</string>
@@ -193,7 +193,7 @@
       </rect>
      </property>
      <property name="styleSheet">
-      <string notr="true">QTableWidget { border: 1px solid #dddddd; gridline-color: #eeeeee; font-size: 13px; } QHeaderView::section { background-color: #1a2a4a; color: white; padding: 6px; font-weight: bold; }</string>
+      <string notr="true">QTableWidget { background-color: #ffffff; border: 1px solid #f0dde1; gridline-color: #f6ebee; font-size: 13px; color: #4a1626; } QHeaderView::section { background-color: #660033; color: white; padding: 6px; font-weight: bold; }</string>
      </property>
     </widget>
    </widget>

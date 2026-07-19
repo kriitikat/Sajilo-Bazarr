@@ -72,6 +72,20 @@
             </spacer>
            </item>
            <item>
+            <widget class="QPushButton" name="btnBackToDashboard">
+             <property name="cursor">
+              <cursorShape>PointingHandCursor</cursorShape>
+             </property>
+             <property name="styleSheet">
+              <string>QPushButton { background-color:transparent; color:#FDE68A; border:1px solid #FDE68A; border-radius:6px; padding:8px 16px; font-size:12px; font-weight:bold; }
+QPushButton:hover { background-color:rgba(253,230,138,40); }</string>
+             </property>
+             <property name="text">
+              <string>← Back to Dashboard</string>
+             </property>
+            </widget>
+           </item>
+           <item>
             <widget class="QPushButton" name="btnRefresh">
              <property name="cursor">
               <cursorShape>PointingHandCursor</cursorShape>

@@ -32,6 +32,15 @@ MyTasks::MyTasks(int staffId, const QString &staffName, QWidget *parent)
 
     connect(ui->btnRefresh, &QPushButton::clicked, this, &MyTasks::refreshTasks);
 
+    // "Back to Dashboard" just closes this window - StaffDashboard is the
+    // one that owns bringing itself back: it hides itself before opening
+    // MyTasks, and re-shows itself (refreshed) via a connect(...destroyed...)
+    // hook once this window is destroyed. Since MyTasks is created with
+    // WA_DeleteOnClose (set in StaffDashboard::on_btnViewTasks_clicked),
+    // a simple close() here is all that's needed to trigger that hand-off -
+    // this is the exact same pattern ProductStaff already uses.
+    connect(ui->btnBackToDashboard, &QPushButton::clicked, this, &QWidget::close);
+
     loadTasksForStaff(staffId, staffName);
 }
 
