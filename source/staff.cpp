@@ -469,5 +469,6 @@ void staff::on_navSupplierBtn_3_clicked()
 {
     auto *perfWin = new StaffPerform(); // no parent -> opens as its own top-level window
     perfWin->setAttribute(Qt::WA_DeleteOnClose);
+    connect(perfWin, &StaffPerform::backToDashboardRequested, perfWin, &StaffPerform::close);
     perfWin->show();
 }
