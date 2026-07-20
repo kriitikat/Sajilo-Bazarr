@@ -9,6 +9,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 #include "../include/productbase.h"
+#include "../include/stockservice.h"
 
 #include <QTableWidget>
 #include <QTableWidgetItem>
@@ -353,20 +354,20 @@ void ProductBase::setRowData(int row, const ProductRecord &p)
     itemExp->setToolTip(p.expiryDate().isEmpty() ? "No expiry set" : "Expiry: " + p.expiryDate());
     decorateExpiryCell(itemExp, daysLeft);
 
-    // Col 7 – Status (colour-coded)
-    auto *itemStatus = new QTableWidgetItem(p.status());
+    // Col 7 – Status (computed LIVE from stock — never trust DB status column)
+    QString liveStatus = StockService::statusForStock(p.stock());
+    auto *itemStatus = new QTableWidgetItem(liveStatus);
     itemStatus->setTextAlignment(Qt::AlignCenter);
-    if (p.status() == "In Stock" || p.status() == "High Stock") {
+    if (liveStatus == "Normal" || liveStatus == "High Stock") {
         itemStatus->setForeground(QColor("#1B8A44"));
         itemStatus->setBackground(QColor("#E6F4EA"));
-    } else if (p.status() == "Low Stock") {
+    } else if (liveStatus == "Low Stock") {
         itemStatus->setForeground(QColor("#856404"));
         itemStatus->setBackground(QColor("#FFF3CD"));
     } else {
         itemStatus->setForeground(QColor("#C0392B"));
         itemStatus->setBackground(QColor("#FDEDEC"));
     }
-
     // Col 8 – Supplier
     auto *itemSupplier = new QTableWidgetItem(p.supplier());
 
