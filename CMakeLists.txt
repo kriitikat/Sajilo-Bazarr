@@ -82,11 +82,15 @@ set(PROJECT_SOURCES
        ui/productstaff.ui
        source/reportdb.cpp
        include/reportdb.h
+       source/stockservice.cpp
+       include/stockservice.h
+
    )
 if(QT_VERSION_MAJOR GREATER_EQUAL 6)
     qt_add_executable(Sajilo-Bazarr
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+
     )
 else()
     if(ANDROID)

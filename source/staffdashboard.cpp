@@ -3,6 +3,7 @@
 #include "../include/productstaff.h"
 #include "../include/profile.h"
 #include "../include/mytasks.h"
+#include "../include/stockservice.h"
 
 #include <QPushButton>
 #include <QLabel>
@@ -304,27 +305,14 @@ QPixmap StaffDashboard::makeCircularPixmap(const QPixmap &source, int diameter)
 // ─────────────────────────────────────────────────────────────────
 void StaffDashboard::refreshDashboardStats()
 {
-    // Total products
+    InventoryStats stats = StockService::computeStats();
+    // Stock stats — now computed the same way everywhere via StockService
     {
-        QSqlQuery q("SELECT COUNT(*) FROM products");
-        if (q.next())
-            lblTotalProducts->setText(QString::number(q.value(0).toInt()));
-    }
-
-    // Low stock (stock > 0 and <= threshold)
-    {
-        QSqlQuery q;
-        q.prepare("SELECT COUNT(*) FROM products WHERE stock > 0 AND stock <= :t");
-        q.bindValue(":t", LOW_STOCK_THRESHOLD);
-        if (q.exec() && q.next())
-            lblLowStockCount->setText(QString::number(q.value(0).toInt()));
-    }
-
-    // Out of stock
-    {
-        QSqlQuery q("SELECT COUNT(*) FROM products WHERE stock <= 0");
-        if (q.next())
-            lblOutOfStockCount->setText(QString::number(q.value(0).toInt()));
+        InventoryStats stats = StockService::computeStats();
+        lblTotalProducts->setText(QString::number(stats.total));
+        lblLowStockCount->setText(QString::number(stats.low));
+        lblOutOfStockCount->setText(QString::number(stats.out));
+        // If staff dashboard ever adds a High Stock card, use stats.high here too
     }
 
     // Pending tasks — filtered by staff_id, same rule MyTasks uses, so

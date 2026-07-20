@@ -1,5 +1,7 @@
 #include "../include/inventory.h"
 #include "../ui/ui_inventory.h"
+#include "../ui/ui_staffdashboard.h"
+#include "../include/stockservice.h"
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QTableWidgetItem>
@@ -59,39 +61,19 @@ inventory::~inventory()
 // This keeps the 4 stat cards stable no matter what filter is applied.
 void inventory::updateStatCards()
 {
-    QSqlQuery query;
-    if (!query.exec("SELECT status, COUNT(*) FROM products GROUP BY status")) {
-        qWarning() << "Inventory: failed to load stat counts -" << query.lastError().text();
-        return;
-    }
+    InventoryStats stats = StockService::computeStats();
 
-    int totalCount = 0;
-    int lowCount = 0;
-    int highCount = 0;
-    int outCount = 0;
-
-    while (query.next()) {
-        const QString status = query.value(0).toString();
-        const int count = query.value(1).toInt();
-
-        totalCount += count;
-
-        if (status.compare("Low Stock", Qt::CaseInsensitive) == 0)
-            lowCount = count;
-        else if (status.compare("High Stock", Qt::CaseInsensitive) == 0)
-            highCount = count;
-        else if (status.compare("Out Of Stock", Qt::CaseInsensitive) == 0)
-            outCount = count;
-    }
-
-    ui->lblTotalValue->setText(QString::number(totalCount));
-    ui->lblLowStockValue->setText(QString::number(lowCount));
-    ui->lblHighStockValue->setText(QString::number(highCount));
-    ui->lblOutOfStockValue->setText(QString::number(outCount));
+    ui->lblTotalValue->setText(QString::number(stats.total));
+    ui->lblLowStockValue->setText(QString::number(stats.low));
+    ui->lblHighStockValue->setText(QString::number(stats.high));
+    ui->lblOutOfStockValue->setText(QString::number(stats.out));
 }
 
 // Loads only the TABLE rows, respecting currentFilter and pagination.
-// Does NOT touch the stat card numbers anymore.
+// Does NOT touch the stat card numbers.
+// Status is computed LIVE from stock (via StockService::statusForStock),
+// never read from a stored "status" column — that's what caused the
+// stat-card vs table mismatch.
 void inventory::loadInventoryData(int page)
 {
     currentPage = page;
@@ -99,17 +81,24 @@ void inventory::loadInventoryData(int page)
 
     QSqlQuery query;
     QString sql = "SELECT id, product_name, category, unit, price, stock, "
-                  "expiry_date, status, supplier, sku FROM products ";
+                  "expiry_date, supplier, sku FROM products ";
 
-    if (!currentFilter.isEmpty())
-        sql += "WHERE LOWER(status) = LOWER(:status) ";
+    if (currentFilter == "Low Stock")
+        sql += "WHERE stock > 0 AND stock <= :low ";
+    else if (currentFilter == "High Stock")
+        sql += "WHERE stock > :high ";
+    else if (currentFilter == "Out Of Stock")
+        sql += "WHERE stock <= 0 ";
+    // currentFilter == "" (Total Products) -> no WHERE clause
 
     sql += "ORDER BY id LIMIT :limit OFFSET :offset";
 
     query.prepare(sql);
 
-    if (!currentFilter.isEmpty())
-        query.bindValue(":status", currentFilter);
+    if (currentFilter == "Low Stock")
+        query.bindValue(":low", StockService::LOW_STOCK_THRESHOLD);
+    else if (currentFilter == "High Stock")
+        query.bindValue(":high", StockService::HIGH_STOCK_THRESHOLD);
 
     query.bindValue(":limit", pageSize);
     query.bindValue(":offset", offset);
@@ -122,15 +111,28 @@ void inventory::loadInventoryData(int page)
     ui->inventoryTable->setRowCount(0);
     int row = 0;
 
+    // Query column order: 0=id, 1=product_name, 2=category, 3=unit, 4=price,
+    // 5=stock, 6=expiry_date, 7=supplier, 8=sku
+    // Table column order: 0=ID,1=Name,2=Category,3=Unit,4=Price,5=Stock,
+    // 6=Expiry,7=Status,8=Supplier,9=SKU
     while (query.next()) {
         ui->inventoryTable->insertRow(row);
+
+        int stock = query.value(5).toInt();
+        QString liveStatus = StockService::statusForStock(stock);
 
         for (int col = 0; col < 10; ++col) {
             auto *item = new QTableWidgetItem();
 
-            // Store Stock (col 5) as a real number so sorting works correctly
             if (col == 5) {
-                item->setData(Qt::DisplayRole, query.value(col).toInt());
+                // Store Stock as a real number so sorting works correctly
+                item->setData(Qt::DisplayRole, stock);
+            } else if (col == 7) {
+                item->setText(liveStatus);                  // Status (computed, not from DB)
+            } else if (col == 8) {
+                item->setText(query.value(7).toString());   // Supplier
+            } else if (col == 9) {
+                item->setText(query.value(8).toString());   // SKU
             } else {
                 item->setText(query.value(col).toString());
             }
