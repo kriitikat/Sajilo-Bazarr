@@ -3,6 +3,7 @@
 #include "../include/billing.h"
 #include "../include/frontproduct.h"
 #include "../include/frontprofile.h"
+#include "../include/stockservice.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -304,18 +305,12 @@ void frontdesk::loadDashboardStats()
         }
     }
 
-    // --- Low stock count ---
-    {
-        QSqlQuery q;
-        q.prepare("SELECT COUNT(*) FROM products WHERE stock < :threshold");
-        q.bindValue(":threshold", LOW_STOCK_THRESHOLD);
 
-        if (q.exec() && q.next()) {
-            if (lblLowStockValue)
-                lblLowStockValue->setText(QString::number(q.value(0).toInt()));
-        } else {
-            qDebug() << "Dashboard: low stock query failed:" << q.lastError().text();
-        }
+    // --- Low stock count (single source of truth: StockService) ---
+    {
+        InventoryStats stats = StockService::computeStats();
+        if (lblLowStockValue)
+            lblLowStockValue->setText(QString::number(stats.low));
     }
 
     loadRecentSales();
