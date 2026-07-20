@@ -5,13 +5,29 @@
 //  Sajilo Bazar – Task Management Module (Admin side)
 //  taskmanagement.h
 //
-//  All static layout/styling now lives in taskmanagement.ui (Ui::TaskManagement).
-//  This class only contains logic: DB access, row population, filtering,
-//  and the Add Task / View Task dialogs. Those two dialogs are still built
-//  in taskmanagement.cpp because their content is generated per-row at
-//  runtime (title, staff name, task list) and Qt Designer cannot express
-//  "one .ui that re-populates itself differently every time it opens" -
-//  this is normal Qt practice for data-driven dialogs.
+//  Hard split between the two files:
+//    - taskmanagement.ui   -> ALL design/coloring. Every color, font
+//                             weight, border, radius, hover/pressed/
+//                             focus state used anywhere in this module
+//                             lives in ui->styleSheet as one QSS block.
+//    - taskmanagement.cpp  -> ALL logic. DB access, row population,
+//                             filtering, the Add Task / View Task
+//                             dialogs. It never contains a hex color
+//                             or a QSS string.
+//
+//  The Add Task / View Task dialogs are still assembled with widget
+//  calls in the .cpp because their content is generated per-row at
+//  runtime (title, staff name, variable-length task list) and Qt
+//  Designer cannot express "one .ui that re-populates itself
+//  differently every time it opens" - this is normal Qt practice for
+//  data-driven dialogs. What changed is *how* they're styled: instead
+//  of building QSS strings with colors in the .cpp, each dynamically
+//  created widget is tagged with a "role" dynamic property (e.g.
+//  setProperty("role", "primary")), and taskmanagement.ui's master
+//  stylesheet (copied onto every dialog via
+//  dialog.setStyleSheet(this->styleSheet())) matches on that role,
+//  e.g. QPushButton[role="primary"]. See taskmanagement.ui for the
+//  full list of roles and their styling.
 //
 //  Tasks are joined to staff by staff_id (information.id), not by the
 //  name string, so a name change in `information` never orphans old

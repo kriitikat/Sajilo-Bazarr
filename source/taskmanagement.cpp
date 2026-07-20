@@ -31,72 +31,25 @@
 //  NOTE ON THE ADD-TASK / VIEW-TASK DIALOGS
 //
 //  Everything that is *static* (the summary panel, the table and its
-//  headers, the metric labels) is defined once in taskmanagement.ui and
-//  is never touched by styleSheet-setting code here anymore.
+//  headers, the metric labels) is defined once in taskmanagement.ui
+//  and is never touched by style-setting code here.
 //
-//  The Add Task / View Task dialogs, however, are still assembled with
-//  widget calls below. They can't be pre-built in Designer because their
-//  content is different every single time they open (a variable-length
-//  list of that staff member's tasks, a title built from their name,
-//  etc.) — Qt Designer only knows how to lay out a fixed, static form.
-//  This is standard practice for data-driven dialogs in Qt; the style
-//  constants below exist only because those specific widgets have no
-//  .ui counterpart to carry a styleSheet property for them.
+//  The Add Task / View Task dialogs are still assembled with widget
+//  calls below, because their content is different every single time
+//  they open (a variable-length list of that staff member's tasks, a
+//  title built from their name, etc.) — Qt Designer only knows how to
+//  lay out a fixed, static form. This is standard practice for
+//  data-driven dialogs in Qt.
+//
+//  What this file does NOT do anymore is carry any color or QSS text.
+//  Every widget built here is tagged with a "role" dynamic property
+//  (setProperty("role", "...")), and taskmanagement.ui's master
+//  stylesheet — copied onto each dialog via
+//  dialog.setStyleSheet(this->styleSheet()) — supplies the actual
+//  colors by matching on that role (e.g. QPushButton[role="primary"]).
+//  See taskmanagement.ui for the full stylesheet and the list of
+//  roles in use.
 // ═══════════════════════════════════════════════════════════════════
-namespace {
-const QString kPanelStyle =
-    "QFrame { background-color:#FFFFFF; border:1px solid #E2E8F0; border-radius:10px; }";
-
-const QString kPanelTitleStyle =
-    "font-size:14px; font-weight:bold; color:#2D4A7A; letter-spacing:0.5px; border:none;";
-
-const QString kLabelStyle = "QLabel { font-weight:600; color:#1A202C; border:none; }";
-
-const QString kInputStyle =
-    "QLineEdit, QTextEdit, QComboBox, QDateEdit {"
-    "  background-color:#FFFFFF; border:1px solid #CBD5E0; color:#000000;"
-    "  border-radius:6px; padding:6px; font-size:13px; outline:none; }"
-    "QLineEdit:focus, QTextEdit:focus, QComboBox:focus, QDateEdit:focus {"
-    "  border:1px solid #2D4A7A; outline:none; }"
-    "QComboBox QAbstractItemView {"
-    "  color:#000000; background-color:#FFFFFF; outline:none;"
-    "  selection-background-color:#EBF2FF; selection-color:#000000; }"
-    "QComboBox QAbstractItemView::item:hover {"
-    "  background-color:#EBF2FF; color:#000000; }";
-
-const QString kPrimaryButtonStyle =
-    "QPushButton { background-color:#2D4A7A; color:#FFFFFF; border:none;"
-    "  border-radius:6px; padding:8px 20px; font-weight:bold; font-size:13px; outline:none; }"
-    "QPushButton:hover    { background-color:#223A61; }"
-    "QPushButton:pressed  { background-color:#1B2E4D; }"
-    "QPushButton:focus    { outline:none; border:none; }";
-
-const QString kSecondaryButtonStyle =
-    "QPushButton { background-color:#FFFFFF; color:#4A5568; border:1px solid #CBD5E0;"
-    "  border-radius:6px; padding:8px 18px; font-size:13px; font-weight:500; outline:none; }"
-    "QPushButton:hover   { background-color:#F7FAFC; border-color:#A0AEC0; }"
-    "QPushButton:pressed { background-color:#EDF2F7; }"
-    "QPushButton:focus   { outline:none; }";
-
-// Colors below are intentionally identical to staffperform.ui's
-// QPushButton[actionRole="expire"] / QPushButton[actionRole="disable"]
-// rules, so the two pages read consistently to an admin - "Add Task"
-// picks up the garnet "expire" color, "View Task" picks up the amber
-// "disable" color.
-const QString kAddTaskButtonStyle =
-    "QPushButton { background-color:#8B0000; color:white; border:none;"
-    "  border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold; outline:none; }"
-    "QPushButton:hover   { background-color:#660000; }"
-    "QPushButton:pressed { background-color:#4d0000; }"
-    "QPushButton:focus   { outline:none; }";
-
-const QString kViewTaskButtonStyle =
-    "QPushButton { background-color:#d97706; color:white; border:none;"
-    "  border-radius:6px; padding:4px 10px; font-size:11px; font-weight:bold; outline:none; }"
-    "QPushButton:hover   { background-color:#b45309; }"
-    "QPushButton:pressed { background-color:#92400e; }"
-    "QPushButton:focus   { outline:none; }";
-}
 
 TaskManagement::TaskManagement(QWidget *parent)
     : QMainWindow(parent)
@@ -233,7 +186,7 @@ void TaskManagement::attachRowActionButtons(int row, int staffId)
     layout->setAlignment(Qt::AlignCenter);
 
     auto *btnAdd = new QPushButton("Add Task");
-    btnAdd->setStyleSheet(kAddTaskButtonStyle);
+    btnAdd->setProperty("role", "addTask");
     btnAdd->setMinimumWidth(80);
     btnAdd->setCursor(Qt::PointingHandCursor);
     btnAdd->setAutoDefault(false);
@@ -241,14 +194,14 @@ void TaskManagement::attachRowActionButtons(int row, int staffId)
     btnAdd->setProperty("staffId", staffId);
 
     auto *btnView = new QPushButton("View Task");
-    btnView->setStyleSheet(kViewTaskButtonStyle);
+    btnView->setProperty("role", "viewTask");
     btnView->setMinimumWidth(85);
     btnView->setCursor(Qt::PointingHandCursor);
     btnView->setAutoDefault(false);
     btnView->setDefault(false);
     btnView->setProperty("staffId", staffId);
 
-
+    connect(btnAdd, &QPushButton::clicked, this, &TaskManagement::onRowAddTaskClicked);
     connect(btnView, &QPushButton::clicked, this, &TaskManagement::onRowViewTaskClicked);
 
     layout->addWidget(btnAdd);
@@ -363,20 +316,23 @@ void TaskManagement::onRowAddTaskClicked()
     QDialog dialog(this);
     dialog.setWindowTitle("Add Task");
     dialog.resize(480, 520);
-    dialog.setStyleSheet("background-color:#F8FAFC;");
+    // Reuse the exact same master stylesheet defined in taskmanagement.ui
+    // so every role selector below (panel, fieldLabel, inputField,
+    // primary, secondary, ...) resolves to the colors defined there.
+    dialog.setStyleSheet(this->styleSheet());
 
     auto *dialogLayout = new QVBoxLayout(&dialog);
     dialogLayout->setContentsMargins(20, 20, 20, 20);
     dialogLayout->setSpacing(16);
 
     auto *formFrame = new QFrame();
-    formFrame->setStyleSheet(kPanelStyle);
+    formFrame->setProperty("role", "panel");
     auto *formLayout = new QVBoxLayout(formFrame);
     formLayout->setContentsMargins(20, 20, 20, 20);
     formLayout->setSpacing(14);
 
     auto *formTitle = new QLabel("CREATE NEW TASK FOR " + staffName.toUpper());
-    formTitle->setStyleSheet(kPanelTitleStyle);
+    formTitle->setProperty("role", "panelTitle");
     formTitle->setWordWrap(true);
     formTitle->setAlignment(Qt::AlignCenter);
     formLayout->addWidget(formTitle, 0, Qt::AlignCenter);
@@ -388,36 +344,36 @@ void TaskManagement::onRowAddTaskClicked()
     auto addFormRow = [&](int r, const QString &labelText, QWidget *field,
                           Qt::Alignment align = Qt::AlignVCenter) {
         auto *label = new QLabel(labelText);
-        label->setStyleSheet(kLabelStyle);
+        label->setProperty("role", "fieldLabel");
         grid->addWidget(label, r, 0, align);
         grid->addWidget(field, r, 1);
     };
 
     auto *titleInput = new QLineEdit();
     titleInput->setPlaceholderText("Enter task title...");
-    titleInput->setStyleSheet(kInputStyle);
+    titleInput->setProperty("role", "inputField");
     addFormRow(0, "Task Title", titleInput);
 
     auto *descInput = new QTextEdit();
     descInput->setPlaceholderText("Provide instructions...");
     descInput->setMaximumHeight(70);
-    descInput->setStyleSheet(kInputStyle);
+    descInput->setProperty("role", "inputField");
     addFormRow(1, "Description", descInput, Qt::AlignTop);
 
     auto *priorityInput = new QComboBox();
     priorityInput->addItems({"Low", "Medium", "High"});
     priorityInput->setCurrentIndex(1);
-    priorityInput->setStyleSheet(kInputStyle);
+    priorityInput->setProperty("role", "inputField");
     addFormRow(2, "Priority", priorityInput);
 
     auto *dueDate = new QDateEdit(QDate::currentDate());
     dueDate->setCalendarPopup(true);
-    dueDate->setStyleSheet(kInputStyle);
+    dueDate->setProperty("role", "inputField");
     addFormRow(3, "Due Date", dueDate);
 
     auto *categoryInput = new QComboBox();
     categoryInput->addItems({"Restocking", "Inspection", "Receiving", "Other"});
-    categoryInput->setStyleSheet(kInputStyle);
+    categoryInput->setProperty("role", "inputField");
     addFormRow(4, "Category", categoryInput);
 
     formLayout->addLayout(grid);
@@ -425,11 +381,11 @@ void TaskManagement::onRowAddTaskClicked()
     auto *buttonBox = new QDialogButtonBox(Qt::Horizontal);
     auto *btnAssign = buttonBox->addButton("Assign Task", QDialogButtonBox::AcceptRole);
     auto *btnCancel = buttonBox->addButton("Cancel", QDialogButtonBox::RejectRole);
-    btnAssign->setStyleSheet(kPrimaryButtonStyle);
+    btnAssign->setProperty("role", "primary");
     btnAssign->setMinimumWidth(120);
     btnAssign->setAutoDefault(false);
     btnAssign->setDefault(false);
-    btnCancel->setStyleSheet(kSecondaryButtonStyle);
+    btnCancel->setProperty("role", "secondary");
     btnCancel->setMinimumWidth(90);
     btnCancel->setAutoDefault(false);
     btnCancel->setDefault(false);
@@ -497,20 +453,21 @@ void TaskManagement::onRowViewTaskClicked()
     QDialog dialog(this);
     dialog.setWindowTitle("View Task");
     dialog.resize(500, 580);
-    dialog.setStyleSheet("background-color:#F8FAFC;");
+    // Reuse the exact same master stylesheet defined in taskmanagement.ui.
+    dialog.setStyleSheet(this->styleSheet());
 
     auto *dialogLayout = new QVBoxLayout(&dialog);
     dialogLayout->setContentsMargins(20, 20, 20, 20);
     dialogLayout->setSpacing(16);
 
     auto *card = new QFrame();
-    card->setStyleSheet(kPanelStyle);
+    card->setProperty("role", "panel");
     auto *cardLayout = new QVBoxLayout(card);
     cardLayout->setContentsMargins(20, 20, 20, 20);
     cardLayout->setSpacing(16);
 
     auto *title = new QLabel("TASK SUMMARY - " + staff.toUpper());
-    title->setStyleSheet(kPanelTitleStyle);
+    title->setProperty("role", "panelTitle");
     title->setWordWrap(true);
     title->setAlignment(Qt::AlignCenter);
     title->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
@@ -522,9 +479,9 @@ void TaskManagement::onRowViewTaskClicked()
 
     auto addInfoRow = [&](int r, const QString &labelText, const QString &value) {
         auto *label = new QLabel(labelText);
-        label->setStyleSheet(kLabelStyle);
+        label->setProperty("role", "fieldLabel");
         auto *valueLabel = new QLabel(value);
-        valueLabel->setStyleSheet("color:#000000; font-size:13px; border:none;");
+        valueLabel->setProperty("role", "valueLabel");
         valueLabel->setWordWrap(true);
         infoGrid->addWidget(label, r, 0);
         infoGrid->addWidget(valueLabel, r, 1);
@@ -536,7 +493,7 @@ void TaskManagement::onRowViewTaskClicked()
 
     auto *divider = new QFrame();
     divider->setFrameShape(QFrame::HLine);
-    divider->setStyleSheet("color:#E2E8F0;");
+    divider->setProperty("role", "divider");
     cardLayout->addWidget(divider);
 
     auto *statsRow = new QHBoxLayout();
@@ -550,19 +507,23 @@ void TaskManagement::onRowViewTaskClicked()
         else if (t.status == "Completed") completed++;
     }
 
-    auto makeStatChip = [](const QString &labelName, const QString &val, const QString &bg, const QString &fg) {
+    // roleSuffix picks the chip out of the three fixed variants defined
+    // in taskmanagement.ui ("statChipTotal/Pending/Completed" and their
+    // matching label/value roles) — these three are fixed categories,
+    // not something computed from data, so a role per category is enough.
+    auto makeStatChip = [](const QString &labelName, const QString &val, const QString &roleSuffix) {
         auto *chip = new QFrame();
-        chip->setStyleSheet(QString("QFrame { background-color:%1; border:none; border-radius:6px; }").arg(bg));
+        chip->setProperty("role", "statChip" + roleSuffix);
         auto *chipLayout = new QVBoxLayout(chip);
         chipLayout->setContentsMargins(8, 8, 8, 8);
         chipLayout->setSpacing(2);
 
         auto *titleLbl = new QLabel(labelName);
-        titleLbl->setStyleSheet(QString("color:%1; font-size:10px; font-weight:bold; border:none;").arg(fg));
+        titleLbl->setProperty("role", "statChipLabel" + roleSuffix);
         titleLbl->setAlignment(Qt::AlignCenter);
 
         auto *valLbl = new QLabel(val);
-        valLbl->setStyleSheet(QString("color:%1; font-size:16px; font-weight:bold; border:none;").arg(fg));
+        valLbl->setProperty("role", "statChipValue" + roleSuffix);
         valLbl->setAlignment(Qt::AlignCenter);
 
         chipLayout->addWidget(titleLbl);
@@ -570,24 +531,23 @@ void TaskManagement::onRowViewTaskClicked()
         return chip;
     };
 
-    statsRow->addWidget(makeStatChip("TOTAL", QString::number(total), "#EBF2FF", "#2D4A7A"));
-    statsRow->addWidget(makeStatChip("PENDING", QString::number(pending), "#FFF3E0", "#DD6B20"));
-    statsRow->addWidget(makeStatChip("COMPLETED", QString::number(completed), "#E9F9EF", "#38A169"));
+    statsRow->addWidget(makeStatChip("TOTAL", QString::number(total), "Total"));
+    statsRow->addWidget(makeStatChip("PENDING", QString::number(pending), "Pending"));
+    statsRow->addWidget(makeStatChip("COMPLETED", QString::number(completed), "Completed"));
     cardLayout->addLayout(statsRow);
 
     auto *divider2 = new QFrame();
     divider2->setFrameShape(QFrame::HLine);
-    divider2->setStyleSheet("color:#E2E8F0;");
+    divider2->setProperty("role", "divider");
     cardLayout->addWidget(divider2);
 
     auto *detailHeading = new QLabel("TASK DETAILS");
-    detailHeading->setStyleSheet(
-        "color:#2D4A7A; font-size:12px; font-weight:bold; letter-spacing:0.5px; border:none;");
+    detailHeading->setProperty("role", "sectionHeading");
     cardLayout->addWidget(detailHeading);
 
     if (currentTasks.isEmpty()) {
         auto *noData = new QLabel("No detailed task records yet for this staff member.");
-        noData->setStyleSheet("color:#718096; font-size:12px; border:none;");
+        noData->setProperty("role", "mutedNote");
         noData->setWordWrap(true);
         cardLayout->addWidget(noData);
     } else {
@@ -595,7 +555,7 @@ void TaskManagement::onRowViewTaskClicked()
         scrollArea->setWidgetResizable(true);
         scrollArea->setFrameShape(QFrame::NoFrame);
         scrollArea->setMaximumHeight(230);
-        scrollArea->setStyleSheet("background:transparent;");
+        scrollArea->setProperty("role", "transparentScroll");
 
         auto *listContainer = new QWidget();
         auto *listLayout = new QVBoxLayout(listContainer);
@@ -615,7 +575,7 @@ void TaskManagement::onRowViewTaskClicked()
     auto *buttonRow = new QHBoxLayout();
     buttonRow->addStretch();
     auto *btnClose = new QPushButton("Close");
-    btnClose->setStyleSheet(kSecondaryButtonStyle);
+    btnClose->setProperty("role", "secondary");
     btnClose->setMinimumWidth(90);
     btnClose->setAutoDefault(false);
     btnClose->setDefault(false);
@@ -629,8 +589,7 @@ void TaskManagement::onRowViewTaskClicked()
 QWidget *TaskManagement::buildTaskDetailCard(const TaskDetail &task, int staffId)
 {
     auto *card = new QFrame();
-    card->setStyleSheet(
-        "QFrame { background-color:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; }");
+    card->setProperty("role", "taskCard");
 
     auto *layout = new QVBoxLayout(card);
     layout->setContentsMargins(12, 10, 12, 10);
@@ -640,20 +599,19 @@ QWidget *TaskManagement::buildTaskDetailCard(const TaskDetail &task, int staffId
     topRow->setSpacing(8);
 
     auto *titleLabel = new QLabel(task.title.isEmpty() ? "Untitled Task" : task.title);
-    titleLabel->setStyleSheet("color:#000000; font-size:13px; font-weight:bold; border:none;");
+    titleLabel->setProperty("role", "cardTitle");
     titleLabel->setWordWrap(true);
 
-    QString priorityBg = "#E9F9EF", priorityFg = "#38A169";
-    if (task.priority == "Medium") {
-        priorityBg = "#FFF3E0"; priorityFg = "#DD6B20";
-    } else if (task.priority == "High") {
-        priorityBg = "#FDECEC"; priorityFg = "#E53E3E";
-    }
+    // Priority determines which of the three fixed badge roles is used;
+    // the colors themselves live entirely in taskmanagement.ui.
+    QString priorityRole = "priorityLow";
+    if (task.priority == "Medium")
+        priorityRole = "priorityMedium";
+    else if (task.priority == "High")
+        priorityRole = "priorityHigh";
 
     auto *priorityBadge = new QLabel(task.priority.isEmpty() ? "Medium" : task.priority);
-    priorityBadge->setStyleSheet(QString(
-                                     "background-color:%1; color:%2; border:none; border-radius:8px;"
-                                     " padding:2px 10px; font-size:11px; font-weight:bold;").arg(priorityBg, priorityFg));
+    priorityBadge->setProperty("role", priorityRole);
     priorityBadge->setAlignment(Qt::AlignCenter);
 
     topRow->addWidget(titleLabel, 1);
@@ -662,24 +620,24 @@ QWidget *TaskManagement::buildTaskDetailCard(const TaskDetail &task, int staffId
 
     if (!task.description.isEmpty()) {
         auto *descLabel = new QLabel(task.description);
-        descLabel->setStyleSheet("color:#4A5568; font-size:12px; border:none;");
+        descLabel->setProperty("role", "cardDescription");
         descLabel->setWordWrap(true);
         layout->addWidget(descLabel);
     }
 
     auto *dueLabel = new QLabel("Due: " + (task.dueDate.isEmpty() ? "N/A" : task.dueDate));
-    dueLabel->setStyleSheet("color:#718096; font-size:11px; border:none;");
+    dueLabel->setProperty("role", "cardMeta");
     layout->addWidget(dueLabel);
 
     auto *statusRow = new QHBoxLayout();
     statusRow->setSpacing(8);
 
     auto *statusLabel = new QLabel("Status:");
-    statusLabel->setStyleSheet(kLabelStyle);
+    statusLabel->setProperty("role", "fieldLabel");
 
     auto *statusCombo = new QComboBox();
     statusCombo->addItems({"Pending", "In Progress", "Completed"});
-    statusCombo->setStyleSheet(kInputStyle);
+    statusCombo->setProperty("role", "inputField");
     int idx = statusCombo->findText(task.status);
     statusCombo->setCurrentIndex(idx >= 0 ? idx : 0);
     statusCombo->setEnabled(task.id >= 0);

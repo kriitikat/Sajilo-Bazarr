@@ -9,6 +9,8 @@
 #include <QLayoutItem>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QMessageBox>
+#include <QStyle>
 #include <QDebug>
 
 // ═══════════════════════════════════════════════════════════════════
@@ -21,6 +23,11 @@
 //  cards and their content depend entirely on what the DB query
 //  returns, so each card is still built with widget calls below. This
 //  mirrors how TaskManagement's Add/View Task dialogs are handled.
+//
+//  Every widget built here is tagged with a "role" dynamic property;
+//  mytasks.ui's master stylesheet supplies the actual colors by
+//  matching on that role. This file never contains a hex color or a
+//  QSS string.
 // ═══════════════════════════════════════════════════════════════════
 
 MyTasks::MyTasks(int staffId, const QString &staffName, QWidget *parent)
@@ -82,9 +89,12 @@ void MyTasks::loadTasksForStaff(int staffId, const QString &staffName)
     // not staff_name (text). This is what makes sure a staff member only
     // ever sees their own tasks, even if two people share a name or a
     // name gets edited.
+    //
+    // `id` is now selected too, so each card knows which DB row to update
+    // when "Mark Completed" is clicked.
     QSqlQuery query;
     query.prepare(
-        "SELECT task_title, task_description, priority, deadline, status "
+        "SELECT id, task_title, task_description, priority, deadline, status "
         "FROM tasks WHERE staff_id = ? ORDER BY id DESC");
     query.addBindValue(staffId);
 
@@ -94,11 +104,12 @@ void MyTasks::loadTasksForStaff(int staffId, const QString &staffName)
 
     if (query.exec()) {
         while (query.next()) {
-            const QString title    = query.value(0).toString();
-            const QString desc     = query.value(1).toString();
-            const QString priority = query.value(2).toString();
-            const QString due      = query.value(3).toString();
-            QString status         = query.value(4).toString();
+            const int     taskId   = query.value(0).toInt();
+            const QString title    = query.value(1).toString();
+            const QString desc     = query.value(2).toString();
+            const QString priority = query.value(3).toString();
+            const QString due      = query.value(4).toString();
+            QString status         = query.value(5).toString();
             if (status.isEmpty())
                 status = "Pending";
 
@@ -106,7 +117,7 @@ void MyTasks::loadTasksForStaff(int staffId, const QString &staffName)
             if (status == "Pending") ++pendingCount;
             else if (status == "Completed") ++completedCount;
 
-            ui->taskCardsLayout->addWidget(createTaskCard(title, desc, priority, due, status));
+            ui->taskCardsLayout->addWidget(createTaskCard(taskId, title, desc, priority, due, status));
         }
     } else {
         qDebug() << "Failed to load tasks for staff_id" << staffId << ":" << query.lastError().text();
@@ -119,55 +130,113 @@ void MyTasks::loadTasksForStaff(int staffId, const QString &staffName)
     ui->emptyStateLabel->setVisible(totalCount == 0);
 }
 
-QWidget *MyTasks::createTaskCard(const QString &title, const QString &description,
+bool MyTasks::updateTaskStatus(int taskId, const QString &newStatus)
+{
+    QSqlQuery q;
+    q.prepare("UPDATE tasks SET status = ? WHERE id = ?");
+    q.addBindValue(newStatus);
+    q.addBindValue(taskId);
+    if (!q.exec()) {
+        qDebug() << "SQL Error:" << q.lastError().text();
+        QMessageBox::critical(this, "Database Error", q.lastError().text());
+        return false;
+    }
+    return true;
+}
+
+QWidget *MyTasks::createTaskCard(int taskId, const QString &title, const QString &description,
                                  const QString &priority, const QString &dueText,
-                                 const QString &statusText) const
+                                 const QString &statusText)
 {
     auto *card = new QFrame();
-    card->setStyleSheet(
-        "QFrame { background-color:#FFFFFF; border:1px solid #f0dde1; border-radius:10px; }");
+    card->setProperty("role", "taskCard");
 
     auto *cardLayout = new QVBoxLayout(card);
     cardLayout->setContentsMargins(16, 16, 16, 16);
     cardLayout->setSpacing(10);
 
-    // Colors intentionally match the same enable/disable/expire palette used
-    // in staffperform.ui, so priority severity reads consistently across
-    // the whole theme: Low = green ("enable"), Medium = amber ("disable"),
-    // High = garnet ("expire").
-    QString priorityBg = "#F0FDF4", priorityFg = "#16a34a"; // Low (default)
-    if (priority == "Medium") { priorityBg = "#FFFAF0"; priorityFg = "#d97706"; }
-    else if (priority == "High") { priorityBg = "#FFF5F5"; priorityFg = "#8B0000"; }
+    // Priority determines which of the three fixed badge roles is used;
+    // the actual colors live entirely in mytasks.ui.
+    QString priorityRole = "priorityLow";
+    if (priority == "Medium")
+        priorityRole = "priorityMedium";
+    else if (priority == "High")
+        priorityRole = "priorityHigh";
 
     auto *topRow = new QHBoxLayout();
 
     auto *priorityBadge = new QLabel(priority.isEmpty() ? "Medium" : priority);
-    priorityBadge->setStyleSheet(QString(
-                                     "background-color:%1; color:%2; border:none; border-radius:4px;"
-                                     " padding:4px 10px; font-size:11px; font-weight:bold;").arg(priorityBg, priorityFg));
+    priorityBadge->setProperty("role", priorityRole);
 
     auto *dueLabel = new QLabel("Due: " + (dueText.isEmpty() ? "N/A" : dueText));
-    dueLabel->setStyleSheet("color:#9c7480; font-size:12px; font-weight:500; border:none;");
+    dueLabel->setProperty("role", "cardDue");
 
     topRow->addWidget(priorityBadge);
     topRow->addStretch();
     topRow->addWidget(dueLabel);
 
     auto *titleLabel = new QLabel(title.isEmpty() ? "Untitled Task" : title);
-    titleLabel->setStyleSheet("font-size:16px; font-weight:bold; color:#4a1626; border:none;");
+    titleLabel->setProperty("role", "cardTitle");
     titleLabel->setWordWrap(true);
 
     auto *descLabel = new QLabel(description.isEmpty() ? "No description provided." : description);
-    descLabel->setStyleSheet("color:#4a1626; font-size:13px; border:none;");
+    descLabel->setProperty("role", "cardDescription");
     descLabel->setWordWrap(true);
 
     auto *statusLabel = new QLabel("Status: " + statusText);
-    statusLabel->setStyleSheet("color:#4a1626; font-size:12px; font-weight:bold; border:none;");
+    statusLabel->setProperty("role", "cardStatus");
+
+    // "Mark Completed" lets staff close out a task themselves. It writes
+    // straight to the same `tasks` row admin's TaskManagement page reads,
+    // so the change shows up there (e.g. in "View Task") the next time
+    // that page loads this staff member's tasks - no direct link between
+    // the two windows is needed.
+    auto *actionButton = new QPushButton();
+    const bool alreadyCompleted = (statusText == "Completed");
+    actionButton->setText(alreadyCompleted ? "\u2713 Completed" : "Mark Completed");
+    actionButton->setProperty("role", alreadyCompleted ? "completedTag" : "markCompleted");
+    actionButton->setEnabled(!alreadyCompleted);
+    actionButton->setCursor(alreadyCompleted ? Qt::ArrowCursor : Qt::PointingHandCursor);
+    actionButton->setAutoDefault(false);
+    actionButton->setDefault(false);
+
+    if (!alreadyCompleted) {
+        connect(actionButton, &QPushButton::clicked, this,
+                [this, actionButton, statusLabel, taskId]() {
+                    if (!updateTaskStatus(taskId, "Completed"))
+                        return;
+
+                    statusLabel->setText("Status: Completed");
+
+                    actionButton->setText("\u2713 Completed");
+                    actionButton->setEnabled(false);
+                    actionButton->setCursor(Qt::ArrowCursor);
+                    actionButton->setProperty("role", "completedTag");
+                    // The role property changed after the button was already
+                    // shown, so force the stylesheet to re-evaluate it.
+                    actionButton->style()->unpolish(actionButton);
+                    actionButton->style()->polish(actionButton);
+
+                    // Move one task from Pending to Completed in the summary
+                    // cards without a full reload.
+                    const int newPending   = ui->lblPendingValue->text().toInt() - 1;
+                    const int newCompleted = ui->lblCompletedValue->text().toInt() + 1;
+                    ui->lblPendingValue->setText(QString::number(qMax(0, newPending)));
+                    ui->lblCompletedValue->setText(QString::number(newCompleted));
+
+                    emit taskStatusChanged();
+                });
+    }
+
+    auto *actionRow = new QHBoxLayout();
+    actionRow->addStretch();
+    actionRow->addWidget(actionButton);
 
     cardLayout->addLayout(topRow);
     cardLayout->addWidget(titleLabel);
     cardLayout->addWidget(descLabel);
     cardLayout->addWidget(statusLabel);
+    cardLayout->addLayout(actionRow);
 
     return card;
 }
