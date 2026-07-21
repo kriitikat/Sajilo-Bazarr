@@ -51,10 +51,8 @@ private:
     void setupProductTable();
     void loadRecentSales();
     void loadCurrentUserInfo();    // pulls username/first_name/picture by id, fills welcome bar + avatar
-    QFrame *createStatCard(QWidget *parent, int x, int y, int w, int h,
-                           const QString &title, const QString &value,
-                           const QString &accentColor);
-
+    QFrame *createStatCard(QWidget *parent, const QString &title,
+                           const QString &value, const QString &accentColor);
     // Turns any source pixmap into a circular (Facebook-style) avatar of the
     // given diameter, with transparent corners.
     static QPixmap makeCircularPixmap(const QPixmap &source, int diameter);
